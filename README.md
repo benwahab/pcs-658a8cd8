@@ -1,24 +1,19 @@
-# PCS
+# PCS — Plateforme de Citoyenneté et de Signalement
 
-je veux creer un nouveau projet PCS
+Plateforme numérique citoyenne permettant de signaler, localiser et suivre les problèmes d’intérêt public.
 
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/1de9a97f-0ae5-43ff-aaa0-90099116a7ec).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
+## Documentation
+- [Documentation technique complète](docs/DOCUMENTATION_TECHNIQUE_COMPLETE.md)
+- CAHIER_DES_CHARGES.md
+- ARCHITECTURE.md
+- DATABASE.md
+- SECURITY.md
+- API.md
+- WORKFLOWS.md
+- ROLES_ET_PERMISSIONS.md
+- ROADMAP.md
+- docs/UX_UI.md
+- docs/ADMINISTRATION.md
+- docs/MODERATION.md
+- docs/NOTIFICATIONS.md
+- docs/DEPLOIEMENT.md
