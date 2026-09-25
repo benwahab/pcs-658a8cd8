@@ -10,6 +10,9 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // PCS pages rely on browser APIs (session, GPS, IndexedDB, camera):
+    // render them in the browser only.
+    defaultSsr: false,
   });
 
   return router;

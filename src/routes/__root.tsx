@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import PcsApp from "../pcs/App";
 
 function NotFoundComponent() {
   return (
@@ -77,21 +78,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "PCS — Signalement citoyen" },
+      { name: "description", content: "Signaler, localiser et suivre les problèmes d’intérêt public." },
+      { name: "theme-color", content: "#0f766e" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { property: "og:title", content: "PCS — Signalement citoyen" },
+      { property: "og:description", content: "Signaler, localiser et suivre les problèmes d’intérêt public." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", href: "/icons/icon-192.jpg", type: "image/jpeg" },
+      { rel: "apple-touch-icon", href: "/icons/icon-192.jpg" },
     ],
   }),
   shellComponent: RootShell,
@@ -102,11 +107,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <HeadContent />
       </head>
       <body>
+        <div id="pcs-splash" aria-label="PCS" role="status">
+          <img src="/assets/pcs-splash.jpg" alt="PCS — Plateforme Citoyenne de Signalement" />
+        </div>
         {children}
         <Scripts />
       </body>
@@ -117,10 +125,25 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // PWA service worker (production only) + splash removal, as in PCS main.tsx.
+  useEffect(() => {
+    if ("serviceWorker" in navigator && import.meta.env.PROD) {
+      navigator.serviceWorker.register("/sw.js").catch((error) => {
+        console.error("PCS service worker registration failed:", error);
+      });
+    }
+    const splash = document.getElementById("pcs-splash");
+    splash?.classList.add("hidden");
+    const t = window.setTimeout(() => splash?.remove(), 350);
+    return () => window.clearTimeout(t);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <PcsApp>
+        <Outlet />
+      </PcsApp>
     </QueryClientProvider>
   );
 }

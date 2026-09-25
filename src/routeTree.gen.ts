@@ -10,33 +10,206 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SplatRouteImport } from './routes/$'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AgentTerrainRouteImport } from './routes/agent-terrain'
+import { Route as ConnexionRouteImport } from './routes/connexion'
+import { Route as ConnexionOperationnelleRouteImport } from './routes/connexion-operationnelle'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as MairieRouteImport } from './routes/mairie'
+import { Route as MesSignalementsRouteImport } from './routes/mes-signalements'
+import { Route as ModerationRouteImport } from './routes/moderation'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as OrganisationRouteImport } from './routes/organisation'
+import { Route as SignalerRouteImport } from './routes/signaler'
+import { Route as SignalementIdRouteImport } from './routes/signalement.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentTerrainRoute = AgentTerrainRouteImport.update({
+  id: '/agent-terrain',
+  path: '/agent-terrain',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnexionRoute = ConnexionRouteImport.update({
+  id: '/connexion',
+  path: '/connexion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnexionOperationnelleRoute = ConnexionOperationnelleRouteImport.update({
+  id: '/connexion-operationnelle',
+  path: '/connexion-operationnelle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MairieRoute = MairieRouteImport.update({
+  id: '/mairie',
+  path: '/mairie',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MesSignalementsRoute = MesSignalementsRouteImport.update({
+  id: '/mes-signalements',
+  path: '/mes-signalements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModerationRoute = ModerationRouteImport.update({
+  id: '/moderation',
+  path: '/moderation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganisationRoute = OrganisationRouteImport.update({
+  id: '/organisation',
+  path: '/organisation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignalerRoute = SignalerRouteImport.update({
+  id: '/signaler',
+  path: '/signaler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignalementIdRoute = SignalementIdRouteImport.update({
+  id: '/signalement/$id',
+  path: '/signalement/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/admin': typeof AdminRoute
+  '/agent-terrain': typeof AgentTerrainRoute
+  '/connexion': typeof ConnexionRoute
+  '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
+  '/dashboard': typeof DashboardRoute
+  '/mairie': typeof MairieRoute
+  '/mes-signalements': typeof MesSignalementsRoute
+  '/moderation': typeof ModerationRoute
+  '/notifications': typeof NotificationsRoute
+  '/organisation': typeof OrganisationRoute
+  '/signaler': typeof SignalerRoute
+  '/signalement/$id': typeof SignalementIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/admin': typeof AdminRoute
+  '/agent-terrain': typeof AgentTerrainRoute
+  '/connexion': typeof ConnexionRoute
+  '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
+  '/dashboard': typeof DashboardRoute
+  '/mairie': typeof MairieRoute
+  '/mes-signalements': typeof MesSignalementsRoute
+  '/moderation': typeof ModerationRoute
+  '/notifications': typeof NotificationsRoute
+  '/organisation': typeof OrganisationRoute
+  '/signaler': typeof SignalerRoute
+  '/signalement/$id': typeof SignalementIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/admin': typeof AdminRoute
+  '/agent-terrain': typeof AgentTerrainRoute
+  '/connexion': typeof ConnexionRoute
+  '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
+  '/dashboard': typeof DashboardRoute
+  '/mairie': typeof MairieRoute
+  '/mes-signalements': typeof MesSignalementsRoute
+  '/moderation': typeof ModerationRoute
+  '/notifications': typeof NotificationsRoute
+  '/organisation': typeof OrganisationRoute
+  '/signaler': typeof SignalerRoute
+  '/signalement/$id': typeof SignalementIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/admin'
+    | '/agent-terrain'
+    | '/connexion'
+    | '/connexion-operationnelle'
+    | '/dashboard'
+    | '/mairie'
+    | '/mes-signalements'
+    | '/moderation'
+    | '/notifications'
+    | '/organisation'
+    | '/signaler'
+    | '/signalement/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/$'
+    | '/admin'
+    | '/agent-terrain'
+    | '/connexion'
+    | '/connexion-operationnelle'
+    | '/dashboard'
+    | '/mairie'
+    | '/mes-signalements'
+    | '/moderation'
+    | '/notifications'
+    | '/organisation'
+    | '/signaler'
+    | '/signalement/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/admin'
+    | '/agent-terrain'
+    | '/connexion'
+    | '/connexion-operationnelle'
+    | '/dashboard'
+    | '/mairie'
+    | '/mes-signalements'
+    | '/moderation'
+    | '/notifications'
+    | '/organisation'
+    | '/signaler'
+    | '/signalement/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
+  AdminRoute: typeof AdminRoute
+  AgentTerrainRoute: typeof AgentTerrainRoute
+  ConnexionRoute: typeof ConnexionRoute
+  ConnexionOperationnelleRoute: typeof ConnexionOperationnelleRoute
+  DashboardRoute: typeof DashboardRoute
+  MairieRoute: typeof MairieRoute
+  MesSignalementsRoute: typeof MesSignalementsRoute
+  ModerationRoute: typeof ModerationRoute
+  NotificationsRoute: typeof NotificationsRoute
+  OrganisationRoute: typeof OrganisationRoute
+  SignalerRoute: typeof SignalerRoute
+  SignalementIdRoute: typeof SignalementIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +221,115 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent-terrain': {
+      id: '/agent-terrain'
+      path: '/agent-terrain'
+      fullPath: '/agent-terrain'
+      preLoaderRoute: typeof AgentTerrainRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connexion': {
+      id: '/connexion'
+      path: '/connexion'
+      fullPath: '/connexion'
+      preLoaderRoute: typeof ConnexionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connexion-operationnelle': {
+      id: '/connexion-operationnelle'
+      path: '/connexion-operationnelle'
+      fullPath: '/connexion-operationnelle'
+      preLoaderRoute: typeof ConnexionOperationnelleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mairie': {
+      id: '/mairie'
+      path: '/mairie'
+      fullPath: '/mairie'
+      preLoaderRoute: typeof MairieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mes-signalements': {
+      id: '/mes-signalements'
+      path: '/mes-signalements'
+      fullPath: '/mes-signalements'
+      preLoaderRoute: typeof MesSignalementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/moderation': {
+      id: '/moderation'
+      path: '/moderation'
+      fullPath: '/moderation'
+      preLoaderRoute: typeof ModerationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/organisation': {
+      id: '/organisation'
+      path: '/organisation'
+      fullPath: '/organisation'
+      preLoaderRoute: typeof OrganisationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signaler': {
+      id: '/signaler'
+      path: '/signaler'
+      fullPath: '/signaler'
+      preLoaderRoute: typeof SignalerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signalement/$id': {
+      id: '/signalement/$id'
+      path: '/signalement/$id'
+      fullPath: '/signalement/$id'
+      preLoaderRoute: typeof SignalementIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
+  AdminRoute: AdminRoute,
+  AgentTerrainRoute: AgentTerrainRoute,
+  ConnexionRoute: ConnexionRoute,
+  ConnexionOperationnelleRoute: ConnexionOperationnelleRoute,
+  DashboardRoute: DashboardRoute,
+  MairieRoute: MairieRoute,
+  MesSignalementsRoute: MesSignalementsRoute,
+  ModerationRoute: ModerationRoute,
+  NotificationsRoute: NotificationsRoute,
+  OrganisationRoute: OrganisationRoute,
+  SignalerRoute: SignalerRoute,
+  SignalementIdRoute: SignalementIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
