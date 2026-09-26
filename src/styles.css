@@ -180,3 +180,51 @@
 .feedSecondary:hover,.feedActionButton:hover{border-color:#ffffff66}
 .button:not(:disabled):active,.mairieButton:not(:disabled):active,.feedPrimary:not(:disabled):active,.feedSecondary:not(:disabled):active,.feedActionButton:not(:disabled):active,.iconButton:not(:disabled):active,.agentRefresh:not(:disabled):active,.missionPager:not(:disabled):active,.filterPills button:not(:disabled):active,.tableActions a:active,.mairieNav button:active{transform:translateY(0) scale(.98);box-shadow:0 3px 10px #0d6b4f18}
 @media(prefers-reduced-motion:reduce){.button,.mairieButton,.feedPrimary,.feedSecondary,.feedActionButton,.iconButton,.agentRefresh,.missionPager,.filterPills button,.tableActions a,.mairieNav button{transition:none!important}.button:hover,.mairieButton:hover,.feedPrimary:hover,.feedSecondary:hover,.feedActionButton:hover,.iconButton:hover,.agentRefresh:hover,.missionPager:hover,.filterPills button:hover,.tableActions a:hover,.mairieNav button:hover{transform:none}}
+
+/* ===== PCS premium visual layer (UI only, palette unchanged) ===== */
+:root{font-family:"Manrope",system-ui,sans-serif;-webkit-font-smoothing:antialiased;--pcs-ease:cubic-bezier(.2,.7,.2,1);--pcs-shadow-sm:0 1px 2px #10251b0d,0 1px 1px #10251b08;--pcs-shadow:0 1px 2px #10251b0a,0 10px 30px -12px #10251b1f;--pcs-shadow-lg:0 2px 4px #10251b0a,0 24px 60px -20px #10251b33}
+:where(main,.mairieDashboard) :where(h1,h2,h3):not(.citizenFeed *),.mairieBrand strong,.mairieWelcome h1{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.02em}
+h1{line-height:1.1}h2{letter-spacing:-.01em}
+body{text-rendering:optimizeLegibility}
+header{background:#ffffffd9;backdrop-filter:blur(14px) saturate(160%);height:72px}
+nav a{position:relative;font-weight:600;font-size:.92rem;transition:color .2s var(--pcs-ease)}
+.button,.mairieButton{font-weight:650;letter-spacing:.005em;border-radius:12px;box-shadow:var(--pcs-shadow-sm);transition:transform .18s var(--pcs-ease),box-shadow .2s var(--pcs-ease),background-color .2s,border-color .2s}
+.button:hover:not(:disabled),.mairieButton:hover{transform:translateY(-1px);box-shadow:var(--pcs-shadow);border-color:#b9c8c2}
+.button:active:not(:disabled),.mairieButton:active{transform:translateY(0);box-shadow:var(--pcs-shadow-sm)}
+.button:focus-visible,.mairieButton:focus-visible,a:focus-visible{outline:2px solid #99d5cf;outline-offset:2px}
+.button.primary{box-shadow:inset 0 1px 0 #ffffff26,0 6px 16px -6px #0f766e80}
+.button.primary:hover:not(:disabled){filter:brightness(1.06);border-color:#0f766e}
+.card,.mairiePanel,.mairieStatCard{border-radius:18px;border-color:#e4eae7;box-shadow:var(--pcs-shadow);transition:box-shadow .25s var(--pcs-ease),transform .25s var(--pcs-ease)}
+.card{padding:28px}
+.stat:hover,.mairieStatCard:hover{transform:translateY(-2px);box-shadow:var(--pcs-shadow-lg)}
+.form{gap:20px}.form label{font-size:.86rem;font-weight:650;color:#3a4744;gap:8px}
+.form input,.form textarea,.form select,.agentSelect{border-radius:12px;padding:13px 14px;border-color:#d8e0dd;background:#fcfdfc;box-shadow:inset 0 1px 2px #10251b08;transition:border-color .2s,box-shadow .2s,background-color .2s}
+.form input:hover,.form textarea:hover,.form select:hover{border-color:#bfccc7}
+.form input:focus,.form textarea:focus,.form select:focus{outline:0;border-color:#0f766e;background:#fff;box-shadow:0 0 0 4px #99d5cf55}
+.badge,.statusPill{font-weight:700;letter-spacing:.02em;box-shadow:inset 0 0 0 1px currentColor;--tw:0;padding:5px 11px}
+.badge{box-shadow:inset 0 0 0 1px #0f766e22}
+.statusPill{box-shadow:none;outline:1px solid #0000000a}
+.tableWrap th{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:#6b7875;font-weight:700;background:#f8faf9}
+.tableWrap td{padding:14px 12px;border-bottom-color:#eef2f0}
+.tableWrap tbody tr{transition:background-color .15s}.tableWrap tbody tr:hover{background:#f6faf8}
+.eyebrow{letter-spacing:.18em}
+.sectionHead{margin-bottom:24px}
+.empty{border:1px dashed #d8e0dd;border-radius:18px;background:#fcfdfc}
+.mairieNav a,.mairieNav button{transition:background-color .18s,color .18s,transform .18s var(--pcs-ease)}
+.mairieNav a:hover,.mairieNav button:hover{transform:translateX(2px)}
+.mairieTopbar{background:#ffffffe0;backdrop-filter:blur(14px) saturate(160%)}
+.iconButton{transition:box-shadow .2s,transform .18s}.iconButton:hover{box-shadow:var(--pcs-shadow);transform:translateY(-1px)}
+main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
+@keyframes pcsFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Auth screens: glass card over faint brand logo */
+.authScreen{position:relative;isolation:isolate;max-width:520px;padding:24px 0 40px}
+.authScreen::before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradient(1200px 600px at 20% 10%,#0f766e14,transparent 60%),radial-gradient(900px 500px at 90% 90%,#0f766e10,transparent 60%),#f6f8f7}
+.authScreen::after{content:"";position:fixed;z-index:-1;left:50%;top:50%;width:min(900px,120vw);aspect-ratio:1;transform:translate(-50%,-50%);background:url(/assets/pcs-logo.jpg) center/contain no-repeat;opacity:.07;filter:blur(2px) saturate(.9);mix-blend-mode:multiply;pointer-events:none}
+.authScreen>h1{font-size:clamp(1.8rem,4vw,2.4rem);text-align:center;margin:8px 0 10px}
+.authScreen>p{text-align:center;color:#586566;margin:0 0 20px}
+.authScreen .card{background:#ffffffb8;backdrop-filter:blur(18px) saturate(150%);border:1px solid #ffffffcc;box-shadow:0 1px 0 #ffffff inset,var(--pcs-shadow-lg);margin:16px 0}
+.authScreen .actions{justify-content:center;margin:18px 0 6px}
+.authScreen>.button{display:flex;width:100%;background:#ffffffa6;backdrop-filter:blur(10px)}
+.authScreen .form .button.primary{padding:14px}
