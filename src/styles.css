@@ -183,7 +183,7 @@
 
 /* ===== PCS premium visual layer (UI only, palette unchanged) ===== */
 :root{font-family:"Manrope",system-ui,sans-serif;-webkit-font-smoothing:antialiased;--pcs-ease:cubic-bezier(.2,.7,.2,1);--pcs-shadow-sm:0 1px 2px #10251b0d,0 1px 1px #10251b08;--pcs-shadow:0 1px 2px #10251b0a,0 10px 30px -12px #10251b1f;--pcs-shadow-lg:0 2px 4px #10251b0a,0 24px 60px -20px #10251b33}
-h1,h2,h3,.brand,.mairieBrand strong,.mairieWelcome h1{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.02em}
+:where(main,.mairieDashboard) :where(h1,h2,h3):not(.citizenFeed *),.mairieBrand strong,.mairieWelcome h1{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.02em}
 h1{line-height:1.1}h2{letter-spacing:-.01em}
 body{text-rendering:optimizeLegibility}
 header{background:#ffffffd9;backdrop-filter:blur(14px) saturate(160%);height:72px}
