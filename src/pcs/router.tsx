@@ -41,5 +41,6 @@ export function useLocation() {
 }
 
 export function useParams<T extends Record<string, string | undefined> = Record<string, string | undefined>>() {
-  return useTsParams({ strict: false }) as T;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (useTsParams as any)({ strict: false }) as T;
 }
