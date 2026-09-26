@@ -18,6 +18,7 @@ import AgentTerrain from "./pages/AgentTerrain";
 import OrganizationDashboard from "./pages/OrganizationDashboard";
 import OnboardingTour from "./components/OnboardingTour";
 import BrandLogo from "./components/BrandLogo";
+import {url as pcsLogoUrl} from "@/assets/pcs-logo.png.asset.json";
 
 export function Shell({children}:{children:React.ReactNode}){
  const [email,setEmail]=useState<string|null>(null);const [roles,setRoles]=useState<AppRole[]>([]);
@@ -97,6 +98,7 @@ export function MyReports(){
 export function ProtectedOperations(){const [roles,setRoles]=useState<AppRole[]|null>(null);const location=useLocation();useEffect(()=>{getMyRoles().then(setRoles).catch(()=>setRoles([]))},[]);if(roles===null)return <section className="narrow"><div className="card">Vérification des autorisations…</div></section>;if(!canOperate(roles))return <section className="narrow"><div className="card error">Accès réservé aux utilisateurs habilités.</div><Link to="/">Retour à l’accueil</Link></section>;return location.pathname==="/admin"?<Admin/>:location.pathname==="/dashboard"?<Dashboard/>:<Moderation/>}
 
 function App({children}:{children:React.ReactNode}){
- return <Shell>{children}<OnboardingTour/>{!isSupabaseConfigured&&<div className="dev-banner">Configuration requise : renseignez les variables VITE_SUPABASE_* avant déploiement.</div>}</Shell>
+ const logoStyle={"--pcs-logo-url":`url("${pcsLogoUrl}")`} as React.CSSProperties;
+ return <div style={logoStyle}><Shell>{children}<OnboardingTour/>{!isSupabaseConfigured&&<div className="dev-banner">Configuration requise : renseignez les variables VITE_SUPABASE_* avant déploiement.</div>}</Shell></div>
 }
 export default App;
