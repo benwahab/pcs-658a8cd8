@@ -228,3 +228,10 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .authScreen .actions{justify-content:center;margin:18px 0 6px}
 .authScreen>.button{display:flex;width:100%;background:#ffffffa6;backdrop-filter:blur(10px)}
 .authScreen .form .button.primary{padding:14px}
+
+/* Espaces organisation dédiés */
+.orgSpace{border-top:4px solid var(--org-accent,currentColor);padding-top:1.5rem}
+.orgNigelec{--org-accent:#e8a317}
+.orgNde{--org-accent:#1f7ac2}
+.orgSpace .eyebrow{color:var(--org-accent)}
+.orgSpace .button.primary{background:var(--org-accent);border-color:var(--org-accent)}
