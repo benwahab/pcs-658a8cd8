@@ -14,6 +14,8 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AgentTerrainRouteImport } from './routes/agent-terrain'
 import { Route as ConnexionRouteImport } from './routes/connexion'
+import { Route as ConnexionNdeRouteImport } from './routes/connexion-nde'
+import { Route as ConnexionNigelecRouteImport } from './routes/connexion-nigelec'
 import { Route as ConnexionOperationnelleRouteImport } from './routes/connexion-operationnelle'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MairieRouteImport } from './routes/mairie'
@@ -47,6 +49,16 @@ const AgentTerrainRoute = AgentTerrainRouteImport.update({
 const ConnexionRoute = ConnexionRouteImport.update({
   id: '/connexion',
   path: '/connexion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnexionNdeRoute = ConnexionNdeRouteImport.update({
+  id: '/connexion-nde',
+  path: '/connexion-nde',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnexionNigelecRoute = ConnexionNigelecRouteImport.update({
+  id: '/connexion-nigelec',
+  path: '/connexion-nigelec',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConnexionOperationnelleRoute = ConnexionOperationnelleRouteImport.update({
@@ -101,6 +113,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/agent-terrain': typeof AgentTerrainRoute
   '/connexion': typeof ConnexionRoute
+  '/connexion-nde': typeof ConnexionNdeRoute
+  '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
@@ -117,6 +131,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/agent-terrain': typeof AgentTerrainRoute
   '/connexion': typeof ConnexionRoute
+  '/connexion-nde': typeof ConnexionNdeRoute
+  '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
@@ -134,6 +150,8 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/agent-terrain': typeof AgentTerrainRoute
   '/connexion': typeof ConnexionRoute
+  '/connexion-nde': typeof ConnexionNdeRoute
+  '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
@@ -152,6 +170,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agent-terrain'
     | '/connexion'
+    | '/connexion-nde'
+    | '/connexion-nigelec'
     | '/connexion-operationnelle'
     | '/dashboard'
     | '/mairie'
@@ -168,6 +188,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agent-terrain'
     | '/connexion'
+    | '/connexion-nde'
+    | '/connexion-nigelec'
     | '/connexion-operationnelle'
     | '/dashboard'
     | '/mairie'
@@ -184,6 +206,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agent-terrain'
     | '/connexion'
+    | '/connexion-nde'
+    | '/connexion-nigelec'
     | '/connexion-operationnelle'
     | '/dashboard'
     | '/mairie'
@@ -201,6 +225,8 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AgentTerrainRoute: typeof AgentTerrainRoute
   ConnexionRoute: typeof ConnexionRoute
+  ConnexionNdeRoute: typeof ConnexionNdeRoute
+  ConnexionNigelecRoute: typeof ConnexionNigelecRoute
   ConnexionOperationnelleRoute: typeof ConnexionOperationnelleRoute
   DashboardRoute: typeof DashboardRoute
   MairieRoute: typeof MairieRoute
@@ -247,6 +273,20 @@ declare module '@tanstack/react-router' {
       path: '/connexion'
       fullPath: '/connexion'
       preLoaderRoute: typeof ConnexionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connexion-nde': {
+      id: '/connexion-nde'
+      path: '/connexion-nde'
+      fullPath: '/connexion-nde'
+      preLoaderRoute: typeof ConnexionNdeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connexion-nigelec': {
+      id: '/connexion-nigelec'
+      path: '/connexion-nigelec'
+      fullPath: '/connexion-nigelec'
+      preLoaderRoute: typeof ConnexionNigelecRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/connexion-operationnelle': {
@@ -321,6 +361,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AgentTerrainRoute: AgentTerrainRoute,
   ConnexionRoute: ConnexionRoute,
+  ConnexionNdeRoute: ConnexionNdeRoute,
+  ConnexionNigelecRoute: ConnexionNigelecRoute,
   ConnexionOperationnelleRoute: ConnexionOperationnelleRoute,
   DashboardRoute: DashboardRoute,
   MairieRoute: MairieRoute,
