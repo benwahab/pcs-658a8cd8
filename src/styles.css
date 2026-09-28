@@ -236,3 +236,26 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .orgNde{--org-accent:#1f7ac2}
 .orgSpace .eyebrow{color:var(--org-accent)}
 .orgSpace .button.primary{background:var(--org-accent);border-color:var(--org-accent)}
+
+/* Médias en défilement (photos puis vidéo) */
+.mediaCarousel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:14px;margin:12px 0;scrollbar-width:none}
+.mediaCarousel::-webkit-scrollbar{display:none}
+.mediaCarouselItem{position:relative;flex:0 0 100%;scroll-snap-align:center;border-radius:14px;overflow:hidden;background:#0000001a}
+.mediaCarouselItem img,.mediaCarouselItem video{display:block;width:100%;max-height:60vh;object-fit:cover}
+.mediaCount{position:absolute;top:8px;right:8px;background:#000000a0;color:#fff;font-size:.75rem;padding:2px 8px;border-radius:999px}
+/* Choix des médias */
+.mediaPicker{border:1px dashed #0f766e55;border-radius:14px;padding:12px;display:grid;gap:10px}
+.mediaPicker legend{padding:0 6px;font-weight:600}
+.mediaPickerRow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mediaPickBtn{display:flex;align-items:center;justify-content:center;text-align:center;padding:12px 8px;border-radius:12px;border:1px solid #0f766e33;background:#0f766e0d;font-weight:600;cursor:pointer;font-size:.9rem}
+.mediaPickBtn:hover{background:#0f766e1a}
+.mediaChosen{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.85rem}
+.mediaChosen li{display:flex;justify-content:space-between;gap:8px;overflow:hidden}
+.mediaChosen button{border:0;background:none;font-size:1.1rem;cursor:pointer}
+/* Bouton espace professionnel */
+.feedAccess summary{display:inline-flex;align-items:center;gap:8px;list-style:none;cursor:pointer;padding:9px 16px 9px 10px;border-radius:999px;background:linear-gradient(135deg,#e8a317,#2f9e5b);color:#fff;font-weight:700;font-size:.85rem;box-shadow:0 6px 20px #00000055,0 0 0 1px #ffffff40 inset;transition:transform .18s ease,box-shadow .18s ease}
+.feedAccess summary::-webkit-details-marker{display:none}
+.feedAccess summary:hover{transform:translateY(-1px);box-shadow:0 10px 26px #00000066,0 0 0 1px #ffffff60 inset}
+.feedAccessIcon{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#ffffff33}
+.feedAccessChevron{transition:transform .2s}
+.feedAccess[open] .feedAccessChevron{transform:rotate(180deg)}
