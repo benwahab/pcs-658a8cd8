@@ -11,6 +11,7 @@ Deno.serve(async(req)=>{
  const {data:{user},error:userError}=await admin.auth.getUser(token);if(userError||!user)return json({error:"Session invalide."},401);
  const {data:account}=await admin.from("cst_accounts").select("id,email").eq("user_id",user.id).maybeSingle();if(!account)return json({error:"Accès CST refusé."},403);
  const started=performance.now();const {error:dbError}=await admin.from("regions").select("id").limit(1);const dbLatency=Math.round(performance.now()-started);
+ const {data:databaseMetrics}=await admin.rpc("cst_database_metrics");
  const since=new Date(Date.now()-60000).toISOString();
  const recentSince=new Date(Date.now()-900000).toISOString();
  const [{data:events},{data:frontends},{count:recentCount},{count:activeUsers},{data:endpoints}]=await Promise.all([
@@ -28,5 +29,5 @@ Deno.serve(async(req)=>{
  const apiMap=new Map<string,any>();
  for(const e of (endpoints??[])){const k=e.method+" "+e.endpoint;const x=apiMap.get(k)??{method:e.method,endpoint:e.endpoint,requests:0,errors:0,totalLatency:0,last_activity:e.occurred_at};x.requests++;if(Number(e.status_code)>=400)x.errors++;if(Number.isFinite(e.latency_ms))x.totalLatency+=e.latency_ms;if(e.occurred_at>x.last_activity)x.last_activity=e.occurred_at;apiMap.set(k,x);}
  const apiMonitoring=[...apiMap.values()].slice(0,30).map(x=>({...x,avg_latency_ms:x.requests?Math.round(x.totalLatency/x.requests):null,error_rate:x.requests?Number(((x.errors/x.requests)*100).toFixed(2)):0}));
- return json({environment:"PRODUCTION",checked_at:new Date().toISOString(),database:{status:dbError?"degraded":"healthy",latency_ms:dbLatency},metrics:{requests_per_minute:recentCount??0,average_latency_ms:avg,error_rate_percent:errorRate,active_users:activeUsers??0},live_requests:events??[],frontend_events:frontends??[],api_monitoring:apiMonitoring,connected_sources:{database:true,authentication:true,frontend_telemetry:true,request_traces:true,backend_metrics:false,external_services:false,platform_logs:false}});
+ return json({environment:"PRODUCTION",checked_at:new Date().toISOString(),database:{status:dbError?"degraded":"healthy",latency_ms:dbLatency,...(databaseMetrics??{})},metrics:{requests_per_minute:recentCount??0,average_latency_ms:avg,error_rate_percent:errorRate,active_users:activeUsers??0},live_requests:events??[],frontend_events:frontends??[],api_monitoring:apiMonitoring,connected_sources:{database:true,authentication:true,frontend_telemetry:true,request_traces:true,backend_metrics:false,external_services:false,platform_logs:false}});
 });
