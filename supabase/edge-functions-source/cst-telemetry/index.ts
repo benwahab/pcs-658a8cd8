@@ -20,7 +20,8 @@ Deno.serve(async(req)=>{
   if(allowed!==true)return json({error:"Telemetry rate limit reached."},429);
   const body=await req.json().catch(()=>({}));
   const events=Array.isArray(body.events)?body.events.slice(0,50):[];
-  if(!events.length)return json({accepted:0});
+  const frontendEvents=Array.isArray(body.frontend_events)?body.frontend_events.slice(0,20):[];
+  if(!events.length&&!frontendEvents.length)return json({accepted:0});
   const auth=req.headers.get("Authorization")?.replace(/^Bearer\s+/i,"");
   let userHash:string|null=null;
   if(auth){
@@ -40,5 +41,16 @@ Deno.serve(async(req)=>{
     metadata:typeof e.metadata==="object"&&e.metadata?e.metadata:{}
   })).filter((e:any)=>e.trace_id.length>=8);
   if(rows.length)await admin.from("cst_request_events").insert(rows);
-  return json({accepted:rows.length});
+  const frontRows=frontendEvents.map((e:any)=>({
+    occurred_at:new Date(Number(e.occurred_at)||Date.now()).toISOString(),
+    event_type:String(e.event_type??"unknown").slice(0,80),
+    message:e.message?String(e.message).slice(0,1000):null,
+    page:e.page?String(e.page).slice(0,240):null,
+    browser:e.browser?String(e.browser).slice(0,120):null,
+    device:e.device?String(e.device).slice(0,120):null,
+    trace_id:e.trace_id?String(e.trace_id).slice(0,80):null,
+    metadata:typeof e.metadata==="object"&&e.metadata?e.metadata:{}
+  }));
+  if(frontRows.length)await admin.from("cst_frontend_events").insert(frontRows);
+  return json({accepted:rows.length,frontend_accepted:frontRows.length});
 });
