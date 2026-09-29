@@ -253,9 +253,20 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .mediaChosen li{display:flex;justify-content:space-between;gap:8px;overflow:hidden}
 .mediaChosen button{border:0;background:none;font-size:1.1rem;cursor:pointer}
 /* Bouton espace professionnel */
-.feedAccess summary{display:inline-flex;align-items:center;gap:8px;list-style:none;cursor:pointer;padding:9px 16px 9px 10px;border-radius:999px;background:linear-gradient(135deg,#e8a317,#2f9e5b);color:#fff;font-weight:700;font-size:.85rem;box-shadow:0 6px 20px #00000055,0 0 0 1px #ffffff40 inset;transition:transform .18s ease,box-shadow .18s ease}
+.feedAccess{position:relative}
+.feedAccess summary{display:inline-flex;align-items:center;gap:8px;list-style:none;cursor:pointer;padding:9px 16px 9px 10px;border-radius:999px;background:linear-gradient(135deg,#e8a317,#2f9e5b);color:#fff;font-weight:700;font-size:.85rem;box-shadow:0 6px 20px #00000055,0 0 0 1px #ffffff40 inset;transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
 .feedAccess summary::-webkit-details-marker{display:none}
-.feedAccess summary:hover{transform:translateY(-1px);box-shadow:0 10px 26px #00000066,0 0 0 1px #ffffff60 inset}
+.feedAccess summary:hover{transform:translateY(-2px);filter:saturate(1.08);box-shadow:0 12px 30px #00000066,0 0 0 1px #ffffff70 inset}
+.feedAccess summary:focus-visible{outline:2px solid #ffffffcc;outline-offset:3px}
 .feedAccessIcon{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#ffffff33}
-.feedAccessChevron{transition:transform .2s}
+.feedAccessChevron{transition:transform .25s ease}
 .feedAccess[open] .feedAccessChevron{transform:rotate(180deg)}
+.feedAccess>div{position:absolute;top:calc(100% + 10px);right:0;width:250px;display:grid;gap:6px;padding:10px;border:1px solid #ffffff35;border-radius:16px;background:linear-gradient(145deg,#10251ddd,#07140fe8);box-shadow:0 18px 45px #00000080,0 0 0 1px #ffffff12 inset;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);animation:feedAccessMenuIn .2s ease-out;transform-origin:top right}
+.feedAccess>div:before{content:"";position:absolute;top:-6px;right:24px;width:12px;height:12px;transform:rotate(45deg);background:#10251d;border-left:1px solid #ffffff35;border-top:1px solid #ffffff35}
+.feedAccess>div a{position:relative;display:flex;align-items:center;gap:12px;min-height:48px;padding:11px 13px;border:1px solid transparent;border-radius:11px;color:#f2f7f5;text-decoration:none;font-size:.78rem;font-weight:750;letter-spacing:.01em;transition:transform .2s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease,color .2s ease}
+.feedAccess>div a:after{content:"→";margin-left:auto;opacity:0;transform:translateX(-5px);transition:opacity .2s ease,transform .2s ease}
+.feedAccess>div a:hover{transform:translateX(4px);background:linear-gradient(90deg,#ffffff12,#2f9e5b25);border-color:#ffffff22;box-shadow:0 7px 18px #00000026;color:#fff}
+.feedAccess>div a:hover:after{opacity:.9;transform:translateX(0)}
+.feedAccess>div a:focus-visible{outline:2px solid #7ee0b6;outline-offset:-2px;background:#ffffff12}
+@keyframes feedAccessMenuIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:600px){.feedAccess>div{right:0;width:min(250px,calc(100vw - 30px))}.citizenFeedTop{padding:0 15px}.feedTabs{display:none}}
