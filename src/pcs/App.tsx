@@ -115,6 +115,19 @@ export function ProtectedOperations(){const [roles,setRoles]=useState<AppRole[]|
 
 function App({children}:{children:React.ReactNode}){
  const logoStyle={"--pcs-logo-url":`url("${pcsLogoUrl}")`} as React.CSSProperties;
+ useEffect(()=>{
+  if(typeof window==="undefined")return;
+  const endpoint=`${import.meta.env.VITE_SUPABASE_URL||""}/functions/v1/cst-telemetry`;
+  if(!endpoint.startsWith("http"))return;
+  const send=(event_type:string,message:string,metadata:Record<string,unknown>={})=>{
+   void fetch(endpoint,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({frontend_events:[{event_type,message,page:window.location.pathname,browser:navigator.userAgent.slice(0,120),device:window.innerWidth<760?"mobile":"desktop",occurred_at:Date.now(),metadata}]}),keepalive:true}).catch(()=>undefined);
+  };
+  const onError=(event:ErrorEvent)=>send("javascript_error",event.message||"Erreur JavaScript",{filename:event.filename?.slice(0,200),line:event.lineno,column:event.colno});
+  const onRejection=(event:PromiseRejectionEvent)=>send("unhandled_rejection",event.reason instanceof Error?event.reason.message:String(event.reason).slice(0,500));
+  window.addEventListener("error",onError);
+  window.addEventListener("unhandledrejection",onRejection);
+  return()=>{window.removeEventListener("error",onError);window.removeEventListener("unhandledrejection",onRejection)};
+ },[]);
  return <div style={logoStyle}><Shell>{children}<OnboardingTour/>{!isSupabaseConfigured&&<div className="dev-banner">Configuration requise : renseignez les variables VITE_SUPABASE_* avant déploiement.</div>}</Shell></div>
 }
 export default App;
