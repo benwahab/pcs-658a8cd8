@@ -17,6 +17,8 @@ import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ConnexionNdeRouteImport } from './routes/connexion-nde'
 import { Route as ConnexionNigelecRouteImport } from './routes/connexion-nigelec'
 import { Route as ConnexionOperationnelleRouteImport } from './routes/connexion-operationnelle'
+import { Route as CstRouteImport } from './routes/cst'
+import { Route as CstDashboardRouteImport } from './routes/cst.dashboard'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MairieRouteImport } from './routes/mairie'
 import { Route as MesSignalementsRouteImport } from './routes/mes-signalements'
@@ -64,6 +66,16 @@ const ConnexionNigelecRoute = ConnexionNigelecRouteImport.update({
 const ConnexionOperationnelleRoute = ConnexionOperationnelleRouteImport.update({
   id: '/connexion-operationnelle',
   path: '/connexion-operationnelle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CstRoute = CstRouteImport.update({
+  id: '/cst',
+  path: '/cst',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CstDashboardRoute = CstDashboardRouteImport.update({
+  id: '/cst/dashboard',
+  path: '/cst/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -116,6 +128,8 @@ export interface FileRoutesByFullPath {
   '/connexion-nde': typeof ConnexionNdeRoute
   '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
+  '/cst': typeof CstRoute
+  '/cst/dashboard': typeof CstDashboardRoute
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
@@ -134,6 +148,8 @@ export interface FileRoutesByTo {
   '/connexion-nde': typeof ConnexionNdeRoute
   '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
+  '/cst': typeof CstRoute
+  '/cst/dashboard': typeof CstDashboardRoute
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
@@ -153,6 +169,8 @@ export interface FileRoutesById {
   '/connexion-nde': typeof ConnexionNdeRoute
   '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
+  '/cst': typeof CstRoute
+  '/cst/dashboard': typeof CstDashboardRoute
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
@@ -173,6 +191,8 @@ export interface FileRouteTypes {
     | '/connexion-nde'
     | '/connexion-nigelec'
     | '/connexion-operationnelle'
+    | '/cst'
+    | '/cst/dashboard'
     | '/dashboard'
     | '/mairie'
     | '/mes-signalements'
@@ -191,6 +211,8 @@ export interface FileRouteTypes {
     | '/connexion-nde'
     | '/connexion-nigelec'
     | '/connexion-operationnelle'
+    | '/cst'
+    | '/cst/dashboard'
     | '/dashboard'
     | '/mairie'
     | '/mes-signalements'
@@ -209,6 +231,8 @@ export interface FileRouteTypes {
     | '/connexion-nde'
     | '/connexion-nigelec'
     | '/connexion-operationnelle'
+    | '/cst'
+    | '/cst/dashboard'
     | '/dashboard'
     | '/mairie'
     | '/mes-signalements'
@@ -296,6 +320,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConnexionOperationnelleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cst': {
+      id: '/cst'
+      path: '/cst'
+      fullPath: '/cst'
+      preLoaderRoute: typeof CstRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cst/dashboard': {
+      id: '/cst/dashboard'
+      path: '/cst/dashboard'
+      fullPath: '/cst/dashboard'
+      preLoaderRoute: typeof CstDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -364,6 +402,8 @@ const rootRouteChildren: RootRouteChildren = {
   ConnexionNdeRoute: ConnexionNdeRoute,
   ConnexionNigelecRoute: ConnexionNigelecRoute,
   ConnexionOperationnelleRoute: ConnexionOperationnelleRoute,
+  CstRoute: CstRoute,
+  CstDashboardRoute: CstDashboardRoute,
   DashboardRoute: DashboardRoute,
   MairieRoute: MairieRoute,
   MesSignalementsRoute: MesSignalementsRoute,
