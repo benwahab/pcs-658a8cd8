@@ -270,3 +270,188 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .feedAccess>div a:focus-visible{outline:2px solid #7ee0b6;outline-offset:-2px;background:#ffffff12}
 @keyframes feedAccessMenuIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:600px){.feedAccess>div{right:0;width:min(250px,calc(100vw - 30px))}.citizenFeedTop{padding:0 15px}.feedTabs{display:none}}
+
+
+/* ===== PCS premium glass surfaces: auth, signup & report ===== */
+.authScreen .card,
+.reportScreen .card{
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(145deg,#ffffffa8 0%,#ffffff78 48%,#effaf633 100%);
+  border:1px solid #ffffffc7;
+  box-shadow:
+    0 1px 0 #ffffffd9 inset,
+    0 0 0 1px #0f766e0d,
+    0 22px 55px -24px #10251b52,
+    0 8px 24px -16px #0f766e33;
+  backdrop-filter:blur(18px) saturate(145%);
+  -webkit-backdrop-filter:blur(18px) saturate(145%);
+  transition:
+    transform .28s var(--pcs-ease),
+    box-shadow .28s var(--pcs-ease),
+    border-color .28s ease,
+    background .28s ease;
+}
+.authScreen .card::before,
+.reportScreen .card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(120deg,#ffffff45,transparent 28%,transparent 72%,#0f766e0a);
+  opacity:.9;
+}
+.authScreen .card:hover,
+.reportScreen .card:hover{
+  transform:translateY(-2px);
+  border-color:#ffffffeb;
+  background:
+    linear-gradient(145deg,#ffffffb8 0%,#ffffff82 48%,#effaf644 100%);
+  box-shadow:
+    0 1px 0 #ffffffef inset,
+    0 0 0 1px #0f766e14,
+    0 30px 70px -28px #10251b66,
+    0 10px 28px -18px #0f766e40;
+}
+.authScreen .card > *,
+.reportScreen .card > *{
+  position:relative;
+  z-index:1;
+}
+.authScreen .form input,
+.authScreen .form textarea,
+.authScreen .form select,
+.reportScreen .form input,
+.reportScreen .form textarea,
+.reportScreen .form select{
+  background:#ffffff66;
+  border-color:#ffffffb8;
+  box-shadow:
+    0 1px 0 #ffffffaa inset,
+    0 5px 14px -10px #10251b2e;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.authScreen .form input:hover,
+.authScreen .form textarea:hover,
+.authScreen .form select:hover,
+.reportScreen .form input:hover,
+.reportScreen .form textarea:hover,
+.reportScreen .form select:hover{
+  background:#ffffff85;
+  border-color:#ffffffdf;
+}
+.authScreen .form input:focus,
+.authScreen .form textarea:focus,
+.authScreen .form select:focus,
+.reportScreen .form input:focus,
+.reportScreen .form textarea:focus,
+.reportScreen .form select:focus{
+  background:#ffffffb8;
+  border-color:#0f766eaa;
+  box-shadow:0 0 0 4px #99d5cf45,0 1px 0 #ffffffd9 inset;
+}
+.authScreen .button,
+.reportScreen .button{
+  border-color:#ffffffb8;
+  background:#ffffff80;
+  box-shadow:0 1px 0 #ffffffb8 inset,0 8px 22px -14px #10251b55;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.authScreen .button:hover:not(:disabled),
+.reportScreen .button:hover:not(:disabled){
+  background:#ffffffa8;
+  border-color:#ffffffea;
+  transform:translateY(-2px);
+  box-shadow:0 1px 0 #ffffffdf inset,0 14px 30px -18px #10251b66;
+}
+.authScreen .button.primary,
+.reportScreen .button.primary{
+  background:linear-gradient(135deg,#0f766e,#16866f);
+  border-color:#ffffff40;
+  box-shadow:
+    0 1px 0 #ffffff38 inset,
+    0 10px 24px -10px #0f766e99,
+    0 0 0 1px #0f766e1f;
+}
+.authScreen .button.primary:hover:not(:disabled),
+.reportScreen .button.primary:hover:not(:disabled){
+  background:linear-gradient(135deg,#138578,#1a957a);
+  box-shadow:
+    0 1px 0 #ffffff52 inset,
+    0 16px 32px -12px #0f766eaa,
+    0 0 0 1px #ffffff30;
+}
+.authScreen .actions .button{
+  flex:1 1 150px;
+}
+.authScreen .mediaPicker,
+.reportScreen .mediaPicker{
+  position:relative;
+  border:1px solid #ffffffa8;
+  background:#ffffff4d;
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 1px 0 #ffffffb8 inset,0 12px 28px -20px #10251b3d;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.authScreen .mediaPickBtn,
+.reportScreen .mediaPickBtn{
+  border-color:#ffffffaa;
+  background:#0f766e12;
+  box-shadow:0 1px 0 #ffffff70 inset;
+  transition:transform .2s var(--pcs-ease),background .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.authScreen .mediaPickBtn:hover,
+.reportScreen .mediaPickBtn:hover{
+  transform:translateY(-2px);
+  background:#0f766e1f;
+  border-color:#ffffffdf;
+  box-shadow:0 8px 20px -14px #0f766e80;
+}
+.authScreen .passwordToggle:hover{
+  background:#ffffff90;
+}
+.reportScreen{
+  max-width:760px;
+}
+.reportScreen > h1{
+  margin-top:8px;
+  text-shadow:0 2px 18px #ffffff99;
+}
+.reportScreen > h1 + p{
+  color:#586566;
+}
+@media(max-width:760px){
+  .authScreen .card,
+  .reportScreen .card{
+    border-radius:16px;
+    padding:22px;
+  }
+  .authScreen .mediaPickerRow,
+  .reportScreen .mediaPickerRow{
+    grid-template-columns:1fr;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .authScreen .card,
+  .reportScreen .card,
+  .authScreen .button,
+  .reportScreen .button,
+  .authScreen .mediaPickBtn,
+  .reportScreen .mediaPickBtn{
+    transition:none!important;
+  }
+  .authScreen .card:hover,
+  .reportScreen .card:hover,
+  .authScreen .button:hover:not(:disabled),
+  .reportScreen .button:hover:not(:disabled),
+  .authScreen .mediaPickBtn:hover,
+  .reportScreen .mediaPickBtn:hover{
+    transform:none;
+  }
+}
