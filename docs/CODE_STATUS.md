@@ -1,43 +1,71 @@
-# État du code
+# État du code PCS
+
+## État actuel
+
+Le dépôt officiel PCS est connecté à Lovable et la branche de travail suivie est `main`. Les commits poussés sur cette branche sont destinés à être resynchronisés dans Lovable.
+
+Le projet utilise TanStack Start / React / TypeScript et le projet Supabase dédié `rqraxjypjwsxcmjdwroy`.
 
 ## Implémenté
 
 - shell React/Vite et routage;
-- authentification Supabase OTP et gestion de session;
-- rôles citizen/agent/moderator/admin avec navigation et garde de routes;
+- authentification et gestion de session Supabase;
+- rôles et garde d'accès;
 - création réelle de signalements dans Supabase;
-- catégories réelles depuis la base;
+- catégories et communes depuis la base;
 - géolocalisation navigateur;
-- upload réel de photos JPG/PNG/WebP dans le bucket privé;
-- nettoyage d’un upload si l’insertion de métadonnées échoue;
-- détail d’un signalement avec historique et médias signés;
+- upload et accès contrôlé aux médias;
+- détail d'un signalement, historique et médias signés;
 - espace citoyen « Mes signalements »;
-- traitement opérationnel avec priorités et transitions de statut contrôlées;
-- calcul automatique de resolved_at;
-- attribution de département via service backend;
+- traitement opérationnel et transitions de statut contrôlées;
+- attribution et missions terrain;
 - notifications persistantes côté base;
 - RLS sur les données métier;
-- helpers RLS SECURITY DEFINER déplacés dans un schéma privé non exposé;
-- rôle citoyen attribué automatiquement à la création d’un compte;
-- CI GitHub Actions pour installer et compiler l’application;
-- documentation d’architecture, sécurité, gouvernance et déploiement.
+- helpers RLS SECURITY DEFINER isolés du schéma API public;
+- protections serveur pour les opérations métier sensibles;
+- PWA et mécanismes offline présents dans le code;
+- CI GitHub Actions pour lint et build sur `main` et les pull requests.
 
-## Vérifications backend effectuées
+## Vérifications / qualité
 
-- projet Supabase PCS dédié : 'rqraxjypjwsxcmjdwroy';
-- aucune donnée fictive de signalement;
-- profils/signalements/médias : 0/0/0 au moment du contrôle;
-- audit de sécurité Supabase : aucune alerte après déplacement des helpers RLS.
+La CI automatise actuellement :
 
-## Reste avant mise en production publique
+- installation des dépendances;
+- lint;
+- build de production.
 
-- exécuter la CI et corriger toute erreur de compilation éventuelle;
-- tests automatisés unitaires/intégration/E2E;
-- pagination et recherche avancée à mesure que le volume augmente;
-- observabilité et gestion centralisée des erreurs;
-- configuration des secrets GitHub/plateforme de déploiement;
-- validation finale UX/accessibilité sur appareils réels;
-- déploiement production;
-- raccordement Lovable PCS une fois les crédits du workspace disponibles.
+Les tests unitaires, d'intégration, E2E et de sécurité automatisés restent à compléter. Aucun jeu de données fictif persistant ne doit être ajouté à Supabase pour réaliser ces tests.
 
-Cette distinction reste volontaire : le backend et la base sont configurés pour une vraie application, mais la mise en production publique doit encore passer par la validation de build, les tests et le déploiement.
+## Points de sécurité à finaliser
+
+- durcir le flux public de création d'une mairie avec une étape d'habilitation institutionnelle avant activation opérationnelle;
+- ajouter une protection anti-abus robuste au flux public de connexion agent terrain;
+- poursuivre la revue des fonctions SECURITY DEFINER et de leurs privilèges EXECUTE;
+- tester les parcours d'autorisation citoyen / mairie / agent / organisation sur des comptes de test isolés.
+
+## Migrations Supabase
+
+Le dépôt contient une migration active sous `supabase/migrations/` et un historique de conception/évolution sous `supabase/migrations_source/`.
+
+Cette situation doit encore être normalisée afin que le dépôt constitue une source de migrations reproductible et non ambiguë. Cette normalisation doit être réalisée sans rejouer aveuglément l'historique sur le projet Supabase existant et sans migration destructive.
+
+## Avant mise en production publique
+
+- compléter les tests automatisés;
+- valider les parcours d'autorisation sur des comptes de test isolés;
+- valider les flux offline sur appareils réels;
+- finaliser la gouvernance d'habilitation des mairies;
+- finaliser la protection anti-abus du login agent;
+- vérifier l'état des migrations et leur reproductibilité;
+- effectuer la validation UX/accessibilité sur appareils réels;
+- configurer les secrets de déploiement;
+- effectuer le déploiement production après validation finale.
+
+## Règles de sécurité du dépôt
+
+- ne jamais committer de clé Supabase secrète ou de service-role key;
+- les fichiers `.env` locaux sont ignorés par Git; seul `.env.example` est versionné;
+- le bucket `report-media` reste privé;
+- les autorisations doivent être imposées côté serveur/RLS et pas uniquement dans l'interface;
+- aucune donnée fictive persistante ne doit être ajoutée à la base de production;
+- toute évolution de schéma doit passer par une migration versionnée ciblant uniquement le projet PCS.
