@@ -3,10 +3,17 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"content-type":"application/json"}});
 const normalizePhone=(v:string)=>v.replace(/[^0-9+]/g,"");
+
 async function sha256(value:string){
  const bytes=new TextEncoder().encode(value);
  const digest=await crypto.subtle.digest("SHA-256",bytes);
  return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+function requestKey(req:Request){
+ const forwarded=req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"unknown";
+ const connecting=req.headers.get("cf-connecting-ip")?.trim()||"";
+ return connecting||forwarded;
 }
 
 Deno.serve(async(req)=>{
@@ -16,12 +23,21 @@ Deno.serve(async(req)=>{
   const admin=createClient(url,service),auth=createClient(url,anon);
   const body=await req.json();
   const phone=normalizePhone(String(body.phone??"").trim());
-  if(!phone)return json({error:"Numéro de téléphone obligatoire."},400);
+  const clientKey=requestKey(req);
 
   if(body.step==="identify"||body.lookup===true){
+   if(!phone)return json({error:"Connexion invalide."},400);
+
+   const rateKey=await sha256("agent-identify|"+phone+"|"+clientKey);
+   const {data:allowed,error:rateError}=await admin.rpc("consume_agent_login_rate_limit",{p_key_hash:rateKey,p_max_attempts:5,p_window_seconds:600,p_block_seconds:900});
+   if(rateError||allowed===false)return json({error:"Trop de tentatives. Réessayez plus tard."},429);
+
    const {data:agent,error}=await admin.from("field_agents").select("user_id,first_name,last_name,matricule,qualification").eq("phone_normalized",phone).eq("is_active",true).maybeSingle();
    if(error)return json({error:"Service indisponible."},500);
-   if(!agent)return json({error:"Ce numéro n'est pas enregistré comme agent terrain.",identified:false},404);
+
+   // Do not disclose whether a phone number exists in the agent directory.
+   if(!agent)return json({error:"Connexion invalide.",identified:false},401);
+
    const raw=crypto.randomUUID()+"."+crypto.randomUUID();
    const hash=await sha256(raw);
    await admin.from("agent_login_challenges").delete().eq("agent_user_id",agent.user_id);
@@ -33,11 +49,16 @@ Deno.serve(async(req)=>{
   const challenge=String(body.challenge??"");
   const password=String(body.password??"");
   if(!challenge||!password)return json({error:"Connexion invalide."},400);
+
+  const rateKey=await sha256("agent-password|"+challenge+"|"+clientKey);
+  const {data:allowed,error:rateError}=await admin.rpc("consume_agent_login_rate_limit",{p_key_hash:rateKey,p_max_attempts:3,p_window_seconds:600,p_block_seconds:900});
+  if(rateError||allowed===false)return json({error:"Trop de tentatives. Réessayez plus tard."},429);
+
   const hash=await sha256(challenge);
   const {data:row,error:qe}=await admin.from("agent_login_challenges").select("id,agent_user_id,expires_at,consumed_at").eq("challenge_hash",hash).maybeSingle();
   if(qe||!row||row.consumed_at||new Date(row.expires_at).getTime()<=Date.now())return json({error:"Session de connexion expirée. Recommencez avec votre numéro."},401);
   const {data:agent,error:ae}=await admin.from("field_agents").select("user_id,is_active").eq("user_id",row.agent_user_id).maybeSingle();
-  if(ae||!agent?.is_active)return json({error:"Compte agent inactif."},403);
+  if(ae||!agent?.is_active)return json({error:"Connexion invalide."},401);
   const {error:consumeError}=await admin.from("agent_login_challenges").update({consumed_at:new Date().toISOString()}).eq("id",row.id).is("consumed_at",null);
   if(consumeError)return json({error:"Connexion invalide."},401);
   const internalEmail="agent-"+row.agent_user_id.replace(/-/g,"")+"@agent.pcs.local";
