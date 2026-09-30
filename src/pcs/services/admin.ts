@@ -44,3 +44,24 @@ export async function rejectOrganizationSignupRequest(id:string,note:string){
  const {data,error}=await supabase.rpc("reject_organization_signup_request",{p_request_id:id,p_note:note.trim()});
  if(error)throw error; return data;
 }
+
+export type MairieSignupRequest={
+ id:string;name:string;region_id:string;region_name:string;commune_id:string;commune_name:string;
+ account_user_id:string;phone:string|null;mayor_name:string|null;latitude:number|null;longitude:number|null;
+ location_label:string|null;is_active:boolean;approval_status:"pending"|"approved"|"rejected";created_at:string;
+};
+export async function listPendingMairieRequests(){
+ if(!supabase)throw new Error("Supabase n’est pas configuré.");
+ const {data,error}=await supabase.rpc("list_pending_mairie_requests");
+ if(error)throw error; return (data??[]) as MairieSignupRequest[];
+}
+export async function approveMairieRequest(id:string){
+ if(!supabase)throw new Error("Supabase n’est pas configuré.");
+ const {data,error}=await supabase.rpc("approve_mairie_request",{p_mairie_id:id});
+ if(error)throw error; return data;
+}
+export async function rejectMairieRequest(id:string){
+ if(!supabase)throw new Error("Supabase n’est pas configuré.");
+ const {data,error}=await supabase.rpc("reject_mairie_request",{p_mairie_id:id});
+ if(error)throw error; return data;
+}
