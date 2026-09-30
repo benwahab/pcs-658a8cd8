@@ -175,7 +175,7 @@ export function ReportForm(){
   try{
    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280,max:1280},height:{ideal:720,max:720}},audio:true});
    streamRef.current=stream;
-   const mime=["video/mp4","video/webm;codecs=vp8,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t))??"";
+   const mime=["video/webm;codecs=vp8,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t))??"";
    const recorder=new MediaRecorder(stream,{...(mime?{mimeType:mime}:{}),videoBitsPerSecond:2500000,audioBitsPerSecond:128000});
    const chunks:Blob[]=[];recorderRef.current=recorder;setRecording(true);setRecordingSeconds(0);
    recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
