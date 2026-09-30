@@ -668,3 +668,107 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   border-color:#4E3A7F;
   box-shadow:0 0 0 4px #D3C5F566;
 }
+
+
+/* ===== Home / citizen feed — premium lavender & deep violet =====
+ * Keep the existing structure and imagery intact; only harmonize the
+ * citizen home visual language with the global PCS palette.
+ */
+.citizenFeed{
+  background:var(--pcs-violet-dark);
+}
+.citizenFeedTop{
+  background:linear-gradient(#3E2E68e8,transparent);
+}
+.feedTabs .active{
+  border-bottom-color:#D3C5F5;
+}
+.feedAccess summary{
+  background:linear-gradient(135deg,#4E3A7F,#3E2E68);
+  box-shadow:0 6px 20px #3E2E6855,0 0 0 1px #FFFFFF40 inset;
+}
+.feedAccess summary:hover{
+  box-shadow:0 12px 30px #3E2E6866,0 0 0 1px #FFFFFF70 inset;
+}
+.feedAccess>div{
+  background:linear-gradient(145deg,#3E2E68f2,#241a43f2);
+  box-shadow:0 18px 45px #1b123b80,0 0 0 1px #FFFFFF12 inset;
+}
+.feedAccess>div:before{
+  background:#3E2E68;
+}
+.feedAccess>div a:hover{
+  background:linear-gradient(90deg,#FFFFFF12,#D3C5F52e);
+}
+.feedAccess>div a:focus-visible{
+  outline-color:#D3C5F5;
+}
+.citizenSlide{
+  background:#3E2E68;
+}
+.citizenSlide:before{
+  background:
+    radial-gradient(circle at 72% 35%,#735CA866 0 12%,transparent 38%),
+    linear-gradient(135deg,#3E2E68,#4E3A7F 55%,#241a43);
+}
+.citizenSlideIntro:before{
+  background:
+    radial-gradient(circle at 70% 35%,#D3C5F566 0 10%,transparent 37%),
+    linear-gradient(135deg,#241a43,#4E3A7F 58%,#3E2E68);
+}
+.citizenSlideProcess:before{
+  background:
+    radial-gradient(circle at 65% 30%,#D3C5F555,transparent 35%),
+    linear-gradient(135deg,#2b214b,#4E3A7F 58%,#241a43);
+}
+.citizenSlideTrack:before{
+  background:
+    radial-gradient(circle at 68% 35%,#E0D7F555,transparent 34%),
+    linear-gradient(135deg,#241a43,#4E3A7F 55%,#1d1637);
+}
+.feedEyebrow{
+  color:#E0D7F5!important;
+}
+.slideContent h1 strong,
+.slideContent h2 strong{
+  color:#D3C5F5;
+}
+.feedPrimary{
+  background:linear-gradient(135deg,#4E3A7F,#3E2E68);
+  border-color:#4E3A7F;
+  color:#FFFFFF;
+  box-shadow:0 8px 22px #3E2E6855;
+}
+.feedPrimary:hover{
+  background:linear-gradient(135deg,#5B478D,#463575);
+  border-color:#5B478D;
+  box-shadow:0 12px 28px #3E2E6866;
+}
+.feedSecondary{
+  background:#FFFFFF12;
+  border-color:#FFFFFF38;
+}
+.feedBottom{
+  background:linear-gradient(transparent,#241a43f2 30%);
+}
+.feedCreate{
+  color:#3E2E68!important;
+}
+.citizenSpace{
+  background:#241a43;
+}
+.citizenReportCard{
+  background:linear-gradient(145deg,#4E3A7F,#241a43);
+}
+.reportVisual{
+  background:
+    radial-gradient(circle at 70% 30%,#735CA866,transparent 35%),
+    linear-gradient(180deg,#4E3A7F,#241a43 70%);
+}
+.reportVisual span{
+  color:#D3C5F5;
+}
+.citizenEmpty{
+  background:#FFFFFF0a;
+  border-color:#FFFFFF20;
+}
