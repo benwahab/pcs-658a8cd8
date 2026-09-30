@@ -34,25 +34,30 @@ Deno.serve(async(req)=>{
     const {data:report}=await admin.from("reports").select("region_id").eq("id",media.report_id).maybeSingle();
     if(!report||report.region_id!==moderatorRegionId)return json({error:"Cette vidéo n’appartient pas à votre région."},403);
   }
-  if(action==="approve"){
-    const now=new Date().toISOString();
-    const {data:updated,error}=await admin.from("report_media").update({moderation_status:"approved",moderated_at:now,moderated_by:user.id,moderation_reason:null}).eq("id",mediaId).eq("moderation_status","pending").select("id").maybeSingle();
-    if(error)return json({error:"Approbation impossible."},500);
-    if(!updated)return json({error:"Cette vidéo a déjà été traitée."},409);
-    const {error:historyError}=await admin.from("cst_media_moderation_history").insert({media_id:mediaId,moderator_id:user.id,action:"approved",reason:null});
-    if(historyError)return json({success:true,status:"approved",audit_logged:false,warning:"Vidéo approuvée, mais l’écriture de l’historique doit être vérifiée."});
+  if(action==="approve"||action==="reject"){
+    const reason=action==="reject"?String(body.reason??"").trim():null;
+    if(action==="reject"&&reason!.length<5)return json({error:"Un motif de rejet d’au moins 5 caractères est requis."},400);
+    const {data:decision,error:decisionError}=await admin.rpc("apply_cst_media_moderation",{
+      p_media_id:mediaId,
+      p_moderator_id:user.id,
+      p_action:action==="approve"?"approved":"rejected",
+      p_reason:reason
+    });
+    if(decisionError){
+      const code=decisionError.code;
+      if(code==="P0003")return json({error:"Cette vidéo a déjà été traitée."},409);
+      if(code==="P0002")return json({error:"Vidéo de signalement introuvable."},404);
+      if(code==="42501")return json({error:"Cette vidéo n’appartient pas à votre périmètre de modération."},403);
+      if(code==="22023")return json({error:"Action de modération invalide."},400);
+      return json({error:action==="approve"?"Approbation impossible.":"Rejet impossible."},500);
+    }
+    const storagePath=decision?.[0]?.storage_path??media.storage_path;
+    if(action==="reject"){
+      const {error:storageError}=await admin.storage.from("report-media").remove([storagePath]);
+      if(storageError)return json({success:true,status:"rejected",storage_deleted:false,audit_logged:true,warning:"Vidéo rejetée et décision journalisée, mais la suppression du fichier de stockage doit être vérifiée."});
+      return json({success:true,status:"rejected",storage_deleted:true,audit_logged:true});
+    }
     return json({success:true,status:"approved",audit_logged:true});
-  }
-  if(action==="reject"){
-    const reason=String(body.reason??"").trim(); if(reason.length<5)return json({error:"Un motif de rejet d’au moins 5 caractères est requis."},400);
-    const {data:updated,error:updateError}=await admin.from("report_media").update({moderation_status:"rejected",moderated_at:new Date().toISOString(),moderated_by:user.id,moderation_reason:reason}).eq("id",mediaId).eq("moderation_status","pending").select("id").maybeSingle();
-    if(updateError)return json({error:"Rejet impossible."},500);
-    if(!updated)return json({error:"Cette vidéo a déjà été traitée."},409);
-    const {error:historyError}=await admin.from("cst_media_moderation_history").insert({media_id:mediaId,moderator_id:user.id,action:"rejected",reason});
-    const {error:storageError}=await admin.storage.from("report-media").remove([media.storage_path]);
-    if(historyError)return json({success:true,status:"rejected",storage_deleted:!storageError,audit_logged:false,warning:"Vidéo bloquée de la publication, mais l’écriture de l’historique doit être vérifiée."});
-    if(storageError)return json({success:true,status:"rejected",storage_deleted:false,audit_logged:true,warning:"Vidéo bloquée de la publication, mais la suppression du fichier de stockage doit être vérifiée."});
-    return json({success:true,status:"rejected",storage_deleted:true,audit_logged:true});
   }
   return json({error:"Action de modération inconnue."},400);
 });
