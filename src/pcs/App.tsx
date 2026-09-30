@@ -185,7 +185,7 @@ export function ReportForm(){
     const file=new File([blob],"signalement-video."+ext,{type:type.split(";")[0]});
     cleanupCamera();if(file.size>50*1024*1024){setError("Vidéo trop volumineuse. Maximum : 50 Mo.");setVideo(null);return}setVideo(file);
    };
-   recorder.start(250);
+   // Keep the recording as one WebM blob so Chromium can write final duration metadata when supported.\n   recorder.start();
    const started=Date.now();const tick=window.setInterval(()=>setRecordingSeconds(Math.min(10,Math.floor((Date.now()-started)/1000))),250);
    timerRef.current=window.setTimeout(()=>{window.clearInterval(tick);if(recorder.state==="recording")recorder.stop()},9800) as unknown as number;
   }catch(e){cleanupCamera();setError(e instanceof Error?e.message:"Impossible d’accéder à la caméra.")}
