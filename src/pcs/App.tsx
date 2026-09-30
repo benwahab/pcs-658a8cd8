@@ -149,67 +149,131 @@ export function OperationalLogin(){
  return <section className="narrow authScreen"><h1>{signup?"Créer le compte de la mairie":mode==="agent"?"Connexion agent terrain":mode==="moderator"?"Connexion modérateur":"Connexion mairie"}</h1>{mode==="agent"&&agent&&<div className="card"><strong>{agent.first_name} {agent.last_name}</strong><p>Matricule : {agent.matricule}</p><p>Qualité : {agent.qualification}</p></div>}{pending?<div className="card"><h2>Demande reçue</h2><p>Votre demande de création de compte mairie a bien été enregistrée.</p><p>Le compte sera activé après validation de l’habilitation de la mairie.</p><button type="button" className="button" onClick={()=>{setPending(false);setSignup(false);setError("");setIdentifier("");setPw("");setConfirmPw("");}}>Retour à la connexion</button></div>:<form className="card form" onSubmit={submit}>{signup&&<><label>Nom de la mairie<input required value={name} onChange={e=>setName(e.target.value)} placeholder="Mairie de Niamey"/></label><label>Nom du maire<input required value={mayorName} onChange={e=>setMayorName(e.target.value)} placeholder="Nom du maire"/></label><label>Région<select required value={region} onChange={e=>setRegion(e.target.value)}><option value="">Choisir…</option>{regions.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></label><label>Mairie / localité<select required disabled={!region} value={commune} onChange={e=>setCommune(e.target.value)}><option value="">{!region?"Choisir d’abord une région…":!communes.length?"Aucune localité disponible":"Choisir une localité…"}</option>{communes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><button type="button" className="button" onClick={()=>navigator.geolocation?.getCurrentPosition(p=>setMairieCoords({lat:p.coords.latitude,lng:p.coords.longitude}),()=>setError("Impossible d’obtenir la position GPS de la mairie."),{enableHighAccuracy:true,timeout:10000,maximumAge:0})}>Utiliser la position GPS de la mairie</button>{mairieCoords&&<small>GPS : {mairieCoords.lat.toFixed(5)}, {mairieCoords.lng.toFixed(5)}</small>}</>}{mode!=="agent"&&<label>Email<input required type="email" value={identifier} onChange={e=>setIdentifier(e.target.value)}/></label>}<PasswordField label="Mot de passe" value={pw} onChange={setPw} visible={showPw} onToggle={()=>setShowPw(value=>!value)}/>{signup&&<PasswordField label="Confirmer le mot de passe" value={confirmPw} onChange={setConfirmPw} confirmation visible={showPw} onToggle={()=>setShowPw(value=>!value)}/>} {error&&<p className="error">{error}</p>}<button className="button primary" type="submit" disabled={busy}>{busy?"Connexion…":signup?"Créer la mairie":"Se connecter"}</button></form>}{mode==="mairie"&&<button className="button" onClick={()=>{setSignup(!signup);setError("");setIdentifier("");setPw("");setConfirmPw("");setShowPw(false)}}>{signup?"J’ai déjà un compte":"Créer un compte mairie"}</button>}{mode==="agent"&&<button className="button" onClick={()=>{setAgent(null);setAgentChallenge("");setError("");setPw("");setShowPw(false)}}>Changer de numéro</button>}</section>
 }
 export function ReportForm(){
- const photoInputRef=useRef<HTMLInputElement|null>(null);const cameraPreviewRef=useRef<HTMLVideoElement|null>(null);const recorderRef=useRef<MediaRecorder|null>(null);const streamRef=useRef<MediaStream|null>(null);const timerRef=useRef<number|null>(null);const intervalRef=useRef<number|null>(null);
- const [categories,setCategories]=useState<Category[]>([]);const [regions,setRegions]=useState<any[]>([]);const [region,setRegion]=useState("");const [commune,setCommune]=useState("");const [communes,setCommunes]=useState<any[]>([]);const [allCommunes,setAllCommunes]=useState<any[]>([]);const [category,setCategory]=useState("");const [title,setTitle]=useState("");const [description,setDescription]=useState("");const [location,setLocation]=useState("");const [coords,setCoords]=useState<{lat:number;lng:number}|null>(null);const [files,setFiles]=useState<File[]>([]);const [video,setVideo]=useState<File|null>(null);const [error,setError]=useState("");const [saving,setSaving]=useState(false);const [submitted,setSubmitted]=useState(false);const [recording,setRecording]=useState(false);const [recordingSeconds,setRecordingSeconds]=useState(0);
+ const photoInputRef=useRef<HTMLInputElement|null>(null);
+ const cameraPreviewRef=useRef<HTMLVideoElement|null>(null);
+ const recorderRef=useRef<MediaRecorder|null>(null);
+ const streamRef=useRef<MediaStream|null>(null);
+ const timerRef=useRef<number|null>(null);
+ const intervalRef=useRef<number|null>(null);
+ const chunksRef=useRef<Blob[]>([]);
+ const stoppingRef=useRef(false);
+ const [categories,setCategories]=useState<Category[]>([]);
+ const [regions,setRegions]=useState<any[]>([]);
+ const [region,setRegion]=useState("");
+ const [commune,setCommune]=useState("");
+ const [communes,setCommunes]=useState<any[]>([]);
+ const [allCommunes,setAllCommunes]=useState<any[]>([]);
+ const [category,setCategory]=useState("");
+ const [title,setTitle]=useState("");
+ const [description,setDescription]=useState("");
+ const [location,setLocation]=useState("");
+ const [coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
+ const [files,setFiles]=useState<File[]>([]);
+ const [video,setVideo]=useState<File|null>(null);
+ const [error,setError]=useState("");
+ const [saving,setSaving]=useState(false);
+ const [submitted,setSubmitted]=useState(false);
+ const [recording,setRecording]=useState(false);
+ const [finalizingVideo,setFinalizingVideo]=useState(false);
+ const [recordingSeconds,setRecordingSeconds]=useState(0);
+
  useEffect(()=>{Promise.all([listCategories(),listRegions(),listAllCommunes()]).then(([c,r,all])=>{setCategories(c);setRegions(r);setAllCommunes(all)}).catch(e=>setError(e instanceof Error?e.message:"Impossible de charger les catégories, régions et localités."))},[]);
  useEffect(()=>{setCommune("");setCommunes(region?allCommunes.filter(c=>c.region_id===region):[])},[region,allCommunes]);
- useEffect(()=>()=>{if(timerRef.current)window.clearTimeout(timerRef.current);if(intervalRef.current)window.clearInterval(intervalRef.current);streamRef.current?.getTracks().forEach(t=>t.stop())},[]);
- useEffect(()=>{
-  const videoEl=cameraPreviewRef.current;const stream=streamRef.current;
-  if(!recording||!videoEl||!stream)return;
-  let cancelled=false;
-  videoEl.autoplay=true;
-  videoEl.muted=true;
-  videoEl.defaultMuted=true;
-  videoEl.playsInline=true;
-  videoEl.srcObject=stream;
-  const playPreview=async()=>{
-    if(cancelled)return;
-    try{await videoEl.play()}catch{
-      // Some Android browsers need the stream metadata before the first play().
-      const retry=()=>{void videoEl.play().catch(()=>undefined)};
-      videoEl.addEventListener("loadedmetadata",retry,{once:true});
-      videoEl.addEventListener("canplay",retry,{once:true});
-    }
-  };
-  void playPreview();
-  return()=>{
-    cancelled=true;
-    videoEl.removeAttribute("src");
-    videoEl.srcObject=null;
-    videoEl.pause();
-  };
- },[recording]);
- function locate(){navigator.geolocation?.getCurrentPosition(p=>{setCoords({lat:p.coords.latitude,lng:p.coords.longitude});setLocation(l=>l||"Position GPS enregistrée");},()=>setError("La position GPS est nécessaire pour envoyer le signalement. Autorisez la localisation puis réessayez."),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
- function addPhotos(list:FileList|null){const next=[...files,...Array.from(list??[])];if(next.length>5){setError("Maximum 5 photos par signalement.");}setFiles(next.slice(0,5))}
- function cleanupCamera(){if(timerRef.current){window.clearTimeout(timerRef.current);timerRef.current=null}if(intervalRef.current){window.clearInterval(intervalRef.current);intervalRef.current=null}streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;if(cameraPreviewRef.current)cameraPreviewRef.current.srcObject=null;recorderRef.current=null;setRecording(false);setRecordingSeconds(0)}
+
+ function clearTimers(){
+  if(timerRef.current!==null){window.clearTimeout(timerRef.current);timerRef.current=null}
+  if(intervalRef.current!==null){window.clearInterval(intervalRef.current);intervalRef.current=null}
+ }
+ function detachPreview(){
+  const videoEl=cameraPreviewRef.current;
+  if(!videoEl)return;
+  videoEl.pause();
+  videoEl.srcObject=null;
+ }
+ function stopCameraTracks(){
+  const stream=streamRef.current;
+  streamRef.current=null;
+  stream?.getTracks().forEach(track=>track.stop());
+ }
+ function resetRecorder(){
+  recorderRef.current=null;
+  stoppingRef.current=false;
+  chunksRef.current=[];
+ }
+ function cleanupCamera(){
+  clearTimers();
+  stopCameraTracks();
+  detachPreview();
+  resetRecorder();
+  setRecording(false);
+  setRecordingSeconds(0);
+ }
+ function finishVideo(file:File|null){
+  stopCameraTracks();
+  detachPreview();
+  setRecording(false);
+  setRecordingSeconds(0);
+  setFinalizingVideo(false);
+  if(!file){setVideo(null);return}
+  if(file.size>50*1024*1024){setError("Vidéo trop volumineuse. Maximum : 50 Mo.");setVideo(null);return}
+  setVideo(file);
+ }
+ function stopRecording(){
+  const recorder=recorderRef.current;
+  if(!recorder||stoppingRef.current)return;
+  stoppingRef.current=true;
+  clearTimers();
+  setRecording(false);
+  setFinalizingVideo(true);
+  if(recorder.state==="recording"){
+   try{recorder.requestData()}catch{}
+   try{recorder.stop()}catch{setError("La vidéo n’a pas pu être finalisée.");cleanupCamera();setFinalizingVideo(false)}
+  }else if(recorder.state==="inactive"){
+   void finalizeInactiveRecorder(recorder);
+  }
+ }
+ async function finalizeInactiveRecorder(recorder:MediaRecorder){
+  const type=recorder.mimeType||"video/webm";
+  const blob=new Blob(chunksRef.current,{type});
+  const file=new File([blob],"signalement-video.webm",{type:"video/webm"});
+  resetRecorder();
+  finishVideo(file);
+ }
  async function startVideoCapture(){
-  setError("");if(recording)return;
+  setError("");
+  if(recording||finalizingVideo)return;
   if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined"){setError("La caméra vidéo n’est pas disponible sur cet appareil.");return}
   try{
-   const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280,max:1280},height:{ideal:720,max:720}},audio:true});
+   const stream=await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:{ideal:"environment"},width:{ideal:854,max:854},height:{ideal:480,max:480},frameRate:{ideal:24,max:24}},
+    audio:false
+   });
    streamRef.current=stream;
-   const mime=["video/webm;codecs=vp8,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t))??"";
-   const recorder=new MediaRecorder(stream,{...(mime?{mimeType:mime}:{}),videoBitsPerSecond:1600000,audioBitsPerSecond:96000});
-   const chunks:Blob[]=[];recorderRef.current=recorder;setRecording(true);setRecordingSeconds(0);
-   recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
-   recorder.onerror=()=>{setError("La caméra n’a pas pu enregistrer la vidéo.");cleanupCamera()};
-   recorder.onstop=()=>{
-    const type=recorder.mimeType||mime||"video/webm";const blob=new Blob(chunks,{type});const ext=type.startsWith("video/mp4")?"mp4":"webm";
-    const file=new File([blob],"signalement-video."+ext,{type:type.split(";")[0]});
-    cleanupCamera();if(file.size>50*1024*1024){setError("Vidéo trop volumineuse. Maximum : 50 Mo.");setVideo(null);return}setVideo(file);
-   };
-   // Keep the recording as one WebM blob so Chromium can write final duration metadata when supported.\n   recorder.start(1000);
+   const mime=["video/webm;codecs=vp8","video/webm"].find(t=>MediaRecorder.isTypeSupported(t))??"";
+   const recorder=new MediaRecorder(stream,{...(mime?{mimeType:mime}:{}),videoBitsPerSecond:900000});
+   chunksRef.current=[];
+   recorderRef.current=recorder;
+   stoppingRef.current=false;
+   recorder.ondataavailable=e=>{if(e.data.size>0)chunksRef.current.push(e.data)};
+   recorder.onerror=()=>{setError("La caméra n’a pas pu enregistrer la vidéo.");cleanupCamera();setFinalizingVideo(false)};
+   recorder.onstop=()=>{void finalizeInactiveRecorder(recorder)};
+   setRecording(true);
+   setFinalizingVideo(false);
+   setRecordingSeconds(0);
+   recorder.start(500);
    const started=Date.now();
-   intervalRef.current=window.setInterval(()=>setRecordingSeconds(Math.min(9,Math.floor((Date.now()-started)/1000))),200) as unknown as number;
-   timerRef.current=window.setTimeout(()=>{
-    setRecordingSeconds(9);
-    if(recorder.state==="recording")recorder.stop();
-   },9500) as unknown as number;
-  }catch(e){cleanupCamera();setError(e instanceof Error?e.message:"Impossible d’accéder à la caméra.")}
+   intervalRef.current=window.setInterval(()=>setRecordingSeconds(Math.min(8,Math.floor((Date.now()-started)/1000))),200);
+   timerRef.current=window.setTimeout(()=>stopRecording(),8500);
+   requestAnimationFrame(()=>{const videoEl=cameraPreviewRef.current;if(!videoEl)return;videoEl.autoplay=true;videoEl.muted=true;videoEl.defaultMuted=true;videoEl.playsInline=true;videoEl.srcObject=stream;void videoEl.play().catch(()=>undefined)});
+  }catch(e){cleanupCamera();setFinalizingVideo(false);setError(e instanceof Error?e.message:"Impossible d’accéder à la caméra.")}
  }
+ useEffect(()=>()=>{clearTimers();const recorder=recorderRef.current;if(recorder&&recorder.state==="recording"){try{recorder.stop()}catch{}}stopCameraTracks();detachPreview();resetRecorder()},[]);
+
+ function locate(){navigator.geolocation?.getCurrentPosition(p=>{setCoords({lat:p.coords.latitude,lng:p.coords.longitude});setLocation(l=>l||"Position GPS enregistrée")},()=>setError("La position GPS est nécessaire pour envoyer le signalement. Autorisez la localisation puis réessayez."),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
+ function addPhotos(list:FileList|null){const next=[...files,...Array.from(list??[])];if(next.length>5){setError("Maximum 5 photos par signalement.")}setFiles(next.slice(0,5))}
  async function submit(e:FormEvent){
   e.preventDefault();setError("");
+  if(recording||finalizingVideo){setError("Attendez la fin de la finalisation de la vidéo.");return}
   if(!supabase){setError("Supabase n’est pas configuré.");return}
   if(!category){setError("Choisissez une catégorie.");return}if(!region){setError("Choisissez la région du problème.");return}if(!commune){setError("Choisissez la localité du problème.");return}
   if(title.trim().length<5){setError("Le titre doit contenir au moins 5 caractères.");return}if(description.trim().length<10){setError("Décrivez le problème en au moins 10 caractères.");return}if(!coords){setError("La position GPS est obligatoire pour vérifier qu’un problème n’a pas déjà été signalé à proximité.");return}
@@ -218,18 +282,20 @@ export function ReportForm(){
   try{
    await submitCitizenReport({category_id:category,region_id:region,commune_id:commune,title:title.trim(),description:description.trim(),location_label:location.trim()||null,latitude:coords.lat,longitude:coords.lng,photos:files,video});
    setSubmitted(true);
-  }catch(e){setError(e instanceof Error?e.message:"Erreur lors de l’envoi du signalement.");}
+  }catch(e){setError(e instanceof Error?e.message:"Erreur lors de l’envoi du signalement.")}
   finally{setSaving(false)}
  }
  if(submitted)return <section className="narrow authScreen reportScreen"><div className="card reportSuccess">Votre signalement a bien été envoyé. Merci pour votre contribution citoyenne.</div></section>;
+ const videoBusy=recording||finalizingVideo;
  return <section className="narrow authScreen reportScreen" data-pcs-tour="report-form"><h1>Faire un signalement</h1><p>Vous pouvez signaler sans créer de compte. Le signalement est enregistré sans identité de citoyen.</p><form className="card form" onSubmit={submit}><label>Région du problème<select required value={region} onChange={e=>setRegion(e.target.value)}><option value="">Choisir…</option>{regions.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></label><label>Localité du problème<select required disabled={!region} value={commune} onChange={e=>setCommune(e.target.value)}><option value="">{!region?"Choisir d’abord une région…":!communes.length?"Aucune localité disponible":"Choisir une localité…"}</option>{communes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Catégorie<select data-pcs-tour="category" required value={category} onChange={e=>setCategory(e.target.value)}><option value="">Choisir…</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Titre<input required minLength={5} maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Ex. Caniveau bouché"/></label><label>Description<textarea required minLength={10} maxLength={5000} rows={5} value={description} onChange={e=>setDescription(e.target.value)} placeholder="Décrivez le problème, ce qui se passe et, si possible, depuis quand…"/></label><label>Zone / adresse<input maxLength={250} value={location} onChange={e=>setLocation(e.target.value)} placeholder="Quartier, rue, repère…"/></label><button type="button" className="button" data-pcs-tour="location" onClick={locate}>Utiliser ma position</button>{coords&&<small>GPS : {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}</small>}
-  <fieldset className="mediaPicker" data-pcs-tour="photo"><legend>La vidéo ne peut pas dépasser 10 secondes</legend>
-   <div className="mediaPickerRow"><button type="button" className="mediaPickBtn" onClick={()=>photoInputRef.current?.click()}>📷 Prendre une photo</button><input ref={photoInputRef} hidden type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={e=>{addPhotos(e.target.files);e.target.value=""}}/></div>
-   <div className="mediaPickerRow"><button type="button" className="mediaPickBtn" onClick={()=>void startVideoCapture()} disabled={recording}>{recording?"🎥 Enregistrement… "+recordingSeconds+" s":"🎥 Filmer (10 s)"}</button></div>
-   {recording&&<div className="cameraCapture"><video ref={cameraPreviewRef} autoPlay muted playsInline/><p>Arrêt automatique à 9,5 secondes pour finaliser la vidéo sans bloquer le téléphone.</p></div>}
+  <fieldset className="mediaPicker" data-pcs-tour="photo"><legend>La vidéo ne peut pas dépasser 8 secondes</legend>
+   <div className="mediaPickerRow"><button type="button" className="mediaPickBtn" onClick={()=>photoInputRef.current?.click()} disabled={videoBusy}><span aria-hidden="true">📷</span> Prendre une photo</button><input ref={photoInputRef} hidden type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={e=>{addPhotos(e.target.files);e.target.value=""}}/></div>
+   <div className="mediaPickerRow"><button type="button" className="mediaPickBtn" onClick={()=>void startVideoCapture()} disabled={videoBusy}>{recording?"🎥 Enregistrement… "+recordingSeconds+" s":finalizingVideo?"⏳ Finalisation de la vidéo…":"🎥 Filmer (8 s)"}</button></div>
+   {recording&&<div className="cameraCapture"><video ref={cameraPreviewRef} autoPlay muted playsInline/><p>Arrêt automatique à 8 secondes. La vidéo est ensuite finalisée avant l’envoi.</p></div>}
+   {finalizingVideo&&!recording&&<div className="cameraCapture"><p>⏳ Finalisation de la vidéo…</p></div>}
    {(files.length>0||video)&&<ul className="mediaChosen">{files.map((f,i)=><li key={i}>📷 {f.name}<button type="button" onClick={()=>setFiles(files.filter((_,j)=>j!==i))}>×</button></li>)}{video&&<li>🎥 {video.name}<button type="button" onClick={()=>setVideo(null)}>×</button></li>}</ul>}
   </fieldset>
-  {error&&<p className="error">{error}</p>}<button data-pcs-tour="submit-report" disabled={saving||recording} className="button primary" type="submit">{saving?"Envoi en cours…":"Envoyer le signalement"}</button></form></section>
+  {error&&<p className="error">{error}</p>}<button data-pcs-tour="submit-report" disabled={saving||videoBusy} className="button primary" type="submit">{saving?"Envoi en cours…":"Envoyer le signalement"}</button></form></section>
 }
 export function ProtectedOperations(){const [roles,setRoles]=useState<AppRole[]|null>(null);const location=useLocation();useEffect(()=>{getMyRoles().then(setRoles).catch(()=>setRoles([]))},[]);if(roles===null)return <section className="narrow"><div className="card">Vérification des autorisations…</div></section>;if(!canOperate(roles))return <section className="narrow"><div className="card error">Accès réservé aux utilisateurs habilités.</div><Link to="/">Retour à l’accueil</Link></section>;return location.pathname==="/admin"?<Admin/>:location.pathname==="/dashboard"?<Dashboard/>:<Moderation/>}
 
