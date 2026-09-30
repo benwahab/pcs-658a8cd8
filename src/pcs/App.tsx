@@ -163,8 +163,28 @@ export function ReportForm(){
  useEffect(()=>{
   const videoEl=cameraPreviewRef.current;const stream=streamRef.current;
   if(!recording||!videoEl||!stream)return;
-  videoEl.srcObject=stream;void videoEl.play().catch(()=>undefined);
-  return()=>{videoEl.pause();videoEl.srcObject=null};
+  let cancelled=false;
+  videoEl.autoplay=true;
+  videoEl.muted=true;
+  videoEl.defaultMuted=true;
+  videoEl.playsInline=true;
+  videoEl.srcObject=stream;
+  const playPreview=async()=>{
+    if(cancelled)return;
+    try{await videoEl.play()}catch{
+      // Some Android browsers need the stream metadata before the first play().
+      const retry=()=>{void videoEl.play().catch(()=>undefined)};
+      videoEl.addEventListener("loadedmetadata",retry,{once:true});
+      videoEl.addEventListener("canplay",retry,{once:true});
+    }
+  };
+  void playPreview();
+  return()=>{
+    cancelled=true;
+    videoEl.removeAttribute("src");
+    videoEl.srcObject=null;
+    videoEl.pause();
+  };
  },[recording]);
  function locate(){navigator.geolocation?.getCurrentPosition(p=>{setCoords({lat:p.coords.latitude,lng:p.coords.longitude});setLocation(l=>l||"Position GPS enregistrée");},()=>setError("Impossible d’obtenir la position. Vous pouvez renseigner la zone manuellement."),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
  function addPhotos(list:FileList|null){const next=[...files,...Array.from(list??[])];if(next.length>5){setError("Maximum 5 photos par signalement.");}setFiles(next.slice(0,5))}
