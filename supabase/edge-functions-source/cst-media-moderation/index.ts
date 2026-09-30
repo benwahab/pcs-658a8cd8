@@ -19,7 +19,7 @@ Deno.serve(async(req)=>{
     return json({items});
   }
   const mediaId=String(body.media_id??"").trim(); if(!mediaId)return json({error:"Média requis."},400);
-  const {data:media,error:mediaError}=await admin.from("report_media").select("id,report_id,storage_path,media_role,moderation_status").eq("id",mediaId).maybeSingle();
+  const {data:media,error:mediaError}=await admin.from("report_media").select("id,report_id,storage_path,media_role,media_type,moderation_status").eq("id",mediaId).maybeSingle();
   if(mediaError||!media||media.media_role!=="citizen_evidence" || !String(media.media_type??"").startsWith("video/"))return json({error:"Vidéo de signalement introuvable."},404);
   if(media.moderation_status!=="pending")return json({error:"Cette vidéo a déjà été traitée."},409);
   if(action==="approve"){
