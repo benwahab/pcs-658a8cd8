@@ -1,19 +1,18 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
+const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"GET, POST, OPTIONS"};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
 async function hash(value:string){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value));return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("");}
 Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
-
+ const url=Deno.env.get("SUPABASE_URL")!,serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,anonKey=Deno.env.get("SUPABASE_ANON_KEY")!;
+ const admin=createClient(url,serviceKey,{auth:{autoRefreshToken:false,persistSession:false}});
  if(req.method==="GET"){
   const {count,error}=await admin.from("cst_accounts").select("id",{count:"exact",head:true});
   if(error)return json({error:"État CST indisponible."},500);
   return json({configured:(count??0)>0});
  }
  if(req.method!=="POST")return json({error:"Méthode non autorisée."},405);
- const url=Deno.env.get("SUPABASE_URL")!,serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,anonKey=Deno.env.get("SUPABASE_ANON_KEY")!;
- const admin=createClient(url,serviceKey,{auth:{autoRefreshToken:false,persistSession:false}});
  const authHeader=req.headers.get("Authorization");
 async function requireCst(){
  if(!authHeader) return null;
