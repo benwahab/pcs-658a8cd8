@@ -18,7 +18,6 @@ import { Route as ConnexionNdeRouteImport } from './routes/connexion-nde'
 import { Route as ConnexionNigelecRouteImport } from './routes/connexion-nigelec'
 import { Route as ConnexionOperationnelleRouteImport } from './routes/connexion-operationnelle'
 import { Route as CstRouteImport } from './routes/cst'
-import { Route as CstIndexRouteImport } from './routes/cst.index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MairieRouteImport } from './routes/mairie'
 import { Route as MesSignalementsRouteImport } from './routes/mes-signalements'
@@ -26,6 +25,7 @@ import { Route as ModerationRouteImport } from './routes/moderation'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as OrganisationRouteImport } from './routes/organisation'
 import { Route as SignalerRouteImport } from './routes/signaler'
+import { Route as CstIndexRouteImport } from './routes/cst.index'
 import { Route as CstDashboardRouteImport } from './routes/cst.dashboard'
 import { Route as SignalementIdRouteImport } from './routes/signalement.$id'
 
@@ -74,11 +74,6 @@ const CstRoute = CstRouteImport.update({
   path: '/cst',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CstIndexRoute = CstIndexRouteImport.update({
-  id: '/cst/',
-  path: '/',
-  getParentRoute: () => CstRoute,
-} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -114,8 +109,13 @@ const SignalerRoute = SignalerRouteImport.update({
   path: '/signaler',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CstIndexRoute = CstIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CstRoute,
+} as any)
 const CstDashboardRoute = CstDashboardRouteImport.update({
-  id: '/cst/dashboard',
+  id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => CstRoute,
 } as any)
@@ -135,7 +135,6 @@ export interface FileRoutesByFullPath {
   '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
   '/cst': typeof CstRouteWithChildren
-  '/cst/': typeof CstIndexRoute
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
@@ -145,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/signaler': typeof SignalerRoute
   '/cst/dashboard': typeof CstDashboardRoute
   '/signalement/$id': typeof SignalementIdRoute
+  '/cst/': typeof CstIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -155,7 +155,6 @@ export interface FileRoutesByTo {
   '/connexion-nde': typeof ConnexionNdeRoute
   '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
-  '/cst': typeof CstRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
@@ -165,6 +164,7 @@ export interface FileRoutesByTo {
   '/signaler': typeof SignalerRoute
   '/cst/dashboard': typeof CstDashboardRoute
   '/signalement/$id': typeof SignalementIdRoute
+  '/cst': typeof CstIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -186,6 +186,7 @@ export interface FileRoutesById {
   '/signaler': typeof SignalerRoute
   '/cst/dashboard': typeof CstDashboardRoute
   '/signalement/$id': typeof SignalementIdRoute
+  '/cst/': typeof CstIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -208,6 +209,7 @@ export interface FileRouteTypes {
     | '/signaler'
     | '/cst/dashboard'
     | '/signalement/$id'
+    | '/cst/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -218,7 +220,6 @@ export interface FileRouteTypes {
     | '/connexion-nde'
     | '/connexion-nigelec'
     | '/connexion-operationnelle'
-    | '/cst'
     | '/dashboard'
     | '/mairie'
     | '/mes-signalements'
@@ -228,6 +229,7 @@ export interface FileRouteTypes {
     | '/signaler'
     | '/cst/dashboard'
     | '/signalement/$id'
+    | '/cst'
   id:
     | '__root__'
     | '/'
@@ -248,6 +250,7 @@ export interface FileRouteTypes {
     | '/signaler'
     | '/cst/dashboard'
     | '/signalement/$id'
+    | '/cst/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -335,13 +338,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CstRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cst/': {
-      id: '/cst/'
-      path: '/'
-      fullPath: '/cst/'
-      preLoaderRoute: typeof CstIndexRouteImport
-      parentRoute: typeof CstRoute
-    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -391,6 +387,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignalerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cst/': {
+      id: '/cst/'
+      path: '/'
+      fullPath: '/cst/'
+      preLoaderRoute: typeof CstIndexRouteImport
+      parentRoute: typeof CstRoute
+    }
     '/cst/dashboard': {
       id: '/cst/dashboard'
       path: '/dashboard'
@@ -409,13 +412,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface CstRouteChildren {
-  CstIndexRoute: typeof CstIndexRoute
   CstDashboardRoute: typeof CstDashboardRoute
+  CstIndexRoute: typeof CstIndexRoute
 }
 
 const CstRouteChildren: CstRouteChildren = {
-  CstIndexRoute: CstIndexRoute,
   CstDashboardRoute: CstDashboardRoute,
+  CstIndexRoute: CstIndexRoute,
 }
 
 const CstRouteWithChildren = CstRoute._addFileChildren(CstRouteChildren)
