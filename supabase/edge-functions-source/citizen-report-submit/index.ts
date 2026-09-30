@@ -160,7 +160,7 @@ Deno.serve(async(req)=>{
     if(videoFile)await validateVideo(videoFile);
     const referenceCode="PCS-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+crypto.randomUUID().slice(0,8).toUpperCase();
     const {data:report,error:reportError}=await admin.from("reports").insert({
-      reference_code:referenceCode,citizen_id:null,category_id:categoryId,title,description,
+      reference_code:referenceCode,category_id:categoryId,title,description,
       location_label:locationLabel,latitude,longitude,region_id:regionId,commune_id:communeId,status:"submitted",is_public:true
     }).select("id,reference_code").single();
     if(reportError){
