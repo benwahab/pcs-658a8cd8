@@ -19,7 +19,7 @@ export async function uploadReportMedia(reportId:string,file:File){
  const {error}=await supabase.storage.from("report-media").upload(path,file,{contentType:file.type,upsert:false});
  if(error)throw error;
  const {data:{user}}=await supabase.auth.getUser();
- const {error:rowError}=await supabase.from("report_media").insert({report_id:reportId,storage_path:path,media_type:file.type,file_size:file.size,uploaded_by:user?.id??null,media_role:"citizen_evidence",moderation_status:isVideo?"pending":"approved"});
+ const {error:rowError}=await supabase.from("report_media").insert({report_id:reportId,storage_path:path,media_type:file.type,file_size:file.size,uploaded_by:user?.id??null,media_role:"citizen_evidence",moderation_status:isVideo?"pending":"approved"} as any);
  if(rowError){await supabase.storage.from("report-media").remove([path]);throw rowError;}
  return path;
 }
