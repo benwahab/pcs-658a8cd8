@@ -18,6 +18,7 @@ import { Route as ConnexionNdeRouteImport } from './routes/connexion-nde'
 import { Route as ConnexionNigelecRouteImport } from './routes/connexion-nigelec'
 import { Route as ConnexionOperationnelleRouteImport } from './routes/connexion-operationnelle'
 import { Route as CstRouteImport } from './routes/cst'
+import { Route as CstIndexRouteImport } from './routes/cst.index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MairieRouteImport } from './routes/mairie'
 import { Route as MesSignalementsRouteImport } from './routes/mes-signalements'
@@ -72,6 +73,11 @@ const CstRoute = CstRouteImport.update({
   id: '/cst',
   path: '/cst',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CstIndexRoute = CstIndexRouteImport.update({
+  id: '/cst/',
+  path: '/',
+  getParentRoute: () => CstRoute,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
   '/cst': typeof CstRouteWithChildren
+  '/cst/': typeof CstIndexRoute
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
@@ -328,6 +335,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CstRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cst/': {
+      id: '/cst/'
+      path: '/'
+      fullPath: '/cst/'
+      preLoaderRoute: typeof CstIndexRouteImport
+      parentRoute: typeof CstRoute
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -395,10 +409,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface CstRouteChildren {
+  CstIndexRoute: typeof CstIndexRoute
   CstDashboardRoute: typeof CstDashboardRoute
 }
 
 const CstRouteChildren: CstRouteChildren = {
+  CstIndexRoute: CstIndexRoute,
   CstDashboardRoute: CstDashboardRoute,
 }
 
