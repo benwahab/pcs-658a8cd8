@@ -2,7 +2,7 @@ import {useEffect,useRef,useState} from "react";
 import type {FormEvent} from "react";
 import {Link,useLocation,useNavigate} from "@/pcs/router";
 import {supabase,isSupabaseConfigured} from "./lib/supabase";
-import {listCategories,listMyReports,listPublicReports,submitCitizenReport} from "./lib/reports";
+import {listCategories,listPublicReports,submitCitizenReport} from "./lib/reports";
 import type {Category,PublicReport,Report} from "./types";
 import {statusLabels} from "./types";
 import Admin from "./pages/Admin";
@@ -138,12 +138,6 @@ function PublicReportSlide({report}:{report:PublicReport}){
   <Link className="feedPrimary" to={report.id ? "/signalement/"+report.id : "/"}>Voir le signalement</Link>
  </div></article>
 }
-export function Auth(){
- const [email,setEmail]=useState("");const [sent,setSent]=useState(false);const [error,setError]=useState("");
- async function submit(e:FormEvent){e.preventDefault();setError("");if(!supabase){setError("Le backend Supabase n’est pas configuré.");return}const {error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:window.location.origin}});if(error)setError(error.message);else setSent(true)}
- return <section className="narrow authScreen"><h1>Connexion</h1>{sent?<div className="card">Un lien de connexion a été envoyé à <strong>{email}</strong>.</div>:<form className="card form" onSubmit={submit}><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></label>{error&&<p className="error">{error}</p>}<button className="button primary" type="submit">Recevoir le lien</button></form>}</section>
-}
-
 export function OperationalLogin(){
  const[mode,setMode]=useState<"mairie"|"agent"|"moderator"|"org">(()=>{const m=new URLSearchParams(window.location.search).get("mode");return m==="agent"?"agent":m==="moderator"?"moderator":"mairie"});
  const[identifier,setIdentifier]=useState("");const[pw,setPw]=useState("");const[confirmPw,setConfirmPw]=useState("");const[showPw,setShowPw]=useState(false);const[name,setName]=useState("");const[mayorName,setMayorName]=useState("");const[region,setRegion]=useState("");const[commune,setCommune]=useState("");const[communes,setCommunes]=useState<any[]>([]);const[allCommunes,setAllCommunes]=useState<any[]>([]);const[mairieCoords,setMairieCoords]=useState<{lat:number;lng:number}|null>(null);const[regions,setRegions]=useState<any[]>([]);const[signup,setSignup]=useState(false);const[agent,setAgent]=useState<any>(null);const[agentChallenge,setAgentChallenge]=useState("");const[error,setError]=useState("");const[busy,setBusy]=useState(false);const[pending,setPending]=useState(false);const nav=useNavigate();
@@ -237,12 +231,6 @@ export function ReportForm(){
   </fieldset>
   {error&&<p className="error">{error}</p>}<button data-pcs-tour="submit-report" disabled={saving||recording} className="button primary" type="submit">{saving?"Envoi en cours…":"Envoyer le signalement"}</button></form></section>
 }
-export function MyReports(){
- const [reports,setReports]=useState<Report[]>([]);const [error,setError]=useState("");
- useEffect(()=>{(async()=>{if(!supabase){setError("Supabase n’est pas configuré.");return}const {data}=await supabase.auth.getUser();if(!data.user){setError("Connectez-vous pour voir vos signalements.");return}try{setReports(await listMyReports(data.user.id))}catch(e){setError(e instanceof Error?e.message:"Erreur")}})()},[]);
- return <section className="citizenSpace" data-pcs-tour="my-reports-page"><div className="citizenSpaceTop"><div><p className="eyebrow">MON ESPACE</p><h1>Mes signalements</h1></div><Link className="feedPrimary" to="/signaler">＋ Nouveau</Link></div>{error&&<div className="card error">{error}</div>}{!error&&!reports.length&&<div className="citizenEmpty"><strong>Aucun signalement pour le moment.</strong><p>Quand vous signalerez un problème, son suivi apparaîtra ici.</p><Link className="feedPrimary" to="/signaler">Faire mon premier signalement</Link></div>}<div className="citizenReportFeed">{reports.map(r=><article className="citizenReportCard" key={r.id}><div className="reportVisual"><div><span>{r.reference_code}</span><strong>{r.title}</strong><small>{r.location_label??"Localisation GPS enregistrée"}</small></div></div><div className="reportOverlay"><span className="badge" data-pcs-tour="status">{statusLabels[r.status]}</span><p>{r.description}</p><small>{new Date(r.created_at).toLocaleDateString("fr-FR")}</small><Link className="feedPrimary" data-pcs-tour="follow-report" to={"/signalement/"+r.id}>Suivre le signalement</Link></div></article>)}</div></section>
-}
-
 export function ProtectedOperations(){const [roles,setRoles]=useState<AppRole[]|null>(null);const location=useLocation();useEffect(()=>{getMyRoles().then(setRoles).catch(()=>setRoles([]))},[]);if(roles===null)return <section className="narrow"><div className="card">Vérification des autorisations…</div></section>;if(!canOperate(roles))return <section className="narrow"><div className="card error">Accès réservé aux utilisateurs habilités.</div><Link to="/">Retour à l’accueil</Link></section>;return location.pathname==="/admin"?<Admin/>:location.pathname==="/dashboard"?<Dashboard/>:<Moderation/>}
 
 function App({children}:{children:React.ReactNode}){
