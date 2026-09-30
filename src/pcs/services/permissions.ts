@@ -13,5 +13,5 @@ export async function getMyRoles():Promise<AppRole[]>{
  if(error)throw error;
  return (data??[]).map((row:any)=>row.roles?.code).filter(Boolean) as AppRole[];
 }
-export function canOperate(roles:AppRole[]){return roles.some(r=>r==="agent"||r==="moderator"||r==="admin"||r==="mairie");}
+export function canOperate(roles:AppRole[]){return roles.some(r=>r==="agent"||r==="admin"||r==="mairie");}
 export function canAdmin(roles:AppRole[]){return roles.includes("admin");}
