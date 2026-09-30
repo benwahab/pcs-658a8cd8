@@ -13,14 +13,14 @@ Deno.serve(async(req)=>{
   const {data:account}=await admin.from("cst_accounts").select("id,user_id,email").eq("user_id",user.id).maybeSingle(); if(!account)return json({error:"Accès CST refusé."},403);
   const body=await req.json().catch(()=>({})); const action=String(body.action??"list");
   if(action==="list"){
-    const {data,error}=await admin.from("report_media").select("id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status").eq("media_role","resolution_video").eq("moderation_status","pending").order("created_at",{ascending:false}).limit(100);
+    const {data,error}=await admin.from("report_media").select("id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status").eq("media_role","citizen_evidence").eq("media_type","video/mp4").eq("moderation_status","pending").order("created_at",{ascending:false}).limit(100);
     if(error)return json({error:"Impossible de charger la file de modération."},500);
     const items=[]; for(const media of data??[]){const {data:report}=await admin.from("reports").select("id,reference_code,title,description,status,priority,location_label,created_at,is_public").eq("id",media.report_id).maybeSingle();const {data:signed}=await admin.storage.from("report-media").createSignedUrl(media.storage_path,900);items.push({...media,report:report??null,preview_url:signed?.signedUrl??null});}
     return json({items});
   }
   const mediaId=String(body.media_id??"").trim(); if(!mediaId)return json({error:"Média requis."},400);
   const {data:media,error:mediaError}=await admin.from("report_media").select("id,report_id,storage_path,media_role,moderation_status").eq("id",mediaId).maybeSingle();
-  if(mediaError||!media||media.media_role!=="resolution_video")return json({error:"Vidéo introuvable."},404);
+  if(mediaError||!media||media.media_role!=="citizen_evidence" || !String(media.media_type??"").startsWith("video/"))return json({error:"Vidéo de signalement introuvable."},404);
   if(media.moderation_status!=="pending")return json({error:"Cette vidéo a déjà été traitée."},409);
   if(action==="approve"){
     const now=new Date().toISOString();
