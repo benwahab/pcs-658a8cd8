@@ -120,6 +120,7 @@ function RootShell({ children }: { children: ReactNode }) {
         </div>
         {children}
         <Scripts />
+        <script dangerouslySetInnerHTML={{__html: `setTimeout(() => document.getElementById("pcs-splash")?.remove(), 1200);`}} />
       </body>
     </html>
   );
