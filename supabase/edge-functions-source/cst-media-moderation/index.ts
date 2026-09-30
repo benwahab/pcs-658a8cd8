@@ -8,20 +8,30 @@ Deno.serve(async(req)=>{
   const url=Deno.env.get("SUPABASE_URL")!,serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,anonKey=Deno.env.get("SUPABASE_ANON_KEY")!;
   const authHeader=req.headers.get("Authorization"); if(!authHeader)return json({error:"Authentification requise."},401);
   const authClient=createClient(url,anonKey,{auth:{autoRefreshToken:false,persistSession:false},global:{headers:{Authorization:authHeader}}});
-  const {data:{user},error:userError}=await authClient.auth.getUser(); if(userError||!user)return json({error:"Session CST invalide."},401);
+  const {data:{user},error:userError}=await authClient.auth.getUser(); if(userError||!user)return json({error:"Session invalide."},401);
   const admin=createClient(url,serviceKey,{auth:{autoRefreshToken:false,persistSession:false}});
-  const {data:account}=await admin.from("cst_accounts").select("id,user_id,email").eq("user_id",user.id).maybeSingle(); if(!account)return json({error:"Accès CST refusé."},403);
+  const {data:cst}=await admin.from("cst_accounts").select("id,user_id,email").eq("user_id",user.id).maybeSingle();
+  const {data:moderator}=await admin.from("moderator_profiles").select("user_id,email,full_name,region_id,is_active,regions(id,name,code)").eq("user_id",user.id).maybeSingle();
+  const isCst=!!cst;
+  const isModerator=!!moderator&&moderator.is_active===true;
+  if(!isCst&&!isModerator)return json({error:"Accès de modération refusé."},403);
   const body=await req.json().catch(()=>({})); const action=String(body.action??"list");
+  const moderatorRegionId=isModerator?moderator.region_id:null;
   if(action==="list"){
-    const {data,error}=await admin.from("report_media").select("id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status").eq("media_role","citizen_evidence").like("media_type","video/%").eq("moderation_status","pending").order("created_at",{ascending:false}).limit(100);
+    const {data,error}=await admin.from("report_media").select("id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status,reports!inner(id,reference_code,title,description,status,priority,location_label,created_at,is_public,region_id)").eq("media_role","citizen_evidence").like("media_type","video/%").eq("moderation_status","pending").order("created_at",{ascending:false}).limit(100);
     if(error)return json({error:"Impossible de charger la file de modération."},500);
-    const items=[]; for(const media of data??[]){const {data:report}=await admin.from("reports").select("id,reference_code,title,description,status,priority,location_label,created_at,is_public").eq("id",media.report_id).maybeSingle();const {data:signed}=await admin.storage.from("report-media").createSignedUrl(media.storage_path,900);items.push({...media,report:report??null,preview_url:signed?.signedUrl??null});}
-    return json({items});
+    const filtered=(data??[]).filter((media:any)=>isCst||media.reports?.region_id===moderatorRegionId);
+    const items=[]; for(const media of filtered){const report=media.reports??null;const {data:signed}=await admin.storage.from("report-media").createSignedUrl(media.storage_path,900);items.push({...media,reports:undefined,report,preview_url:signed?.signedUrl??null});}
+    return json({items,region:isModerator?moderator.regions??null:null,scope:isCst?"global":"regional"});
   }
   const mediaId=String(body.media_id??"").trim(); if(!mediaId)return json({error:"Média requis."},400);
   const {data:media,error:mediaError}=await admin.from("report_media").select("id,report_id,storage_path,media_role,media_type,moderation_status").eq("id",mediaId).maybeSingle();
   if(mediaError||!media||media.media_role!=="citizen_evidence" || !String(media.media_type??"").startsWith("video/"))return json({error:"Vidéo de signalement introuvable."},404);
   if(media.moderation_status!=="pending")return json({error:"Cette vidéo a déjà été traitée."},409);
+  if(isModerator){
+    const {data:report}=await admin.from("reports").select("region_id").eq("id",media.report_id).maybeSingle();
+    if(!report||report.region_id!==moderatorRegionId)return json({error:"Cette vidéo n’appartient pas à votre région."},403);
+  }
   if(action==="approve"){
     const now=new Date().toISOString();
     const {error}=await admin.from("report_media").update({moderation_status:"approved",moderated_at:now,moderated_by:user.id,moderation_reason:null}).eq("id",mediaId).eq("moderation_status","pending");
