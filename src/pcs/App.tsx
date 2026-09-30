@@ -129,7 +129,28 @@ function App({children}:{children:React.ReactNode}){
   window.addEventListener("unhandledrejection",onRejection);
   return()=>{window.removeEventListener("error",onError);window.removeEventListener("unhandledrejection",onRejection)};
  },[]);
- return <div style={logoStyle}><Shell>{children}<OnboardingTour/>{!isSupabaseConfigured&&<div className="dev-banner">Configuration requise : renseignez les variables VITE_SUPABASE_* avant déploiement.</div>}</Shell></div>
+ return <div style={logoStyle}><Shell>{children}<OnboardingTour/><ConnectionStatus/>{!isSupabaseConfigured&&<div className="dev-banner">Configuration requise : renseignez les variables VITE_SUPABASE_* avant déploiement.</div>}</Shell></div>
+}
+function ConnectionStatus(){
+ const [online,setOnline]=useState(()=>typeof navigator==="undefined"?true:navigator.onLine);
+ const [weak,setWeak]=useState(false);
+ useEffect(()=>{
+  if(typeof window==="undefined")return;
+  const update=()=>setOnline(navigator.onLine);
+  const updateConnection=()=>{
+   const connection=(navigator as Navigator & {connection?:{effectiveType?:string;downlink?:number}}).connection;
+   const type=connection?.effectiveType;
+   setWeak(type==="slow-2g"||type==="2g"||(connection?.downlink!=null&&connection.downlink<0.7));
+  };
+  updateConnection();
+  window.addEventListener("online",update);
+  window.addEventListener("offline",update);
+  const connection=(navigator as Navigator & {connection?:EventTarget}).connection;
+  connection?.addEventListener("change",updateConnection);
+  return()=>{window.removeEventListener("online",update);window.removeEventListener("offline",update);connection?.removeEventListener("change",updateConnection)};
+ },[]);
+ if(online&&!weak)return null;
+ return <div className={"connectionStatus "+(!online?"offline":"weak")} role="status" aria-live="polite">{!online?"Hors connexion — les pages déjà chargées restent disponibles.":"Connexion faible — PCS privilégie les données déjà en cache et réessaie automatiquement les lectures."}</div>;
 }
 export default App;
 
