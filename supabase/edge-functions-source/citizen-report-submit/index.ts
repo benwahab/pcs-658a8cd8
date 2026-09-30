@@ -49,13 +49,76 @@ function findMvhdDuration(b:Uint8Array,start:number,end:number):number|null{
 }
 function parseMp4Duration(b:Uint8Array){return findMvhdDuration(b,0,b.length)}
 function ebmlVint(b:Uint8Array,o:number){if(o>=b.length)return null;const first=b[o];let mask=0x80,len=1;while(len<=8&&(first&mask)===0){mask>>=1;len++}if(len>8||o+len>b.length)return null;let value=first&(~mask);for(let i=1;i<len;i++)value=value*256+b[o+i];return{value,length:len}}
+function ebmlIdLength(first:number){
+  if(first&0x80)return 1;
+  if(first&0x40)return 2;
+  if(first&0x20)return 3;
+  if(first&0x10)return 4;
+  return 0;
+}
+function ebmlId(b:Uint8Array,o:number,len:number){
+  let id=0;for(let i=0;i<len;i++)id=id*256+b[o+i];return id;
+}
+function ebmlUint(b:Uint8Array,o:number,len:number){
+  let value=0;for(let i=0;i<len;i++)value=value*256+b[o+i];return value;
+}
 function findWebmDuration(b:Uint8Array){
   let scale=1000000,duration:number|null=null;
   for(let i=0;i<b.length-4;i++){
-    if(b[i]===0x2a&&b[i+1]===0xd7&&b[i+2]===0xb1){const s=ebmlVint(b,i+3);if(s&&s.value>0&&s.value<=8&&i+3+s.length+s.value<=b.length){let v=0;for(let j=0;j<s.value;j++)v=v*256+b[i+3+s.length+j];if(v>0)scale=v}}
-    if(i<b.length-2&&b[i]===0x44&&b[i+1]===0x89){const s=ebmlVint(b,i+2);if(s&&s.value>0&&s.value<=8&&i+2+s.length+s.value<=b.length){const o=i+2+s.length;if(s.value===4)duration=new DataView(b.buffer,b.byteOffset+o,4).getFloat32(0,false);else if(s.value===8)duration=new DataView(b.buffer,b.byteOffset+o,8).getFloat64(0,false)}}
+    if(b[i]===0x2a&&b[i+1]===0xd7&&b[i+2]===0xb1){
+      const s=ebmlVint(b,i+3);
+      if(s&&s.value>0&&s.value<=8&&i+3+s.length+s.value<=b.length){
+        const v=ebmlUint(b,i+3+s.length,s.value);if(v>0)scale=v;
+      }
+    }
+    if(i<b.length-2&&b[i]===0x44&&b[i+1]===0x89){
+      const s=ebmlVint(b,i+2);
+      if(s&&s.value>0&&s.value<=8&&i+2+s.length+s.value<=b.length){
+        const o=i+2+s.length;
+        if(s.value===4)duration=new DataView(b.buffer,b.byteOffset+o,4).getFloat32(0,false);
+        else if(s.value===8)duration=new DataView(b.buffer,b.byteOffset+o,8).getFloat64(0,false);
+      }
+    }
   }
-  return duration!=null&&Number.isFinite(duration)?duration*scale/1e9:null;
+  if(duration!=null&&Number.isFinite(duration)&&duration>0)return duration*scale/1e9;
+
+  // MediaRecorder may emit a valid WebM without Info/Duration metadata.
+  // Recover the real timeline from Cluster timecodes + SimpleBlock timestamps.
+  let maxTicks=-Infinity,foundBlock=false;
+  const CLUSTER=0x1f43b675,SIMPLE_BLOCK=0xa3,TIMECODE=0xe7;
+  for(let i=0;i+5<b.length;){
+    if(b[i]!==0x1f||b[i+1]!==0x43||b[i+2]!==0xb6||b[i+3]!==0x75){i++;continue;}
+    const clusterSize=ebmlVint(b,i+4);if(!clusterSize)break;
+    const clusterStart=i+4+clusterSize.length;
+    const unknownSize=(2**(7*clusterSize.length)-1);
+    const clusterEnd=Math.min(b.length,clusterStart+(clusterSize.value===unknownSize?b.length:clusterSize.value));
+    if(clusterEnd<=clusterStart){i++;continue;}
+    let clusterTimecode=0,p=clusterStart;
+    while(p+2<=clusterEnd){
+      const idLen=ebmlIdLength(b[p]);if(!idLen||p+idLen>=clusterEnd)break;
+      const id=ebmlId(b,p,idLen),size=ebmlVint(b,p+idLen);if(!size)break;
+      const dataStart=p+idLen+size.length;
+      const unknown=(2**(7*size.length)-1);
+      const dataEnd=Math.min(clusterEnd,dataStart+(size.value===unknown?clusterEnd-dataStart:size.value));
+      if(dataEnd<dataStart)break;
+      if(id===TIMECODE){
+        if(size.value>0&&size.value<=8)clusterTimecode=ebmlUint(b,dataStart,size.value);
+      }else if(id===SIMPLE_BLOCK){
+        const track=ebmlVint(b,dataStart);
+        const tcOffset=dataStart+(track?.length??0);
+        if(track&&tcOffset+3<=dataEnd){
+          const raw=(b[tcOffset]<<8)|b[tcOffset+1];
+          const relative=(raw&0x8000)?raw-0x10000:raw;
+          const timestamp=clusterTimecode+relative;
+          if(Number.isFinite(timestamp)){maxTicks=Math.max(maxTicks,timestamp);foundBlock=true;}
+        }
+      }
+      p=dataEnd;
+    }
+    i=clusterEnd;
+  }
+  if(foundBlock&&Number.isFinite(maxTicks)&&maxTicks>=0)return maxTicks*scale/1e9;
+  return null;
 }
 async function validateVideo(file:File){
   if(!ALLOWED_VIDEOS.has(file.type))throw new Error("Type vidéo non autorisé.");
