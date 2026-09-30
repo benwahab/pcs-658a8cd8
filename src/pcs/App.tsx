@@ -160,6 +160,14 @@ export function ReportForm(){
  useEffect(()=>{Promise.all([listCategories(),listRegions(),listAllCommunes()]).then(([c,r,all])=>{setCategories(c);setRegions(r);setAllCommunes(all)}).catch(e=>setError(e instanceof Error?e.message:"Impossible de charger les catégories, régions et localités."))},[]);
  useEffect(()=>{setCommune("");setCommunes(region?allCommunes.filter(c=>c.region_id===region):[])},[region,allCommunes]);
  useEffect(()=>()=>{if(timerRef.current)window.clearTimeout(timerRef.current);streamRef.current?.getTracks().forEach(t=>t.stop())},[]);
+ useEffect(()=>{
+  const videoEl=cameraPreviewRef.current;
+  const stream=streamRef.current;
+  if(!recording||!videoEl||!stream)return;
+  videoEl.srcObject=stream;
+  void videoEl.play().catch(()=>undefined);
+  return()=>{videoEl.pause();videoEl.srcObject=null};
+ },[recording]);
  function locate(){navigator.geolocation?.getCurrentPosition(p=>{setCoords({lat:p.coords.latitude,lng:p.coords.longitude});setLocation(l=>l||"Position GPS enregistrée");},()=>setError("Impossible d’obtenir la position. Vous pouvez renseigner la zone manuellement."),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
  function addPhotos(list:FileList|null){const next=[...files,...Array.from(list??[])];if(next.length>5){setError("Maximum 5 photos par signalement.");}setFiles(next.slice(0,5))}
  function cleanupCamera(){if(timerRef.current){window.clearTimeout(timerRef.current);timerRef.current=null}streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;if(cameraPreviewRef.current)cameraPreviewRef.current.srcObject=null;recorderRef.current=null;setRecording(false);setRecordingSeconds(0)}
@@ -168,7 +176,7 @@ export function ReportForm(){
   if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined"){setError("La caméra vidéo n’est pas disponible sur cet appareil.");return}
   try{
    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280,max:1280},height:{ideal:720,max:720}},audio:true});
-   streamRef.current=stream;if(cameraPreviewRef.current){cameraPreviewRef.current.srcObject=stream;await cameraPreviewRef.current.play().catch(()=>undefined)}
+   streamRef.current=stream;
    const mime=["video/mp4","video/webm;codecs=vp8,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t))??"";
    const recorder=new MediaRecorder(stream,{...(mime?{mimeType:mime}:{}),videoBitsPerSecond:2500000,audioBitsPerSecond:128000});
    const chunks:Blob[]=[];recorderRef.current=recorder;setRecording(true);setRecordingSeconds(0);
