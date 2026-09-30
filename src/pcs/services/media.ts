@@ -51,13 +51,22 @@ export async function uploadReportMedia(reportId:string,file:File){
  const isVideo=ALLOWED_VIDEOS.includes(file.type);
  if(!ALLOWED_IMAGES.includes(file.type)&&!isVideo)throw new Error("Type de fichier non autorisé. Utilisez JPG, PNG, WebP ou une vidéo MP4/WebM/MOV.");
  if(!isVideo&&file.size>MAX_IMAGE_SIZE)throw new Error("Photo trop volumineuse. Maximum : 8 Mo.");
- if(isVideo)await validateCitizenVideo(file);
- const ext=file.name.split(".").pop()?.toLowerCase()||(isVideo?"mp4":"jpg");
+ if(isVideo){
+  await validateCitizenVideo(file);
+  const body=new FormData();
+  body.append("report_id",reportId);
+  body.append("file",file,file.name);
+  const {data,error}=await supabase.functions.invoke("report-media-upload",{body});
+  if(error)throw error;
+  if(data?.error)throw new Error(String(data.error));
+  return String(data.storage_path);
+ }
+ const ext=file.name.split(".").pop()?.toLowerCase()||"jpg";
  const path=reportId+"/"+crypto.randomUUID()+"."+ext;
  const {error}=await supabase.storage.from("report-media").upload(path,file,{contentType:file.type,upsert:false});
  if(error)throw error;
  const {data:{user}}=await supabase.auth.getUser();
- const {error:rowError}=await supabase.from("report_media").insert({report_id:reportId,storage_path:path,media_type:file.type,file_size:file.size,uploaded_by:user?.id??null,media_role:"citizen_evidence",moderation_status:isVideo?"pending":"approved"} as any);
+ const {error:rowError}=await supabase.from("report_media").insert({report_id:reportId,storage_path:path,media_type:file.type,file_size:file.size,uploaded_by:user?.id??null,media_role:"citizen_evidence",moderation_status:"approved"} as any);
  if(rowError){await supabase.storage.from("report-media").remove([path]);throw rowError;}
  return path;
 }
