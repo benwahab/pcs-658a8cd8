@@ -103,8 +103,13 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseClient() {
-  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || process.env['SUPABASE_PUBLISHABLE_KEY'];
+  // Public (publishable) fallbacks for the official PCS project, used when the
+  // build did not inject VITE_* variables. Safe to ship: RLS enforces access.
+  const FALLBACK_URL = 'https://rqraxjypjwsxcmjdwroy.supabase.co';
+  const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxcmF4anlwandzeGNtamR3cm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMTAwNDYsImV4cCI6MjEwNTU4NjA0Nn0.KJjegtzYsWwU0cmTf3y4gIEuLxCZ-JcPIDcPa4DW7_A';
+  const serverEnv = typeof process !== 'undefined' ? process.env : ({} as Record<string, string | undefined>);
+  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || serverEnv['SUPABASE_URL'] || FALLBACK_URL;
+  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || serverEnv['SUPABASE_PUBLISHABLE_KEY'] || FALLBACK_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
