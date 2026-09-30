@@ -13,7 +13,7 @@ const EXTENSIONS:Record<string,string[]>={
 };
 const cors={
   "Access-Control-Allow-Origin":"*",
-  "Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type, x-retry-count, traceparent, tracestate, baggage",
+  "Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type, x-retry-count, x-pcs-trace-id, traceparent, tracestate, baggage",
   "Access-Control-Allow-Methods":"POST, OPTIONS"
 };
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
