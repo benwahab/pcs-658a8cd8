@@ -42,9 +42,37 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     headers.set('traceparent', trace.traceparent);
     const started = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
-    try {
-      const response = await fetch(input, { ...init, headers });
-      if (isBrowser && !isTelemetryRequest) {
+    const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    const retryable = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
+    const maxAttempts = retryable && !isTelemetryRequest ? 3 : 1;
+    let response: Response | undefined;
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        response = await fetch(input, { ...init, headers });
+        if (
+          retryable &&
+          !isTelemetryRequest &&
+          [408, 425, 429, 502, 503, 504].includes(response.status) &&
+          attempt < maxAttempts - 1
+        ) {
+          await new Promise((resolve) => setTimeout(resolve, 700 * 2 ** attempt));
+          continue;
+        }
+        break;
+      } catch (error) {
+        lastError = error;
+        if (attempt >= maxAttempts - 1) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 700 * 2 ** attempt));
+      }
+    }
+
+    if (!response) {
+      throw lastError instanceof Error ? lastError : new Error('Réseau indisponible.');
+    }
+
+    if (isBrowser && !isTelemetryRequest) {
         const latency = Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - started);
         const token = headers.get('Authorization');
         const telemetryUrl = `${import.meta.env['VITE_SUPABASE_URL'] || ''}/functions/v1/cst-telemetry`;
@@ -59,7 +87,7 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
               events: [{
                 trace_id: trace.traceId,
                 occurred_at: Date.now(),
-                method: (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase(),
+                method,
                 endpoint: requestUrl,
                 status_code: response.status,
                 latency_ms: latency,
