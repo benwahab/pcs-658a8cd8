@@ -8,6 +8,13 @@ Deno.serve(async(req)=>{
   try{
     if(req.method!=="POST") return json({error:"Méthode non autorisée"},405);
     const url=Deno.env.get("SUPABASE_URL")!,key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,db=createClient(url,key);
+    const forwarded=req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+    const realIp=req.headers.get("cf-connecting-ip")?.trim()||forwarded||"unknown";
+    const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(realIp+"|pcs-mairie-signup"));
+    const keyHash=Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join("");
+    const {data:allowed,error:rateError}=await db.rpc("consume_mairie_signup_rate_limit",{p_key_hash:keyHash,p_max_attempts:5,p_window_seconds:900,p_block_seconds:1800});
+    if(rateError)return json({error:"Service temporairement indisponible. Réessayez plus tard."},503);
+    if(allowed===false)return json({error:"Trop de tentatives. Réessayez plus tard."},429);
     const b=await req.json();
     for(const k of ["name","region_id","commune_id","email","password"]) if(!b[k]||String(b[k]).trim()==="") return json({error:"Champs obligatoires manquants"},400);
     if(String(b.password).length<8) return json({error:"Le mot de passe doit contenir au moins 8 caractères"},400);
