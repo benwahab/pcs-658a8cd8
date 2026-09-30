@@ -37,14 +37,14 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     const requestUrl = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     const isBrowser = typeof window !== 'undefined';
     const isTelemetryRequest = requestUrl.includes('/functions/v1/cst-telemetry');
+    const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    const retryable = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
+    const maxAttempts = retryable && !isTelemetryRequest ? 3 : 1;
     const trace = createTraceContext();
     headers.set('x-pcs-trace-id', trace.traceId);
     headers.set('traceparent', trace.traceparent);
     const started = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
-    const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
-    const retryable = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
-    const maxAttempts = retryable && !isTelemetryRequest ? 3 : 1;
     let response: Response | undefined;
     let lastError: unknown;
 
@@ -63,73 +63,43 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
         break;
       } catch (error) {
         lastError = error;
-        if (attempt >= maxAttempts - 1) throw error;
+        if (attempt >= maxAttempts - 1) break;
         await new Promise((resolve) => setTimeout(resolve, 700 * 2 ** attempt));
       }
     }
 
-    if (!response) {
-      throw lastError instanceof Error ? lastError : new Error('Réseau indisponible.');
+    const latency = Math.round(
+      (typeof performance !== 'undefined' ? performance.now() : Date.now()) - started,
+    );
+    const token = headers.get('Authorization');
+    const telemetryUrl = `${import.meta.env['VITE_SUPABASE_URL'] || ''}/functions/v1/cst-telemetry`;
+
+    if (isBrowser && !isTelemetryRequest && telemetryUrl.startsWith('http')) {
+      void fetch(telemetryUrl, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          ...(token ? { Authorization: token } : {}),
+        },
+        body: JSON.stringify({
+          events: [{
+            trace_id: trace.traceId,
+            occurred_at: Date.now(),
+            method,
+            endpoint: requestUrl,
+            status_code: response?.status ?? 0,
+            latency_ms: latency,
+            ...(response ? {} : { error_class: lastError instanceof Error ? lastError.name : 'NetworkError' }),
+          }],
+        }),
+        keepalive: true,
+      }).catch(() => undefined);
     }
 
-    if (isBrowser && !isTelemetryRequest) {
-        const latency = Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - started);
-        const token = headers.get('Authorization');
-        const telemetryUrl = `${import.meta.env['VITE_SUPABASE_URL'] || ''}/functions/v1/cst-telemetry`;
-        if (telemetryUrl.startsWith('http')) {
-          void fetch(telemetryUrl, {
-            method: 'POST',
-            headers: {
-              'content-type': 'application/json',
-              ...(token ? { Authorization: token } : {}),
-            },
-            body: JSON.stringify({
-              events: [{
-                trace_id: trace.traceId,
-                occurred_at: Date.now(),
-                method,
-                endpoint: requestUrl,
-                status_code: response.status,
-                latency_ms: latency,
-              }],
-            }),
-            keepalive: true,
-          }).catch(() => undefined);
-        }
-      }
-      return response;
-    } catch (error) {
-      if (isBrowser && !isTelemetryRequest) {
-        const latency = Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - started);
-        const token = headers.get('Authorization');
-        const telemetryUrl = `${import.meta.env['VITE_SUPABASE_URL'] || ''}/functions/v1/cst-telemetry`;
-        if (telemetryUrl.startsWith('http')) {
-          void fetch(telemetryUrl, {
-            method: 'POST',
-            headers: {
-              'content-type': 'application/json',
-              ...(token ? { Authorization: token } : {}),
-            },
-            body: JSON.stringify({
-              events: [{
-                trace_id: trace.traceId,
-                occurred_at: Date.now(),
-                method: (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase(),
-                endpoint: requestUrl,
-                status_code: 0,
-                latency_ms: latency,
-                error_class: error instanceof Error ? error.name : 'NetworkError',
-              }],
-            }),
-            keepalive: true,
-          }).catch(() => undefined);
-        }
-      }
-      throw error;
-    }
+    if (response) return response;
+    throw lastError instanceof Error ? lastError : new Error('Réseau indisponible.');
   };
 }
-
 function createSupabaseClient() {
   // Public (publishable) fallbacks for the official PCS project, used when the
   // build did not inject VITE_* variables. Safe to ship: RLS enforces access.
