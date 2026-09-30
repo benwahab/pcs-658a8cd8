@@ -15,7 +15,7 @@ import {canOperate,getMyRoles,type AppRole} from "./services/permissions";
 import {uploadReportMedia,createReportMediaUrl,validateCitizenVideo,CITIZEN_VIDEO_MAX_SECONDS} from "./services/media";
 let activeFeedVideo:HTMLVideoElement|null=null;
 
-function LazyFeedVideo({src}:{src:string}){
+function LazyFeedVideo({src,poster}:{src:string;poster?:string}){
  const ref=useRef<HTMLVideoElement|null>(null);
  const [active,setActive]=useState(false);
  const [autoplayAllowed,setAutoplayAllowed]=useState(true);
@@ -51,12 +51,13 @@ function LazyFeedVideo({src}:{src:string}){
    if(activeFeedVideo===video)activeFeedVideo=null;
   };
  },[active,autoplayAllowed]);
- return <video ref={ref} src={active?src:undefined} controls playsInline muted loop preload="none" aria-label="Vidéo du média"/>;
+ return <video ref={ref} src={active?src:undefined} poster={poster} controls playsInline muted loop preload="none" aria-label="Vidéo du média"/>;
 }
 
 export function MediaCarousel({media}:{media:{id:string;url:string;media_type:string;media_role?:string}[]}){
  if(!media.length)return null;
- return <div className="mediaCarousel">{media.map((m,i)=><div className="mediaCarouselItem" key={m.id}>{m.media_type?.startsWith("video")||m.media_role==="resolution_video"?<LazyFeedVideo src={m.url}/>:<img src={m.url} alt="Pièce jointe du signalement" loading="lazy"/>}{media.length>1&&<span className="mediaCount">{i+1}/{media.length}</span>}</div>)}</div>;
+ const poster=media.find(m=>!m.media_type?.startsWith("video")&&m.media_role!=="resolution_video")?.url;
+ return <div className="mediaCarousel">{media.map((m,i)=><div className="mediaCarouselItem" key={m.id}>{m.media_type?.startsWith("video")||m.media_role==="resolution_video"?<LazyFeedVideo src={m.url} poster={poster}/>:<img src={m.url} alt="Pièce jointe du signalement" loading="lazy" decoding="async"/>}{media.length>1&&<span className="mediaCount">{i+1}/{media.length}</span>}</div>)}</div>;
 }
 import {listRegions,listAllCommunes,signupMairie,loginAgent,lookupAgentByPhone,getMyMairie} from "./services/mairie";
 import MairieDashboard from "./pages/MairieDashboard";
