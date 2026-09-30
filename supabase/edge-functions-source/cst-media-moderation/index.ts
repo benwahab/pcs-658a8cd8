@@ -18,9 +18,9 @@ Deno.serve(async(req)=>{
   const body=await req.json().catch(()=>({})); const action=String(body.action??"list");
   const moderatorRegionId=isModerator?moderator.region_id:null;
   if(action==="list"){
-    const {data,error}=await admin.from("report_media").select("id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status,reports!inner(id,reference_code,title,description,status,priority,location_label,created_at,is_public,region_id)").eq("media_role","citizen_evidence").like("media_type","video/%").eq("moderation_status","pending").order("created_at",{ascending:false}).limit(100);
+    const {data,error}=await admin.from("report_media").select("id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status,reports!inner(id,reference_code,title,description,status,priority,location_label,created_at,is_public,region_id)").eq("media_role","citizen_evidence").like("media_type","video/%").eq("moderation_status","pending").order("created_at",{ascending:false});
     if(error)return json({error:"Impossible de charger la file de modération."},500);
-    const filtered=(data??[]).filter((media:any)=>isCst||media.reports?.region_id===moderatorRegionId);
+    const filtered=(data??[]).filter((media:any)=>isCst||media.reports?.region_id===moderatorRegionId).slice(0,100);
     const items=[]; for(const media of filtered){const report=media.reports??null;const {data:signed}=await admin.storage.from("report-media").createSignedUrl(media.storage_path,900);items.push({...media,reports:undefined,report,preview_url:signed?.signedUrl??null});}
     return json({items,region:isModerator?moderator.regions??null:null,scope:isCst?"global":"regional"});
   }
@@ -34,16 +34,18 @@ Deno.serve(async(req)=>{
   }
   if(action==="approve"){
     const now=new Date().toISOString();
-    const {error}=await admin.from("report_media").update({moderation_status:"approved",moderated_at:now,moderated_by:user.id,moderation_reason:null}).eq("id",mediaId).eq("moderation_status","pending");
+    const {data:updated,error}=await admin.from("report_media").update({moderation_status:"approved",moderated_at:now,moderated_by:user.id,moderation_reason:null}).eq("id",mediaId).eq("moderation_status","pending").select("id").maybeSingle();
     if(error)return json({error:"Approbation impossible."},500);
+    if(!updated)return json({error:"Cette vidéo a déjà été traitée."},409);
     const {error:historyError}=await admin.from("cst_media_moderation_history").insert({media_id:mediaId,moderator_id:user.id,action:"approved",reason:null});
     if(historyError)return json({success:true,status:"approved",audit_logged:false,warning:"Vidéo approuvée, mais l’écriture de l’historique doit être vérifiée."});
     return json({success:true,status:"approved",audit_logged:true});
   }
   if(action==="reject"){
     const reason=String(body.reason??"").trim(); if(reason.length<5)return json({error:"Un motif de rejet d’au moins 5 caractères est requis."},400);
-    const {error:updateError}=await admin.from("report_media").update({moderation_status:"rejected",moderated_at:new Date().toISOString(),moderated_by:user.id,moderation_reason:reason}).eq("id",mediaId).eq("moderation_status","pending");
+    const {data:updated,error:updateError}=await admin.from("report_media").update({moderation_status:"rejected",moderated_at:new Date().toISOString(),moderated_by:user.id,moderation_reason:reason}).eq("id",mediaId).eq("moderation_status","pending").select("id").maybeSingle();
     if(updateError)return json({error:"Rejet impossible."},500);
+    if(!updated)return json({error:"Cette vidéo a déjà été traitée."},409);
     const {error:historyError}=await admin.from("cst_media_moderation_history").insert({media_id:mediaId,moderator_id:user.id,action:"rejected",reason});
     const {error:storageError}=await admin.storage.from("report-media").remove([media.storage_path]);
     if(historyError)return json({success:true,status:"rejected",storage_deleted:!storageError,audit_logged:false,warning:"Vidéo bloquée de la publication, mais l’écriture de l’historique doit être vérifiée."});
