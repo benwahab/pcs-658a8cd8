@@ -202,7 +202,7 @@ export function ReportForm(){
   if(files.length>5){setError("Maximum 5 photos par signalement.");return}if(video&&video.size>50*1024*1024){setError("Vidéo trop volumineuse. Maximum : 50 Mo.");return}
   setSaving(true);
   try{
-   const report=await createReport({citizen_id:user.id,category_id:category,region_id:region,commune_id:commune,title:title.trim(),description:title.trim().length>=10?title.trim():title.trim()+" — signalement citoyen",location_label:location.trim()||null,latitude:coords.lat,longitude:coords.lng,commune_id:commune});
+   const report=await createReport({citizen_id:user.id,category_id:category,region_id:region,commune_id:commune,title:title.trim(),description:title.trim().length>=10?title.trim():title.trim()+" — signalement citoyen",location_label:location.trim()||null,latitude:coords.lat,longitude:coords.lng});
    for(const file of files)await uploadReportMedia(report.id,file);
    if(video)await uploadReportMedia(report.id,video);
    setSubmitted(true);
