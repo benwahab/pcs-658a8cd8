@@ -324,6 +324,48 @@ export type Database = {
         }
         Relationships: []
       }
+      cst_media_moderation_history: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          media_id: string
+          moderator_id: string
+          reason: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          media_id: string
+          moderator_id: string
+          reason?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          media_id?: string
+          moderator_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cst_media_moderation_history_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "public_report_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cst_media_moderation_history_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "report_media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cst_registration_lock: {
         Row: {
           id: number
@@ -1091,6 +1133,10 @@ export type Database = {
           id: string
           media_role: string
           media_type: string
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_reason: string | null
+          moderation_status: string
           report_id: string
           storage_path: string
           uploaded_by: string | null
@@ -1103,6 +1149,10 @@ export type Database = {
           id?: string
           media_role?: string
           media_type: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_reason?: string | null
+          moderation_status?: string
           report_id: string
           storage_path: string
           uploaded_by?: string | null
@@ -1115,6 +1165,10 @@ export type Database = {
           id?: string
           media_role?: string
           media_type?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_reason?: string | null
+          moderation_status?: string
           report_id?: string
           storage_path?: string
           uploaded_by?: string | null
