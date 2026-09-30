@@ -77,12 +77,7 @@ Deno.serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
   if(req.method!=="POST")return json({error:"Méthode non autorisée."},405);
   if(!allowedByRate(req))return json({error:"Trop de signalements depuis cette connexion. Réessayez plus tard."},429);
-  const url=Deno.env.get("SUPABASE_URL")!,anonKey=Deno.env.get("SUPABASE_ANON_KEY")!,serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const authHeader=req.headers.get("Authorization");
-  if(!authHeader)return json({error:"Authentification requise."},401);
-  const auth=createClient(url,anonKey,{auth:{autoRefreshToken:false,persistSession:false},global:{headers:{Authorization:authHeader}}});
-  const {data:{user},error:userError}=await auth.auth.getUser();
-  if(userError||!user)return json({error:"Session invalide."},401);
+  const url=Deno.env.get("SUPABASE_URL")!,serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const admin=createClient(url,serviceKey,{auth:{autoRefreshToken:false,persistSession:false}});
   try{
     const form=await req.formData();
@@ -102,7 +97,7 @@ Deno.serve(async(req)=>{
     if(videoFile)await validateVideo(videoFile);
     const referenceCode="PCS-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+crypto.randomUUID().slice(0,8).toUpperCase();
     const {data:report,error:reportError}=await admin.from("reports").insert({
-      reference_code:referenceCode,citizen_id:user.id,category_id:categoryId,title,description,
+      reference_code:referenceCode,citizen_id:null,category_id:categoryId,title,description,
       location_label:locationLabel,latitude,longitude,region_id:regionId,commune_id:communeId,status:"submitted",is_public:true
     }).select("id,reference_code").single();
     if(reportError){
