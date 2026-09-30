@@ -809,3 +809,11 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .cstEmptyModeration{padding:28px 4px}
 @media(max-width:800px){.cstModerationHead{flex-direction:column}.cstVideoReview{grid-template-columns:1fr}.cstVideoPreview,.cstVideoPreview video{min-height:200px}.cstVideoTitle{flex-direction:column}.cstMediaFacts{grid-template-columns:1fr}}
 @media(max-width:520px){.cstVideoReview{padding:10px}.cstVideoActions{flex-direction:column}.cstVideoActions .button{width:100%}}
+
+
+.cstModules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 20px}
+.cstModuleCard{display:flex;flex-direction:column;justify-content:space-between;gap:18px;padding:22px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:var(--surface,#111827);min-height:190px}
+.cstModuleCard h2{margin:4px 0 8px}
+.cstModuleCard p:not(.eyebrow){margin:0;color:var(--muted,#94a3b8);line-height:1.55}
+.cstModuleCard .button{align-self:flex-start}
+@media (max-width:900px){.cstModules{grid-template-columns:1fr}.cstModuleCard{min-height:0}}
