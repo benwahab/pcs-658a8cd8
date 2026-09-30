@@ -1,4 +1,4 @@
-const CACHE_NAME="pcs-shell-v4";
+const CACHE_NAME="pcs-shell-v5";
 const APP_SHELL=["/","/index.html","/manifest.webmanifest","/assets/pcs-splash.jpg","/icons/icon-192.jpg","/icons/icon-512.jpg"];
 
 async function cacheShell(){
@@ -59,7 +59,12 @@ self.addEventListener("fetch",(event)=>{
     return;
   }
 
-  const isStatic=request.destination==="script"||request.destination==="style"||request.destination==="image"||request.destination==="font"||request.destination==="manifest";
+  const isCode=request.destination==="script"||request.destination==="style";
+  const isStatic=request.destination==="image"||request.destination==="font"||request.destination==="manifest";
+  if(isCode){
+    event.respondWith(networkFirst(request));
+    return;
+  }
   if(isStatic){
     event.respondWith(staleWhileRevalidate(request));
   }
