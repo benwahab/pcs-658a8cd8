@@ -2,7 +2,7 @@ import {useEffect,useMemo,useState} from "react";
 import {Link,useNavigate} from "@/pcs/router";
 import {supabase} from "@/pcs/lib/supabase";
 
-async function callCst(body:Record<string,unknown>){if(!supabase)throw new Error("Supabase non configuré.");const isStatus=body.action==="status";const {data,error}=await supabase.functions.invoke("cst-auth",isStatus?{method:"GET"}:{body});if(error)throw new Error(error.message||"Service CST indisponible.");if(data?.error)throw new Error(data.error);return data as any;}
+async function callCst(body:Record<string,unknown>){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-auth",{body});if(error)throw new Error(error.message||"Service CST indisponible.");if(data?.error)throw new Error(data.error);return data as any;}
 async function health(){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-health",{method:"GET"});if(error||data?.error)throw new Error(data?.error??"Supervision indisponible.");return data as any;}
 async function mediaModeration(body:Record<string,unknown>={action:"list"}){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-media-moderation",{body});if(error||data?.error)throw new Error(data?.error??"Service de modération indisponible.");return data as any;}
 const Dot=({s}:{s:string})=><span className={"cstStatusDot "+s} aria-hidden="true"/>;
