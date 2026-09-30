@@ -34,7 +34,7 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     }
     headers.set('apikey', supabaseKey);
 
-    const requestUrl = typeof input === 'string' ? input : input.url;
+    const requestUrl = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     const isBrowser = typeof window !== 'undefined';
     const isTelemetryRequest = requestUrl.includes('/functions/v1/cst-telemetry');
     const trace = createTraceContext();
