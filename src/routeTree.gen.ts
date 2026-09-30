@@ -27,6 +27,8 @@ import { Route as OrganisationRouteImport } from './routes/organisation'
 import { Route as SignalerRouteImport } from './routes/signaler'
 import { Route as CstIndexRouteImport } from './routes/cst.index'
 import { Route as CstDashboardRouteImport } from './routes/cst.dashboard'
+import { Route as CstModerateursRouteImport } from './routes/cst.moderateurs'
+import { Route as ModerateurRouteImport } from './routes/moderateur'
 import { Route as SignalementIdRouteImport } from './routes/signalement.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -119,6 +121,16 @@ const CstDashboardRoute = CstDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => CstRoute,
 } as any)
+const CstModerateursRoute = CstModerateursRouteImport.update({
+  id: '/moderateurs',
+  path: '/moderateurs',
+  getParentRoute: () => CstRoute,
+} as any)
+const ModerateurRoute = ModerateurRouteImport.update({
+  id: '/moderateur',
+  path: '/moderateur',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignalementIdRoute = SignalementIdRouteImport.update({
   id: '/signalement/$id',
   path: '/signalement/$id',
@@ -139,10 +151,13 @@ export interface FileRoutesByFullPath {
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
   '/moderation': typeof ModerationRoute
+  '/moderateur': typeof ModerateurRoute
+  '/moderateur': typeof ModerateurRoute
   '/notifications': typeof NotificationsRoute
   '/organisation': typeof OrganisationRoute
   '/signaler': typeof SignalerRoute
   '/cst/dashboard': typeof CstDashboardRoute
+  '/cst/moderateurs': typeof CstModerateursRoute
   '/signalement/$id': typeof SignalementIdRoute
   '/cst/': typeof CstIndexRoute
 }
@@ -159,10 +174,12 @@ export interface FileRoutesByTo {
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
   '/moderation': typeof ModerationRoute
+  '/moderateur': typeof ModerateurRoute
   '/notifications': typeof NotificationsRoute
   '/organisation': typeof OrganisationRoute
   '/signaler': typeof SignalerRoute
   '/cst/dashboard': typeof CstDashboardRoute
+  '/cst/moderateurs': typeof CstModerateursRoute
   '/signalement/$id': typeof SignalementIdRoute
   '/cst': typeof CstIndexRoute
 }
@@ -413,11 +430,13 @@ declare module '@tanstack/react-router' {
 
 interface CstRouteChildren {
   CstDashboardRoute: typeof CstDashboardRoute
+  CstModerateursRoute: typeof CstModerateursRoute
   CstIndexRoute: typeof CstIndexRoute
 }
 
 const CstRouteChildren: CstRouteChildren = {
   CstDashboardRoute: CstDashboardRoute,
+  CstModerateursRoute: CstModerateursRoute,
   CstIndexRoute: CstIndexRoute,
 }
 
@@ -437,6 +456,7 @@ const rootRouteChildren: RootRouteChildren = {
   MairieRoute: MairieRoute,
   MesSignalementsRoute: MesSignalementsRoute,
   ModerationRoute: ModerationRoute,
+  ModerateurRoute: ModerateurRoute,
   NotificationsRoute: NotificationsRoute,
   OrganisationRoute: OrganisationRoute,
   SignalerRoute: SignalerRoute,
