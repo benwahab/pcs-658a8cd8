@@ -21,6 +21,7 @@ import { Route as CstRouteImport } from './routes/cst'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MairieRouteImport } from './routes/mairie'
 import { Route as MesSignalementsRouteImport } from './routes/mes-signalements'
+import { Route as ModerateurRouteImport } from './routes/moderateur'
 import { Route as ModerationRouteImport } from './routes/moderation'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as OrganisationRouteImport } from './routes/organisation'
@@ -28,7 +29,6 @@ import { Route as SignalerRouteImport } from './routes/signaler'
 import { Route as CstIndexRouteImport } from './routes/cst.index'
 import { Route as CstDashboardRouteImport } from './routes/cst.dashboard'
 import { Route as CstModerateursRouteImport } from './routes/cst.moderateurs'
-import { Route as ModerateurRouteImport } from './routes/moderateur'
 import { Route as SignalementIdRouteImport } from './routes/signalement.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -91,6 +91,11 @@ const MesSignalementsRoute = MesSignalementsRouteImport.update({
   path: '/mes-signalements',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ModerateurRoute = ModerateurRouteImport.update({
+  id: '/moderateur',
+  path: '/moderateur',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ModerationRoute = ModerationRouteImport.update({
   id: '/moderation',
   path: '/moderation',
@@ -126,11 +131,6 @@ const CstModerateursRoute = CstModerateursRouteImport.update({
   path: '/moderateurs',
   getParentRoute: () => CstRoute,
 } as any)
-const ModerateurRoute = ModerateurRouteImport.update({
-  id: '/moderateur',
-  path: '/moderateur',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SignalementIdRoute = SignalementIdRouteImport.update({
   id: '/signalement/$id',
   path: '/signalement/$id',
@@ -150,9 +150,8 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
+  '/moderateur': typeof ModerateurRoute
   '/moderation': typeof ModerationRoute
-  '/moderateur': typeof ModerateurRoute
-  '/moderateur': typeof ModerateurRoute
   '/notifications': typeof NotificationsRoute
   '/organisation': typeof OrganisationRoute
   '/signaler': typeof SignalerRoute
@@ -173,8 +172,8 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
-  '/moderation': typeof ModerationRoute
   '/moderateur': typeof ModerateurRoute
+  '/moderation': typeof ModerationRoute
   '/notifications': typeof NotificationsRoute
   '/organisation': typeof OrganisationRoute
   '/signaler': typeof SignalerRoute
@@ -197,11 +196,13 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
   '/mes-signalements': typeof MesSignalementsRoute
+  '/moderateur': typeof ModerateurRoute
   '/moderation': typeof ModerationRoute
   '/notifications': typeof NotificationsRoute
   '/organisation': typeof OrganisationRoute
   '/signaler': typeof SignalerRoute
   '/cst/dashboard': typeof CstDashboardRoute
+  '/cst/moderateurs': typeof CstModerateursRoute
   '/signalement/$id': typeof SignalementIdRoute
   '/cst/': typeof CstIndexRoute
 }
@@ -220,11 +221,13 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/mairie'
     | '/mes-signalements'
+    | '/moderateur'
     | '/moderation'
     | '/notifications'
     | '/organisation'
     | '/signaler'
     | '/cst/dashboard'
+    | '/cst/moderateurs'
     | '/signalement/$id'
     | '/cst/'
   fileRoutesByTo: FileRoutesByTo
@@ -240,11 +243,13 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/mairie'
     | '/mes-signalements'
+    | '/moderateur'
     | '/moderation'
     | '/notifications'
     | '/organisation'
     | '/signaler'
     | '/cst/dashboard'
+    | '/cst/moderateurs'
     | '/signalement/$id'
     | '/cst'
   id:
@@ -261,11 +266,13 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/mairie'
     | '/mes-signalements'
+    | '/moderateur'
     | '/moderation'
     | '/notifications'
     | '/organisation'
     | '/signaler'
     | '/cst/dashboard'
+    | '/cst/moderateurs'
     | '/signalement/$id'
     | '/cst/'
   fileRoutesById: FileRoutesById
@@ -283,6 +290,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   MairieRoute: typeof MairieRoute
   MesSignalementsRoute: typeof MesSignalementsRoute
+  ModerateurRoute: typeof ModerateurRoute
   ModerationRoute: typeof ModerationRoute
   NotificationsRoute: typeof NotificationsRoute
   OrganisationRoute: typeof OrganisationRoute
@@ -376,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MesSignalementsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/moderateur': {
+      id: '/moderateur'
+      path: '/moderateur'
+      fullPath: '/moderateur'
+      preLoaderRoute: typeof ModerateurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/moderation': {
       id: '/moderation'
       path: '/moderation'
@@ -418,6 +433,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CstDashboardRouteImport
       parentRoute: typeof CstRoute
     }
+    '/cst/moderateurs': {
+      id: '/cst/moderateurs'
+      path: '/moderateurs'
+      fullPath: '/cst/moderateurs'
+      preLoaderRoute: typeof CstModerateursRouteImport
+      parentRoute: typeof CstRoute
+    }
     '/signalement/$id': {
       id: '/signalement/$id'
       path: '/signalement/$id'
@@ -455,8 +477,8 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   MairieRoute: MairieRoute,
   MesSignalementsRoute: MesSignalementsRoute,
-  ModerationRoute: ModerationRoute,
   ModerateurRoute: ModerateurRoute,
+  ModerationRoute: ModerationRoute,
   NotificationsRoute: NotificationsRoute,
   OrganisationRoute: OrganisationRoute,
   SignalerRoute: SignalerRoute,
