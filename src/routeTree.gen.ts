@@ -109,7 +109,7 @@ const SignalerRoute = SignalerRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CstDashboardRoute = CstDashboardRouteImport.update({
-  id: '/dashboard',
+  id: '/cst/dashboard',
   path: '/dashboard',
   getParentRoute: () => CstRoute,
 } as any)
