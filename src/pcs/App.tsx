@@ -1,4 +1,4 @@
-import {useEffect,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import type {FormEvent} from "react";
 import {Link,useLocation,useNavigate} from "@/pcs/router";
 import {supabase,isSupabaseConfigured} from "./lib/supabase";
@@ -12,10 +12,34 @@ import Dashboard from "./pages/Dashboard";
 import Moderation from "./pages/Moderation";
 import {getMyOrganizationMembership} from "./services/organization";
 import {canOperate,getMyRoles,type AppRole} from "./services/permissions";
-import {uploadReportMedia,createReportMediaUrl,getVideoDuration,CITIZEN_VIDEO_MAX_SECONDS} from "./services/media";
+import {uploadReportMedia,createReportMediaUrl,validateCitizenVideo,CITIZEN_VIDEO_MAX_SECONDS} from "./services/media";
+function LazyFeedVideo({src}:{src:string}){
+ const ref=useRef<HTMLVideoElement|null>(null);
+ const [active,setActive]=useState(false);
+ useEffect(()=>{
+  const video=ref.current;
+  if(!video)return;
+  if(!("IntersectionObserver" in window)){setActive(true);return}
+  const observer=new IntersectionObserver(([entry])=>setActive(Boolean(entry?.isIntersecting)),{rootMargin:"180px 0px",threshold:0.35});
+  observer.observe(video);
+  return()=>observer.disconnect();
+ },[]);
+ useEffect(()=>{
+  const video=ref.current;
+  if(!video)return;
+  if(active){
+   video.preload="metadata";
+   void video.play().catch(()=>undefined);
+  }else{
+   video.pause();
+  }
+ },[active]);
+ return <video ref={ref} src={active?src:undefined} controls playsInline muted loop preload="none" aria-label="Vidéo du signalement"/>;
+}
+
 export function MediaCarousel({media}:{media:{id:string;url:string;media_type:string;media_role?:string}[]}){
  if(!media.length)return null;
- return <div className="mediaCarousel">{media.map((m,i)=><div className="mediaCarouselItem" key={m.id}>{m.media_type?.startsWith("video")||m.media_role==="resolution_video"?<video src={m.url} controls playsInline preload="metadata"/>:<img src={m.url} alt="Pièce jointe du signalement"/>}{media.length>1&&<span className="mediaCount">{i+1}/{media.length}</span>}</div>)}</div>;
+ return <div className="mediaCarousel">{media.map((m,i)=><div className="mediaCarouselItem" key={m.id}>{m.media_type?.startsWith("video")||m.media_role==="resolution_video"?<LazyFeedVideo src={m.url}/>:<img src={m.url} alt="Pièce jointe du signalement" loading="lazy"/>}{media.length>1&&<span className="mediaCount">{i+1}/{media.length}</span>}</div>)}</div>;
 }
 import {listRegions,listAllCommunes,signupMairie,loginAgent,lookupAgentByPhone,getMyMairie} from "./services/mairie";
 import MairieDashboard from "./pages/MairieDashboard";
@@ -64,12 +88,35 @@ export function Home(){
 }
 function PublicReportSlide({report}:{report:PublicReport}){
  const [media,setMedia]=useState<{id:string;url:string;media_role:string;media_type:string}[]>([]);
- useEffect(()=>{if(!supabase||!report.id){setMedia([]);return}const reportId=report.id;void (async()=>{try{const {data,error}=await supabase.from("public_report_media").select("id,storage_path,media_role,media_type").eq("report_id",reportId).order("created_at",{ascending:true});if(error)throw error;const urls=(await Promise.all((data??[]).filter(m=>m.id&&m.storage_path).map(async m=>({id:m.id as string,url:await createReportMediaUrl(m.storage_path as string),media_role:m.media_role??"evidence",media_type:m.media_type??"image"}))));setMedia(urls)}catch{setMedia([])}})()},[report.id]);
- return <article className="citizenSlide citizenSlideTrack"><div className="slideContent">
+ const [mediaReady,setMediaReady]=useState(false);
+ const slideRef=useRef<HTMLElement|null>(null);
+ useEffect(()=>{
+  const slide=slideRef.current;
+  if(!slide||!supabase||!report.id){setMedia([]);return}
+  if(!("IntersectionObserver" in window)){setMediaReady(true);return}
+  const observer=new IntersectionObserver(([entry])=>{if(entry?.isIntersecting){setMediaReady(true);observer.disconnect()}},{rootMargin:"700px 0px",threshold:0});
+  observer.observe(slide);
+  return()=>observer.disconnect();
+ },[report.id]);
+ useEffect(()=>{
+  if(!mediaReady||!supabase||!report.id)return;
+  let cancelled=false;
+  const reportId=report.id;
+  void (async()=>{
+   try{
+    const {data,error}=await supabase.from("public_report_media").select("id,storage_path,media_role,media_type").eq("report_id",reportId).order("created_at",{ascending:true});
+    if(error)throw error;
+    const urls=await Promise.all((data??[]).filter(m=>m.id&&m.storage_path).map(async m=>({id:m.id as string,url:await createReportMediaUrl(m.storage_path as string),media_role:m.media_role??"evidence",media_type:m.media_type??"image"})));
+    if(!cancelled)setMedia(urls);
+   }catch{if(!cancelled)setMedia([])}
+  })();
+  return()=>{cancelled=true};
+ },[mediaReady,report.id]);
+ return <article ref={slideRef} className="citizenSlide citizenSlideTrack"><div className="slideContent">
   <p className="eyebrow feedEyebrow">{report.status ? statusLabels[report.status] : "Signalement"}</p><div className="row"><strong>{report.reference_code ?? "PCS"}</strong><span className="badge" data-pcs-tour="status">{report.priority ? report.priority : "normal"}</span></div><h2>{report.title}</h2><p>{report.description}</p>
   {report.location_label&&<p><strong>📍</strong> {report.location_label}</p>}
   {report.resolution_note&&<p><strong>Résolution :</strong> {report.resolution_note}</p>}
-  <MediaCarousel media={media}/>
+  {mediaReady?<MediaCarousel media={media}/>:<div className="mediaCarousel mediaCarouselPlaceholder" aria-hidden="true"><div className="mediaCarouselItem"/></div>}
   <Link className="feedPrimary" to={report.id ? "/signalement/"+report.id : "/"}>Voir le signalement</Link>
  </div></article>
 }
@@ -95,7 +142,7 @@ export function ReportForm(){
  useEffect(()=>{setCommune("");setCommunes(region?allCommunes.filter(c=>c.region_id===region):[])},[region,allCommunes]);
  function locate(){navigator.geolocation?.getCurrentPosition(p=>{setCoords({lat:p.coords.latitude,lng:p.coords.longitude});setLocation(l=>l||"Position GPS enregistrée");},()=>setError("Impossible d’obtenir la position. Vous pouvez renseigner la zone manuellement."),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
  function addPhotos(list:FileList|null){const next=[...files,...Array.from(list??[])];if(next.length>5){setError("Maximum 5 photos par signalement.");}setFiles(next.slice(0,5))}
- async function pickVideo(f:File|undefined){setError("");if(!f)return;try{const d=await getVideoDuration(f);if(d>CITIZEN_VIDEO_MAX_SECONDS+0.5){setError(`La vidéo doit durer ${CITIZEN_VIDEO_MAX_SECONDS} secondes maximum (celle-ci dure ${Math.round(d)} s).`);return}setVideo(f)}catch(e){setError(e instanceof Error?e.message:"Vidéo illisible.")}}
+ async function pickVideo(f:File|undefined){setError("");if(!f)return;try{await validateCitizenVideo(f);setVideo(f)}catch(e){setVideo(null);setError(e instanceof Error?e.message:"Vidéo illisible ou non conforme.")}}
  async function submit(e:FormEvent){e.preventDefault();setError("");if(!supabase){setError("Supabase n’est pas configuré.");return}const {data}=await supabase.auth.getUser();if(!data.user){nav("/connexion");return}if(!category){setError("Choisissez une catégorie.");return}if(!region){setError("Choisissez la région du problème.");return}if(!commune){setError("Choisissez la localité du problème.");return}if(title.trim().length<5){setError("Le titre doit contenir au moins 5 caractères.");return}if(!coords){setError("La position GPS est obligatoire pour vérifier qu’un problème n’a pas déjà été signalé à proximité.");return}if(files.length>5){setError("Maximum 5 photos par signalement.");return}setSaving(true);try{const report=await createReport({citizen_id:data.user.id,category_id:category,title:title.trim(),description:title.trim(),location_label:location.trim()||null,latitude:coords?.lat,longitude:coords?.lng,region_id:region,commune_id:commune});for(const file of files)await uploadReportMedia(report.id,file);if(video)await uploadReportMedia(report.id,video);nav("/signalement/"+report.id)}catch(e){setError(e instanceof Error?e.message:"Erreur lors de l’envoi.");}finally{setSaving(false)}}
  return <section className="narrow authScreen reportScreen" data-pcs-tour="report-form"><h1>Faire un signalement</h1><form className="card form" onSubmit={submit}><label>Région du problème<select required value={region} onChange={e=>setRegion(e.target.value)}><option value="">Choisir…</option>{regions.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></label><label>Localité du problème<select required disabled={!region} value={commune} onChange={e=>setCommune(e.target.value)}><option value="">{!region?"Choisir d’abord une région…":!communes.length?"Aucune localité disponible":"Choisir une localité…"}</option>{communes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Catégorie<select data-pcs-tour="category" required value={category} onChange={e=>setCategory(e.target.value)}><option value="">Choisir…</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Titre<input required minLength={5} maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Ex. Caniveau bouché"/></label><label>Zone / adresse<input maxLength={250} value={location} onChange={e=>setLocation(e.target.value)} placeholder="Quartier, rue, repère…"/></label><button type="button" className="button" data-pcs-tour="location" onClick={locate}>Utiliser ma position</button>{coords&&<small>GPS : {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}</small>}
   <fieldset className="mediaPicker" data-pcs-tour="photo"><legend>Photos (jusqu’à 5) et vidéo courte ({CITIZEN_VIDEO_MAX_SECONDS} s max)</legend>
