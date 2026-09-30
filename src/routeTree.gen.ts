@@ -13,14 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AgentTerrainRouteImport } from './routes/agent-terrain'
-import { Route as ConnexionRouteImport } from './routes/connexion'
 import { Route as ConnexionNdeRouteImport } from './routes/connexion-nde'
 import { Route as ConnexionNigelecRouteImport } from './routes/connexion-nigelec'
 import { Route as ConnexionOperationnelleRouteImport } from './routes/connexion-operationnelle'
 import { Route as CstRouteImport } from './routes/cst'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MairieRouteImport } from './routes/mairie'
-import { Route as MesSignalementsRouteImport } from './routes/mes-signalements'
 import { Route as ModerateurRouteImport } from './routes/moderateur'
 import { Route as ModerationRouteImport } from './routes/moderation'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -51,11 +49,6 @@ const AgentTerrainRoute = AgentTerrainRouteImport.update({
   path: '/agent-terrain',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConnexionRoute = ConnexionRouteImport.update({
-  id: '/connexion',
-  path: '/connexion',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ConnexionNdeRoute = ConnexionNdeRouteImport.update({
   id: '/connexion-nde',
   path: '/connexion-nde',
@@ -84,11 +77,6 @@ const DashboardRoute = DashboardRouteImport.update({
 const MairieRoute = MairieRouteImport.update({
   id: '/mairie',
   path: '/mairie',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MesSignalementsRoute = MesSignalementsRouteImport.update({
-  id: '/mes-signalements',
-  path: '/mes-signalements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ModerateurRoute = ModerateurRouteImport.update({
@@ -142,14 +130,12 @@ export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/admin': typeof AdminRoute
   '/agent-terrain': typeof AgentTerrainRoute
-  '/connexion': typeof ConnexionRoute
   '/connexion-nde': typeof ConnexionNdeRoute
   '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
   '/cst': typeof CstRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
-  '/mes-signalements': typeof MesSignalementsRoute
   '/moderateur': typeof ModerateurRoute
   '/moderation': typeof ModerationRoute
   '/notifications': typeof NotificationsRoute
@@ -165,13 +151,11 @@ export interface FileRoutesByTo {
   '/$': typeof SplatRoute
   '/admin': typeof AdminRoute
   '/agent-terrain': typeof AgentTerrainRoute
-  '/connexion': typeof ConnexionRoute
   '/connexion-nde': typeof ConnexionNdeRoute
   '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
-  '/mes-signalements': typeof MesSignalementsRoute
   '/moderateur': typeof ModerateurRoute
   '/moderation': typeof ModerationRoute
   '/notifications': typeof NotificationsRoute
@@ -188,14 +172,12 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/admin': typeof AdminRoute
   '/agent-terrain': typeof AgentTerrainRoute
-  '/connexion': typeof ConnexionRoute
   '/connexion-nde': typeof ConnexionNdeRoute
   '/connexion-nigelec': typeof ConnexionNigelecRoute
   '/connexion-operationnelle': typeof ConnexionOperationnelleRoute
   '/cst': typeof CstRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/mairie': typeof MairieRoute
-  '/mes-signalements': typeof MesSignalementsRoute
   '/moderateur': typeof ModerateurRoute
   '/moderation': typeof ModerationRoute
   '/notifications': typeof NotificationsRoute
@@ -282,14 +264,12 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   AdminRoute: typeof AdminRoute
   AgentTerrainRoute: typeof AgentTerrainRoute
-  ConnexionRoute: typeof ConnexionRoute
   ConnexionNdeRoute: typeof ConnexionNdeRoute
   ConnexionNigelecRoute: typeof ConnexionNigelecRoute
   ConnexionOperationnelleRoute: typeof ConnexionOperationnelleRoute
   CstRoute: typeof CstRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   MairieRoute: typeof MairieRoute
-  MesSignalementsRoute: typeof MesSignalementsRoute
   ModerateurRoute: typeof ModerateurRoute
   ModerationRoute: typeof ModerationRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -326,13 +306,6 @@ declare module '@tanstack/react-router' {
       path: '/agent-terrain'
       fullPath: '/agent-terrain'
       preLoaderRoute: typeof AgentTerrainRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/connexion': {
-      id: '/connexion'
-      path: '/connexion'
-      fullPath: '/connexion'
-      preLoaderRoute: typeof ConnexionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/connexion-nde': {
@@ -375,13 +348,6 @@ declare module '@tanstack/react-router' {
       path: '/mairie'
       fullPath: '/mairie'
       preLoaderRoute: typeof MairieRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mes-signalements': {
-      id: '/mes-signalements'
-      path: '/mes-signalements'
-      fullPath: '/mes-signalements'
-      preLoaderRoute: typeof MesSignalementsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/moderateur': {
@@ -469,14 +435,12 @@ const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   AdminRoute: AdminRoute,
   AgentTerrainRoute: AgentTerrainRoute,
-  ConnexionRoute: ConnexionRoute,
   ConnexionNdeRoute: ConnexionNdeRoute,
   ConnexionNigelecRoute: ConnexionNigelecRoute,
   ConnexionOperationnelleRoute: ConnexionOperationnelleRoute,
   CstRoute: CstRouteWithChildren,
   DashboardRoute: DashboardRoute,
   MairieRoute: MairieRoute,
-  MesSignalementsRoute: MesSignalementsRoute,
   ModerateurRoute: ModerateurRoute,
   ModerationRoute: ModerationRoute,
   NotificationsRoute: NotificationsRoute,
