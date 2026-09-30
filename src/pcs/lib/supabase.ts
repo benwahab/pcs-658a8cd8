@@ -6,6 +6,5 @@ import type { Database } from "../types/database";
 // only one auth session in the app. Typed with the PCS database types.
 export const supabase: SupabaseClient<Database> | null =
   projectClient as unknown as SupabaseClient<Database>;
-export const isSupabaseConfigured = Boolean(
-  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-);
+// The project client always has the official PCS URL/key (with public fallbacks).
+export const isSupabaseConfigured = true;
