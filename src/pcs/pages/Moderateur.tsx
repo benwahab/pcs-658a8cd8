@@ -5,7 +5,12 @@ import {supabase} from "@/pcs/lib/supabase";
 async function moderation(body:Record<string,unknown>={action:"list"}){
  if(!supabase)throw new Error("Supabase non configuré.");
  const {data,error}=await supabase.functions.invoke("cst-media-moderation",{body});
- if(error||data?.error)throw new Error(data?.error??"Service de modération indisponible.");
+ if(error){
+  const e=new Error(data?.error??"Service de modération indisponible.");
+  (e as Error & {status?:number}).status=error.context?.status;
+  throw e;
+ }
+ if(data?.error)throw new Error(data.error);
  return data as any;
 }
 
@@ -25,7 +30,7 @@ export default function Moderateur(){
    setRegion(result.region?.name??"Toutes les régions");
    setError("");
   }catch(e){
-   await supabase?.auth.signOut();
+   if((e as Error & {status?:number})?.status===401||(e as Error & {status?:number})?.status===403)await supabase?.auth.signOut();
    setError(e instanceof Error?e.message:"Accès modérateur refusé.");
   }
  }
