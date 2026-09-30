@@ -41,6 +41,30 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_login_rate_limits: {
+        Row: {
+          attempts: number
+          blocked_until: string | null
+          key_hash: string
+          updated_at: string
+          window_started_at: string
+        }
+        Insert: {
+          attempts?: number
+          blocked_until?: string | null
+          key_hash: string
+          updated_at?: string
+          window_started_at?: string
+        }
+        Update: {
+          attempts?: number
+          blocked_until?: string | null
+          key_hash?: string
+          updated_at?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -146,6 +170,234 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cst_accounts: {
+        Row: {
+          created_at: string
+          email: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cst_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          code: string
+          created_at: string
+          id: string
+          message: string
+          observed_at: string
+          resolved_at: string | null
+          service: string
+          severity: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          message: string
+          observed_at?: string
+          resolved_at?: string | null
+          service: string
+          severity: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          message?: string
+          observed_at?: string
+          resolved_at?: string | null
+          service?: string
+          severity?: string
+        }
+        Relationships: []
+      }
+      cst_auth_rate_limits: {
+        Row: {
+          attempts: number
+          blocked_until: string | null
+          key_hash: string
+          window_started_at: string
+        }
+        Insert: {
+          attempts?: number
+          blocked_until?: string | null
+          key_hash: string
+          window_started_at?: string
+        }
+        Update: {
+          attempts?: number
+          blocked_until?: string | null
+          key_hash?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
+      cst_frontend_events: {
+        Row: {
+          browser: string | null
+          device: string | null
+          event_type: string
+          id: number
+          message: string | null
+          metadata: Json
+          occurred_at: string
+          page: string | null
+          trace_id: string | null
+        }
+        Insert: {
+          browser?: string | null
+          device?: string | null
+          event_type: string
+          id?: never
+          message?: string | null
+          metadata?: Json
+          occurred_at?: string
+          page?: string | null
+          trace_id?: string | null
+        }
+        Update: {
+          browser?: string | null
+          device?: string | null
+          event_type?: string
+          id?: never
+          message?: string | null
+          metadata?: Json
+          occurred_at?: string
+          page?: string | null
+          trace_id?: string | null
+        }
+        Relationships: []
+      }
+      cst_incidents: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          impact: string | null
+          incident_code: string
+          resolution: string | null
+          service: string
+          severity: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          impact?: string | null
+          incident_code: string
+          resolution?: string | null
+          service: string
+          severity: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          impact?: string | null
+          incident_code?: string
+          resolution?: string | null
+          service?: string
+          severity?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      cst_registration_lock: {
+        Row: {
+          id: number
+          registered_at: string
+        }
+        Insert: {
+          id?: number
+          registered_at?: string
+        }
+        Update: {
+          id?: number
+          registered_at?: string
+        }
+        Relationships: []
+      }
+      cst_request_events: {
+        Row: {
+          endpoint: string
+          error_class: string | null
+          id: number
+          latency_ms: number | null
+          metadata: Json
+          method: string
+          occurred_at: string
+          source: string
+          status_code: number | null
+          trace_id: string
+          user_hash: string | null
+        }
+        Insert: {
+          endpoint: string
+          error_class?: string | null
+          id?: never
+          latency_ms?: number | null
+          metadata?: Json
+          method: string
+          occurred_at?: string
+          source?: string
+          status_code?: number | null
+          trace_id: string
+          user_hash?: string | null
+        }
+        Update: {
+          endpoint?: string
+          error_class?: string | null
+          id?: never
+          latency_ms?: number | null
+          metadata?: Json
+          method?: string
+          occurred_at?: string
+          source?: string
+          status_code?: number | null
+          trace_id?: string
+          user_hash?: string | null
+        }
+        Relationships: []
+      }
+      cst_telemetry_rate_limits: {
+        Row: {
+          events: number
+          key_hash: string
+          window_started_at: string
+        }
+        Insert: {
+          events?: number
+          key_hash: string
+          window_started_at?: string
+        }
+        Update: {
+          events?: number
+          key_hash?: string
+          window_started_at?: string
+        }
+        Relationships: []
       }
       departments: {
         Row: {
@@ -1509,6 +1761,34 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      consume_agent_login_rate_limit: {
+        Args: {
+          p_block_seconds?: number
+          p_key_hash: string
+          p_max_attempts?: number
+          p_window_seconds?: number
+        }
+        Returns: boolean
+      }
+      consume_cst_auth_rate_limit: {
+        Args: {
+          p_block_seconds?: number
+          p_key_hash: string
+          p_max_attempts?: number
+          p_window_seconds?: number
+        }
+        Returns: boolean
+      }
+      consume_cst_telemetry_rate: {
+        Args: {
+          p_key_hash: string
+          p_max_events?: number
+          p_window_seconds?: number
+        }
+        Returns: boolean
+      }
+      cst_database_metrics: { Args: never; Returns: Json }
+      cst_system_snapshot: { Args: never; Returns: Json }
       has_role: { Args: { required_role: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       mairie_transmit_report: {
