@@ -24,3 +24,23 @@ export async function listAssignableAgents(){if(!supabase)throw new Error("Supab
 export async function assignReport(reportId:string,departmentId:string,agentId?:string|null){if(!supabase)throw new Error("Supabase n’est pas configuré.");const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error("Session requise.");const {data:existing}=await supabase.from("report_assignments").select("id").eq("report_id",reportId).is("unassigned_at",null).limit(1);if(existing?.[0]){const {error}=await supabase.from("report_assignments").update({unassigned_at:new Date().toISOString()}).eq("id",existing[0].id);if(error)throw error;}const {error}=await supabase.from("report_assignments").insert({report_id:reportId,department_id:departmentId,agent_id:agentId??null,assigned_by:user.id});if(error)throw error;const {error:updateError}=await supabase.from("reports").update({department_id:departmentId}).eq("id",reportId);if(updateError)throw updateError;}
 export async function addInternalComment(reportId:string,body:string){if(!supabase)throw new Error("Supabase n’est pas configuré.");const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error("Session requise.");const clean=body.trim();if(!clean||clean.length>5000)throw new Error("La note doit contenir entre 1 et 5000 caractères.");const {error}=await supabase.from("report_comments").insert({report_id:reportId,author_id:user.id,body:clean,visibility:"internal"});if(error)throw error;}
 export async function listReportComments(reportId:string){if(!supabase)throw new Error("Supabase n’est pas configuré.");const {data,error}=await supabase.from("report_comments").select("id,author_id,body,visibility,created_at").eq("report_id",reportId).eq("visibility","internal").order("created_at",{ascending:true});if(error)throw error;return data??[];}
+
+export type OrganizationSignupRequest={
+ id:string;user_id:string;organization_id:string;organization_name:string;organization_code:string;
+ email:string;full_name:string;status:"pending"|"approved"|"rejected";review_note:string|null;reviewed_by:string|null;reviewed_at:string|null;created_at:string;
+};
+export async function listOrganizationSignupRequests(){
+ if(!supabase)throw new Error("Supabase n’est pas configuré.");
+ const {data,error}=await supabase.rpc("list_organization_signup_requests");
+ if(error)throw error; return (data??[]) as OrganizationSignupRequest[];
+}
+export async function approveOrganizationSignupRequest(id:string,note?:string){
+ if(!supabase)throw new Error("Supabase n’est pas configuré.");
+ const {data,error}=await supabase.rpc("approve_organization_signup_request",{p_request_id:id,p_note:note?.trim()||null});
+ if(error)throw error; return data;
+}
+export async function rejectOrganizationSignupRequest(id:string,note:string){
+ if(!supabase)throw new Error("Supabase n’est pas configuré.");
+ const {data,error}=await supabase.rpc("reject_organization_signup_request",{p_request_id:id,p_note:note.trim()});
+ if(error)throw error; return data;
+}
