@@ -13,13 +13,19 @@ import Moderation from "./pages/Moderation";
 import {getMyOrganizationMembership} from "./services/organization";
 import {canOperate,getMyRoles,type AppRole} from "./services/permissions";
 import {uploadReportMedia,createReportMediaUrl,validateCitizenVideo,CITIZEN_VIDEO_MAX_SECONDS} from "./services/media";
+let activeFeedVideo:HTMLVideoElement|null=null;
+
 function LazyFeedVideo({src}:{src:string}){
  const ref=useRef<HTMLVideoElement|null>(null);
  const [active,setActive]=useState(false);
+ const [autoplayAllowed,setAutoplayAllowed]=useState(true);
  useEffect(()=>{
+  const connection=(navigator as Navigator & {connection?:{saveData?:boolean;effectiveType?:string}}).connection;
+  const slowNetwork=connection?.saveData===true||connection?.effectiveType==="slow-2g"||connection?.effectiveType==="2g";
+  setAutoplayAllowed(!slowNetwork&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  if(!("IntersectionObserver" in window)){setActive(true);return}
   const video=ref.current;
   if(!video)return;
-  if(!("IntersectionObserver" in window)){setActive(true);return}
   const observer=new IntersectionObserver(([entry])=>setActive(Boolean(entry?.isIntersecting)),{rootMargin:"180px 0px",threshold:0.35});
   observer.observe(video);
   return()=>observer.disconnect();
@@ -27,14 +33,25 @@ function LazyFeedVideo({src}:{src:string}){
  useEffect(()=>{
   const video=ref.current;
   if(!video)return;
+  const onVisibility=()=>{if(document.visibilityState!=="visible")video.pause()};
+  document.addEventListener("visibilitychange",onVisibility);
   if(active){
    video.preload="metadata";
-   void video.play().catch(()=>undefined);
+   if(autoplayAllowed){
+    if(activeFeedVideo&&activeFeedVideo!==video)activeFeedVideo.pause();
+    activeFeedVideo=video;
+    void video.play().catch(()=>undefined);
+   }
   }else{
    video.pause();
+   if(activeFeedVideo===video)activeFeedVideo=null;
   }
- },[active]);
- return <video ref={ref} src={active?src:undefined} controls playsInline muted loop preload="none" aria-label="Vidéo du signalement"/>;
+  return()=>{
+   document.removeEventListener("visibilitychange",onVisibility);
+   if(activeFeedVideo===video)activeFeedVideo=null;
+  };
+ },[active,autoplayAllowed]);
+ return <video ref={ref} src={active?src:undefined} controls playsInline muted loop preload="none" aria-label="Vidéo du média"/>;
 }
 
 export function MediaCarousel({media}:{media:{id:string;url:string;media_type:string;media_role?:string}[]}){
