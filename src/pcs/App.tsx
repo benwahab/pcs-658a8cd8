@@ -190,7 +190,7 @@ export function ReportForm(){
    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280,max:1280},height:{ideal:720,max:720}},audio:true});
    streamRef.current=stream;
    const mime=["video/webm;codecs=vp8,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t))??"";
-   const recorder=new MediaRecorder(stream,{...(mime?{mimeType:mime}:{}),videoBitsPerSecond:2500000,audioBitsPerSecond:128000});
+   const recorder=new MediaRecorder(stream,{...(mime?{mimeType:mime}:{}),videoBitsPerSecond:1600000,audioBitsPerSecond:96000});
    const chunks:Blob[]=[];recorderRef.current=recorder;setRecording(true);setRecordingSeconds(0);
    recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
    recorder.onerror=()=>{setError("La caméra n’a pas pu enregistrer la vidéo.");cleanupCamera()};
@@ -199,13 +199,13 @@ export function ReportForm(){
     const file=new File([blob],"signalement-video."+ext,{type:type.split(";")[0]});
     cleanupCamera();if(file.size>50*1024*1024){setError("Vidéo trop volumineuse. Maximum : 50 Mo.");setVideo(null);return}setVideo(file);
    };
-   // Keep the recording as one WebM blob so Chromium can write final duration metadata when supported.\n   recorder.start();
+   // Keep the recording as one WebM blob so Chromium can write final duration metadata when supported.\n   recorder.start(1000);
    const started=Date.now();
-   intervalRef.current=window.setInterval(()=>setRecordingSeconds(Math.min(10,Math.floor((Date.now()-started)/1000))),200) as unknown as number;
+   intervalRef.current=window.setInterval(()=>setRecordingSeconds(Math.min(9,Math.floor((Date.now()-started)/1000))),200) as unknown as number;
    timerRef.current=window.setTimeout(()=>{
-    setRecordingSeconds(10);
+    setRecordingSeconds(9);
     if(recorder.state==="recording")recorder.stop();
-   },10000) as unknown as number;
+   },9500) as unknown as number;
   }catch(e){cleanupCamera();setError(e instanceof Error?e.message:"Impossible d’accéder à la caméra.")}
  }
  async function submit(e:FormEvent){
@@ -226,7 +226,7 @@ export function ReportForm(){
   <fieldset className="mediaPicker" data-pcs-tour="photo"><legend>La vidéo ne peut pas dépasser 10 secondes</legend>
    <div className="mediaPickerRow"><button type="button" className="mediaPickBtn" onClick={()=>photoInputRef.current?.click()}>📷 Prendre une photo</button><input ref={photoInputRef} hidden type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={e=>{addPhotos(e.target.files);e.target.value=""}}/></div>
    <div className="mediaPickerRow"><button type="button" className="mediaPickBtn" onClick={()=>void startVideoCapture()} disabled={recording}>{recording?"🎥 Enregistrement… "+recordingSeconds+" s":"🎥 Filmer (10 s)"}</button></div>
-   {recording&&<div className="cameraCapture"><video ref={cameraPreviewRef} autoPlay muted playsInline/><p>Enregistrement automatique jusqu’à 10 secondes.</p></div>}
+   {recording&&<div className="cameraCapture"><video ref={cameraPreviewRef} autoPlay muted playsInline/><p>Arrêt automatique à 9,5 secondes pour finaliser la vidéo sans bloquer le téléphone.</p></div>}
    {(files.length>0||video)&&<ul className="mediaChosen">{files.map((f,i)=><li key={i}>📷 {f.name}<button type="button" onClick={()=>setFiles(files.filter((_,j)=>j!==i))}>×</button></li>)}{video&&<li>🎥 {video.name}<button type="button" onClick={()=>setVideo(null)}>×</button></li>}</ul>}
   </fieldset>
   {error&&<p className="error">{error}</p>}<button data-pcs-tour="submit-report" disabled={saving||recording} className="button primary" type="submit">{saving?"Envoi en cours…":"Envoyer le signalement"}</button></form></section>
