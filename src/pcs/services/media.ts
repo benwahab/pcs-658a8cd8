@@ -1,19 +1,57 @@
 import { supabase } from "../lib/supabase";
 
 const MAX_IMAGE_SIZE=8*1024*1024;
+const MAX_VIDEO_SIZE=50*1024*1024;
 const ALLOWED_IMAGES=["image/jpeg","image/png","image/webp"];
 const ALLOWED_VIDEOS=["video/mp4","video/webm","video/quicktime"];
+const VIDEO_EXTENSIONS:Record<string,string[]> = {
+ "video/mp4":["mp4","m4v"],
+ "video/webm":["webm"],
+ "video/quicktime":["mov","qt"],
+};
 
 export const CITIZEN_VIDEO_MAX_SECONDS=10;
+
 export function getVideoDuration(file:File):Promise<number>{
- return new Promise((resolve,reject)=>{const v=document.createElement("video");v.preload="metadata";const url=URL.createObjectURL(file);v.onloadedmetadata=()=>{URL.revokeObjectURL(url);resolve(v.duration)};v.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Vidéo illisible."))};v.src=url;});
+ return new Promise((resolve,reject)=>{
+  const v=document.createElement("video");
+  v.preload="metadata";
+  const url=URL.createObjectURL(file);
+  const cleanup=()=>URL.revokeObjectURL(url);
+  v.onloadedmetadata=()=>{cleanup();resolve(v.duration)};
+  v.onerror=()=>{cleanup();reject(new Error("Vidéo illisible ou format non pris en charge."))};
+  v.src=url;
+ });
 }
+
+async function detectVideoContainer(file:File):Promise<"mp4"|"webm"|null>{
+ const bytes=new Uint8Array(await file.slice(0,32).arrayBuffer());
+ if(bytes.length>=4&&bytes[0]===0x1a&&bytes[1]===0x45&&bytes[2]===0xdf&&bytes[3]===0xa3)return "webm";
+ if(bytes.length>=12&&bytes[4]===0x66&&bytes[5]===0x74&&bytes[6]===0x79&&bytes[7]===0x70)return "mp4";
+ return null;
+}
+
+export async function validateCitizenVideo(file:File){
+ if(!ALLOWED_VIDEOS.includes(file.type))throw new Error("Type vidéo non autorisé. Utilisez MP4, WebM ou MOV.");
+ if(file.size<=0||file.size>MAX_VIDEO_SIZE)throw new Error("Vidéo trop volumineuse. Maximum : 50 Mo.");
+ const ext=file.name.split(".").pop()?.toLowerCase()||"";
+ const allowedExts=VIDEO_EXTENSIONS[file.type]??[];
+ if(!allowedExts.includes(ext))throw new Error("L’extension de la vidéo ne correspond pas à son type MIME.");
+ const container=await detectVideoContainer(file);
+ if(!container)throw new Error("Le fichier vidéo n’est pas reconnu comme un conteneur MP4/WebM valide.");
+ if((file.type==="video/webm"&&container!=="webm")||(file.type!=="video/webm"&&container!=="mp4"))throw new Error("Le contenu réel de la vidéo ne correspond pas à son type déclaré.");
+ const duration=await getVideoDuration(file);
+ if(!Number.isFinite(duration)||duration<=0)throw new Error("Impossible de déterminer la durée réelle de la vidéo.");
+ if(duration>CITIZEN_VIDEO_MAX_SECONDS+0.25)throw new Error("La vidéo doit durer "+CITIZEN_VIDEO_MAX_SECONDS+" secondes maximum (celle-ci dure "+Math.ceil(duration)+" s).");
+ return {duration,container};
+}
+
 export async function uploadReportMedia(reportId:string,file:File){
  if(!supabase)throw new Error("Supabase n’est pas configuré.");
  const isVideo=ALLOWED_VIDEOS.includes(file.type);
  if(!ALLOWED_IMAGES.includes(file.type)&&!isVideo)throw new Error("Type de fichier non autorisé. Utilisez JPG, PNG, WebP ou une vidéo MP4/WebM/MOV.");
  if(!isVideo&&file.size>MAX_IMAGE_SIZE)throw new Error("Photo trop volumineuse. Maximum : 8 Mo.");
- if(isVideo&&file.size>50*1024*1024)throw new Error("Vidéo trop volumineuse. Maximum : 50 Mo.");
+ if(isVideo)await validateCitizenVideo(file);
  const ext=file.name.split(".").pop()?.toLowerCase()||(isVideo?"mp4":"jpg");
  const path=reportId+"/"+crypto.randomUUID()+"."+ext;
  const {error}=await supabase.storage.from("report-media").upload(path,file,{contentType:file.type,upsert:false});
