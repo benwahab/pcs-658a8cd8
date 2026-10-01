@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ProtectedOperations } from "@/pcs/App";
+import ProtectedOperations from "@/pcs/pages/ProtectedOperations";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
