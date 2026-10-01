@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ReportForm } from "@/pcs/App";
+import ReportForm from "@/pcs/pages/ReportForm";
 
 export const Route = createFileRoute("/signaler")({
   head: () => ({
