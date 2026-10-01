@@ -1,12 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { supabase } from "../lib/supabase";
-import { listCategories, submitCitizenReport } from "../lib/reports";
-import type { Category } from "../types";
-import { listAllCommunes, listRegions } from "../services/mairie";
 
-type Region = { id: string; name: string };
-type Commune = { id: string; name: string; region_id: string };
+import { supabase } from "../lib/supabase";
+import {
+  listCategories,
+  submitCitizenReport,
+} from "../lib/reports";
+import type { Category, Region } from "../types";
+import {
+  listAllCommunes,
+  listRegions,
+} from "../services/mairie";
+import {
+  MAX_VIDEO_SIZE_BYTES,
+  validateCitizenVideo,
+} from "../services/media";
+
+interface Commune {
+  id: string;
+  name: string;
+  region_id: string;
+}
+
+const MAX_PHOTOS = 5;
+const MAX_TITLE_LENGTH = 120;
+const MAX_DESCRIPTION_LENGTH = 5000;
+const MAX_LOCATION_LENGTH = 250;
+const CAPTURE_VIDEO_MAX_SECONDS = 8;
+const CAPTURE_VIDEO_STOP_MS = 8500;
 
 export default function ReportForm() {
   const photoInputRef = useRef<HTMLInputElement | null>(null);
@@ -20,10 +41,11 @@ export default function ReportForm() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
-  const [region, setRegion] = useState("");
-  const [commune, setCommune] = useState("");
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [allCommunes, setAllCommunes] = useState<Commune[]>([]);
+
+  const [region, setRegion] = useState("");
+  const [commune, setCommune] = useState("");
   const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -31,6 +53,7 @@ export default function ReportForm() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     null,
   );
+
   const [files, setFiles] = useState<File[]>([]);
   const [video, setVideo] = useState<File | null>(null);
   const [error, setError] = useState("");
@@ -47,19 +70,21 @@ export default function ReportForm() {
         setRegions(regionList);
         setAllCommunes(communeList);
       })
-      .catch((error) =>
+      .catch((loadError) => {
         setError(
-          error instanceof Error
-            ? error.message
+          loadError instanceof Error
+            ? loadError.message
             : "Impossible de charger les catégories, régions et localités.",
-        ),
-      );
+        );
+      });
   }, []);
 
   useEffect(() => {
     setCommune("");
     setCommunes(
-      region ? allCommunes.filter((item) => item.region_id === region) : [],
+      region
+        ? allCommunes.filter((item) => item.region_id === region)
+        : [],
     );
   }, [region, allCommunes]);
 
@@ -68,6 +93,7 @@ export default function ReportForm() {
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+
     if (intervalRef.current !== null) {
       window.clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -77,6 +103,7 @@ export default function ReportForm() {
   function detachPreview() {
     const videoElement = cameraPreviewRef.current;
     if (!videoElement) return;
+
     videoElement.pause();
     videoElement.srcObject = null;
   }
@@ -114,7 +141,7 @@ export default function ReportForm() {
       return;
     }
 
-    if (file.size > 50 * 1024 * 1024) {
+    if (file.size > MAX_VIDEO_SIZE_BYTES) {
       setError("Vidéo trop volumineuse. Maximum : 50 Mo.");
       setVideo(null);
       return;
@@ -136,7 +163,7 @@ export default function ReportForm() {
       try {
         recorder.requestData();
       } catch {
-        // Browser may already be finalizing the last chunk.
+        // Le navigateur peut déjà finaliser le dernier fragment.
       }
 
       try {
@@ -146,12 +173,16 @@ export default function ReportForm() {
         cleanupCamera();
         setFinalizingVideo(false);
       }
-    } else if (recorder.state === "inactive") {
-      void finalizeInactiveRecorder(recorder);
+
+      return;
+    }
+
+    if (recorder.state === "inactive") {
+      finalizeInactiveRecorder(recorder);
     }
   }
 
-  async function finalizeInactiveRecorder(recorder: MediaRecorder) {
+  function finalizeInactiveRecorder(recorder: MediaRecorder) {
     const type = recorder.mimeType || "video/webm";
     const blob = new Blob(chunksRef.current, { type });
     const file = new File([blob], "signalement-video.webm", {
@@ -203,7 +234,9 @@ export default function ReportForm() {
       stoppingRef.current = false;
 
       recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunksRef.current.push(event.data);
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
       };
 
       recorder.onerror = () => {
@@ -213,7 +246,7 @@ export default function ReportForm() {
       };
 
       recorder.onstop = () => {
-        void finalizeInactiveRecorder(recorder);
+        finalizeInactiveRecorder(recorder);
       };
 
       setRecording(true);
@@ -221,16 +254,21 @@ export default function ReportForm() {
       setRecordingSeconds(0);
       recorder.start(500);
 
-      const started = Date.now();
-      intervalRef.current = window.setInterval(
-        () =>
-          setRecordingSeconds(
-            Math.min(8, Math.floor((Date.now() - started) / 1000)),
-          ),
-        200,
-      );
+      const startedAt = Date.now();
 
-      timerRef.current = window.setTimeout(() => stopRecording(), 8500);
+      intervalRef.current = window.setInterval(() => {
+        setRecordingSeconds(
+          Math.min(
+            CAPTURE_VIDEO_MAX_SECONDS,
+            Math.floor((Date.now() - startedAt) / 1000),
+          ),
+        );
+      }, 200);
+
+      timerRef.current = window.setTimeout(
+        stopRecording,
+        CAPTURE_VIDEO_STOP_MS,
+      );
 
       requestAnimationFrame(() => {
         const videoElement = cameraPreviewRef.current;
@@ -243,12 +281,12 @@ export default function ReportForm() {
         videoElement.srcObject = stream;
         void videoElement.play().catch(() => undefined);
       });
-    } catch (error) {
+    } catch (captureError) {
       cleanupCamera();
       setFinalizingVideo(false);
       setError(
-        error instanceof Error
-          ? error.message
+        captureError instanceof Error
+          ? captureError.message
           : "Impossible d’accéder à la caméra.",
       );
     }
@@ -257,13 +295,14 @@ export default function ReportForm() {
   useEffect(
     () => () => {
       clearTimers();
+
       const recorder = recorderRef.current;
 
       if (recorder && recorder.state === "recording") {
         try {
           recorder.stop();
         } catch {
-          // Ignore cleanup errors during unmount.
+          // Ignore les erreurs pendant le démontage du composant.
         }
       }
 
@@ -283,22 +322,27 @@ export default function ReportForm() {
         });
         setLocation((value) => value || "Position GPS enregistrée");
       },
-      () =>
+      () => {
         setError(
           "La position GPS est nécessaire pour envoyer le signalement. Autorisez la localisation puis réessayez.",
-        ),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+        );
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      },
     );
   }
 
   function addPhotos(list: FileList | null) {
     const next = [...files, ...Array.from(list ?? [])];
 
-    if (next.length > 5) {
+    if (next.length > MAX_PHOTOS) {
       setError("Maximum 5 photos par signalement.");
     }
 
-    setFiles(next.slice(0, 5));
+    setFiles(next.slice(0, MAX_PHOTOS));
   }
 
   async function submit(event: FormEvent) {
@@ -347,14 +391,27 @@ export default function ReportForm() {
       return;
     }
 
-    if (files.length > 5) {
+    if (files.length > MAX_PHOTOS) {
       setError("Maximum 5 photos par signalement.");
       return;
     }
 
-    if (video && video.size > 50 * 1024 * 1024) {
-      setError("Vidéo trop volumineuse. Maximum : 50 Mo.");
-      return;
+    if (video) {
+      if (video.size > MAX_VIDEO_SIZE_BYTES) {
+        setError("Vidéo trop volumineuse. Maximum : 50 Mo.");
+        return;
+      }
+
+      try {
+        await validateCitizenVideo(video);
+      } catch (videoError) {
+        setError(
+          videoError instanceof Error
+            ? videoError.message
+            : "La vidéo n’est pas valide.",
+        );
+        return;
+      }
     }
 
     setSaving(true);
@@ -372,11 +429,12 @@ export default function ReportForm() {
         photos: files,
         video,
       });
+
       setSubmitted(true);
-    } catch (error) {
+    } catch (submitError) {
       setError(
-        error instanceof Error
-          ? error.message
+        submitError instanceof Error
+          ? submitError.message
           : "Erreur lors de l’envoi du signalement.",
       );
     } finally {
@@ -470,7 +528,7 @@ export default function ReportForm() {
           <input
             required
             minLength={5}
-            maxLength={120}
+            maxLength={MAX_TITLE_LENGTH}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Ex. Caniveau bouché"
@@ -482,7 +540,7 @@ export default function ReportForm() {
           <textarea
             required
             minLength={10}
-            maxLength={5000}
+            maxLength={MAX_DESCRIPTION_LENGTH}
             rows={5}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
@@ -493,7 +551,7 @@ export default function ReportForm() {
         <label>
           Zone / adresse
           <input
-            maxLength={250}
+            maxLength={MAX_LOCATION_LENGTH}
             value={location}
             onChange={(event) => setLocation(event.target.value)}
             placeholder="Quartier, rue, repère…"
@@ -516,7 +574,9 @@ export default function ReportForm() {
         )}
 
         <fieldset className="mediaPicker" data-pcs-tour="photo">
-          <legend>La vidéo ne peut pas dépasser 8 secondes</legend>
+          <legend>
+            La vidéo ne peut pas dépasser {CAPTURE_VIDEO_MAX_SECONDS} secondes
+          </legend>
 
           <div className="mediaPickerRow">
             <button
@@ -527,6 +587,7 @@ export default function ReportForm() {
             >
               <span aria-hidden="true">📷</span> Prendre une photo
             </button>
+
             <input
               ref={photoInputRef}
               hidden
@@ -551,7 +612,7 @@ export default function ReportForm() {
                 ? `🎥 Enregistrement… ${recordingSeconds} s`
                 : finalizingVideo
                   ? "⏳ Finalisation de la vidéo…"
-                  : "🎥 Filmer (8 s)"}
+                  : `🎥 Filmer (${CAPTURE_VIDEO_MAX_SECONDS} s)`}
             </button>
           </div>
 
@@ -559,8 +620,8 @@ export default function ReportForm() {
             <div className="cameraCapture">
               <video ref={cameraPreviewRef} autoPlay muted playsInline />
               <p>
-                Arrêt automatique à 8 secondes. La vidéo est ensuite finalisée
-                avant l’envoi.
+                Arrêt automatique à {CAPTURE_VIDEO_MAX_SECONDS} secondes. La
+                vidéo est ensuite finalisée avant l’envoi.
               </p>
             </div>
           )}
@@ -574,13 +635,15 @@ export default function ReportForm() {
           {(files.length > 0 || video) && (
             <ul className="mediaChosen">
               {files.map((file, index) => (
-                <li key={`${file.name}-${index}`}>
+                <li key={file.name + "-" + index}>
                   📷 {file.name}
                   <button
                     type="button"
                     onClick={() =>
                       setFiles((current) =>
-                        current.filter((_, itemIndex) => itemIndex !== index),
+                        current.filter(
+                          (_, itemIndex) => itemIndex !== index,
+                        ),
                       )
                     }
                   >
