@@ -46,5 +46,5 @@ Deno.serve(async(req)=>{
     const {data:mairie,error:me}=await db.from("mairies").insert({name,region_id:b.region_id,commune_id:b.commune_id,account_user_id:uid,phone:phone||null,mayor_name:mayorName||null,latitude:b.latitude??null,longitude:b.longitude??null,location_label:locationLabel||null,is_active:false}).select("id,name,region_id,commune_id,is_active").single();
     if(me){await db.auth.admin.deleteUser(uid);return json({error:me.message.includes("mairies_name_key")||me.message.includes("mairies_commune_id_unique")?"Cette mairie/localité est déjà enregistrée.":"Création de la mairie impossible."},400)}
     return json({mairie,status:"pending",message:"Demande reçue. Le compte sera activé après validation de l'habilitation de la mairie."},200);
-  }catch(e){return json({error:e instanceof Error?e.message:"Erreur interne"},500)}
+  }catch(e){console.error("mairie-signup",e);return json({error:"Erreur interne"},500)}
 });

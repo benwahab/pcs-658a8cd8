@@ -28,6 +28,11 @@ Deno.serve(async(req)=>{
   if(body.step==="identify"||body.lookup===true){
    if(!phone)return json({error:"Connexion invalide."},400);
 
+   // Limite par numéro seul : l'IP (en-tête falsifiable) ne suffit pas à empêcher l'énumération.
+   const phoneKey=await sha256("agent-identify-phone|"+phone);
+   const {data:phoneAllowed,error:phoneRateError}=await admin.rpc("consume_agent_login_rate_limit",{p_key_hash:phoneKey,p_max_attempts:15,p_window_seconds:600,p_block_seconds:900});
+   if(phoneRateError||phoneAllowed===false)return json({error:"Trop de tentatives. Réessayez plus tard."},429);
+
    const rateKey=await sha256("agent-identify|"+phone+"|"+clientKey);
    const {data:allowed,error:rateError}=await admin.rpc("consume_agent_login_rate_limit",{p_key_hash:rateKey,p_max_attempts:5,p_window_seconds:600,p_block_seconds:900});
    if(rateError||allowed===false)return json({error:"Trop de tentatives. Réessayez plus tard."},429);
@@ -65,5 +70,5 @@ Deno.serve(async(req)=>{
   const {data,error:loginError}=await auth.auth.signInWithPassword({email:internalEmail,password});
   if(loginError||!data.session)return json({error:"Mot de passe incorrect."},401);
   return json({session:data.session,user:data.user});
- }catch(e){return json({error:e instanceof Error?e.message:"Erreur interne"},500)}
+ }catch(e){console.error("agent-login",e);return json({error:"Erreur interne"},500)}
 });
