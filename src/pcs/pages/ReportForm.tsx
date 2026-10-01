@@ -624,10 +624,10 @@ export default function ReportForm() {
               disabled={videoBusy}
             >
               {recording
-                ? `🎥 Enregistrement… ${recordingSeconds} s`
+                ? "🎥 Enregistrement en cours…"
                 : finalizingVideo
                   ? "⏳ Finalisation de la vidéo…"
-                  : `🎥 Filmer (${CAPTURE_VIDEO_MAX_SECONDS} s)`}
+                  : "🎥 Filmer une vidéo"}
             </button>
           </div>
 
