@@ -57,7 +57,6 @@ interface CitizenReportInput {
   region_id: string;
   commune_id: string;
   title: string;
-  description: string;
   location_label?: string | null;
   latitude: number;
   longitude: number;
@@ -83,7 +82,6 @@ export async function submitCitizenReport(
   body.append("region_id", input.region_id);
   body.append("commune_id", input.commune_id);
   body.append("title", input.title);
-  body.append("description", input.description);
   body.append("latitude", String(input.latitude));
   body.append("longitude", String(input.longitude));
 
