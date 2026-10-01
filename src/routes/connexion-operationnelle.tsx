@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { OperationalLogin } from "@/pcs/App";
+import OperationalLogin from "@/pcs/pages/OperationalLogin";
 
 export const Route = createFileRoute("/connexion-operationnelle")({
   head: () => ({
