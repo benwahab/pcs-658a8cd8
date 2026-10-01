@@ -106,21 +106,23 @@ export async function validateCitizenVideo(file: File) {
 
   const duration = await getVideoDuration(file);
 
-  if (!Number.isFinite(duration) || duration <= 0) {
-    throw new Error("Impossible de déterminer la durée réelle de la vidéo.");
+  // Certains navigateurs mobiles renvoient Infinity pour la durée des WebM
+  // MediaRecorder sans métadonnées de durée. Ne pas bloquer ici : l'Edge
+  // Function analyse le conteneur réel et applique la limite stricte côté serveur.
+  if (Number.isFinite(duration) && duration > 0) {
+    if (duration > CITIZEN_VIDEO_MAX_SECONDS + 0.25) {
+      throw new Error(
+        "La vidéo doit durer " +
+          CITIZEN_VIDEO_MAX_SECONDS +
+          " secondes maximum (celle-ci dure " +
+          Math.ceil(duration) +
+          " s).",
+      );
+    }
+    return { duration, container };
   }
 
-  if (duration > CITIZEN_VIDEO_MAX_SECONDS + 0.25) {
-    throw new Error(
-      "La vidéo doit durer " +
-        CITIZEN_VIDEO_MAX_SECONDS +
-        " secondes maximum (celle-ci dure " +
-        Math.ceil(duration) +
-        " s).",
-    );
-  }
-
-  return { duration, container };
+  return { duration: null, container };
 }
 
 export async function createReportMediaUrl(
