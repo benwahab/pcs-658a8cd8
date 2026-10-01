@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "@/pcs/router";
 import { supabase, isSupabaseConfigured } from "./lib/supabase";
-import { getMyRoles, type AppRole } from "./services/permissions";
 import OnboardingTour from "./components/OnboardingTour";
 import BrandLogo from "./components/BrandLogo";
 import { url as pcsLogoUrl } from "@/assets/pcs-logo.png.asset.json";
 
 export function Shell({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
-  const [roles, setRoles] = useState<AppRole[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const isMairie = location.pathname === "/mairie";
@@ -21,19 +19,10 @@ export function Shell({ children }: { children: ReactNode }) {
       .getUser()
       .then(({ data }) => setEmail(data.user?.email ?? null));
 
-    getMyRoles()
-      .then(setRoles)
-      .catch(() => setRoles([]));
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setEmail(session?.user?.email ?? null);
-      if (session) {
-        setRoles(await getMyRoles().catch(() => []));
-      } else {
-        setRoles([]);
-      }
     });
 
     return () => subscription.unsubscribe();
@@ -42,7 +31,6 @@ export function Shell({ children }: { children: ReactNode }) {
   async function logout() {
     await supabase?.auth.signOut();
     setEmail(null);
-    setRoles([]);
     navigate("/");
   }
 
