@@ -1,4 +1,4 @@
-import {useEffect,useMemo,useState} from "react";
+import {useEffect,useMemo,useRef,useState} from "react";
 import {Link,useNavigate} from "@/pcs/router";
 import {supabase} from "@/pcs/lib/supabase";
 
@@ -27,19 +27,19 @@ function Status({value}:{value:string}){return <span className="cstStatus"><Dot 
 
 export function CSTDashboard(){
  const nav=useNavigate();const[data,setData]=useState<any>(null);const[error,setError]=useState("");const[last,setLast]=useState("");const[traceFilter,setTraceFilter]=useState("");const[mediaQueue,setMediaQueue]=useState<any[]>([]);const[mediaBusy,setMediaBusy]=useState(false);const[rejectingId,setRejectingId]=useState("");const[rejectReason,setRejectReason]=useState("");
- const [queueLoadedAt,setQueueLoadedAt]=useState(0);
+ const queueLoadedAt=useRef(0);
  const refreshQueue=async(forceUrlRefresh=false)=>{
   const result=await mediaModeration({action:"list"});
   const now=Date.now();
   setMediaQueue(previous=>{
    const oldById=new Map(previous.map((item:any)=>[item.id,item]));
-   const refreshUrls=forceUrlRefresh||now-queueLoadedAt>=12*60*1000;
+   const refreshUrls=forceUrlRefresh||now-queueLoadedAt.current>=12*60*1000;
    return (result?.items??[]).map((item:any)=>{
     const old:any=oldById.get(item.id);
     return old&&!refreshUrls&&old.preview_url?{...item,preview_url:old.preview_url}:item;
    });
   });
-  setQueueLoadedAt(now);
+  queueLoadedAt.current=now;
  };
  useEffect(()=>{
   let active=true;
