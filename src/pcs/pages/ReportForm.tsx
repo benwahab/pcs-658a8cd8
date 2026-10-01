@@ -400,6 +400,11 @@ export default function ReportForm() {
       return;
     }
 
+    if (files.length === 0 && !video) {
+      setError("Ajoutez au moins une photo ou une vidéo au signalement.");
+      return;
+    }
+
     if (files.length > MAX_PHOTOS) {
       setError("Maximum 5 photos par signalement.");
       return;
