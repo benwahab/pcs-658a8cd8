@@ -206,7 +206,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
             })),
         );
 
-        if (!cancelled) setMedia(urls);
+        if (!cancelled) {
+          setMedia(urls.sort((a, b) => Number(b.media_type.startsWith("video")) - Number(a.media_type.startsWith("video"))));
+        }
       } catch {
         if (!cancelled) setMedia([]);
       }
@@ -220,6 +222,14 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   return (
     <article ref={slideRef} className="citizenSlide citizenSlideTrack">
       <div className="slideContent">
+        {mediaReady && media.length > 0 ? (
+          <MediaCarousel media={media} />
+        ) : mediaReady ? null : (
+          <div className="mediaCarousel mediaCarouselPlaceholder" aria-hidden="true">
+            <div className="mediaCarouselItem" />
+          </div>
+        )}
+
         <p className="eyebrow feedEyebrow">
           {report.status ? statusLabels[report.status] : "Signalement"}
         </p>
@@ -232,7 +242,6 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         </div>
 
         <h2>{report.title}</h2>
-        <p>{report.description}</p>
 
         {report.location_label && (
           <p>
@@ -245,24 +254,6 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
             <strong>Résolution :</strong> {report.resolution_note}
           </p>
         )}
-
-        {mediaReady ? (
-          <MediaCarousel media={media} />
-        ) : (
-          <div
-            className="mediaCarousel mediaCarouselPlaceholder"
-            aria-hidden="true"
-          >
-            <div className="mediaCarouselItem" />
-          </div>
-        )}
-
-        <Link
-          className="feedPrimary"
-          to={report.id ? `/signalement/${report.id}` : "/"}
-        >
-          Voir le signalement
-        </Link>
       </div>
     </article>
   );
