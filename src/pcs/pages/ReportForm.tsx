@@ -24,7 +24,6 @@ interface Commune {
 
 const MAX_PHOTOS = 5;
 const MAX_TITLE_LENGTH = 120;
-const MAX_DESCRIPTION_LENGTH = 5000;
 const MAX_LOCATION_LENGTH = 250;
 const CAPTURE_VIDEO_MAX_SECONDS = 8;
 const CAPTURE_VIDEO_STOP_MS = 8500;
@@ -48,7 +47,6 @@ export default function ReportForm() {
   const [commune, setCommune] = useState("");
   const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     null,
@@ -200,6 +198,34 @@ export default function ReportForm() {
 
     resetRecorder();
     finishVideo(file);
+  }
+
+  async function requestPhotoCameraPermission() {
+    setError("");
+    if (videoBusy) return;
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError("L’accès à la caméra n’est pas disponible. Vérifiez les autorisations du navigateur puis réessayez.");
+      return;
+    }
+
+    try {
+      // Demande explicitement l'autorisation caméra au clic sur « Prendre une photo ».
+      const permissionStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } },
+        audio: false,
+      });
+      permissionStream.getTracks().forEach((track) => track.stop());
+      photoInputRef.current?.click();
+    } catch (captureError) {
+      setError(
+        captureError instanceof Error
+          ? captureError.name === "NotAllowedError" || captureError.name === "PermissionDeniedError"
+            ? "Autorisez l’accès à la caméra dans les paramètres du navigateur ou du téléphone, puis réessayez."
+            : captureError.message
+          : "Impossible d’accéder à la caméra. Vérifiez l’autorisation puis réessayez.",
+      );
+    }
   }
 
   async function startVideoCapture() {
@@ -388,11 +414,6 @@ export default function ReportForm() {
       return;
     }
 
-    if (description.trim().length < 10) {
-      setError("Décrivez le problème en au moins 10 caractères.");
-      return;
-    }
-
     if (!coords) {
       setError(
         "La position GPS est obligatoire pour vérifier qu’un problème n’a pas déjà été signalé à proximité.",
@@ -431,7 +452,7 @@ export default function ReportForm() {
         region_id: region,
         commune_id: commune,
         title: title.trim(),
-        description: description.trim(),
+        description: title.trim(),
         location_label: location.trim() || null,
         latitude: coords.lat,
         longitude: coords.lng,
@@ -545,19 +566,6 @@ export default function ReportForm() {
         </label>
 
         <label>
-          Description
-          <textarea
-            required
-            minLength={10}
-            maxLength={MAX_DESCRIPTION_LENGTH}
-            rows={5}
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="Décrivez le problème, ce qui se passe et, si possible, depuis quand…"
-          />
-        </label>
-
-        <label>
           Zone / adresse
           <input
             maxLength={MAX_LOCATION_LENGTH}
@@ -583,15 +591,13 @@ export default function ReportForm() {
         )}
 
         <fieldset className="mediaPicker" data-pcs-tour="photo">
-          <legend>
-            La vidéo ne peut pas dépasser {CAPTURE_VIDEO_MAX_SECONDS} secondes
-          </legend>
+          <legend>Photos et vidéo du signalement</legend>
 
           <div className="mediaPickerRow">
             <button
               type="button"
               className="mediaPickBtn"
-              onClick={() => photoInputRef.current?.click()}
+              onClick={() => void requestPhotoCameraPermission()}
               disabled={videoBusy}
             >
               <span aria-hidden="true">📷</span> Prendre une photo
@@ -629,8 +635,7 @@ export default function ReportForm() {
             <div className="cameraCapture">
               <video ref={cameraPreviewRef} autoPlay muted playsInline />
               <p>
-                Arrêt automatique à {CAPTURE_VIDEO_MAX_SECONDS} secondes. La
-                vidéo est ensuite finalisée avant l’envoi.
+                La vidéo est finalisée avant l’envoi.
               </p>
             </div>
           )}
