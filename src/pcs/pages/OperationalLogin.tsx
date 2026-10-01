@@ -177,12 +177,14 @@ export default function OperationalLogin() {
 
       const mairie = await getMyMairie();
 
-      if (mairie?.is_active) {
+      if (mairie?.is_active && mairie.approval_status === "approved") {
         navigate("/mairie");
       } else {
         await supabase.auth.signOut();
         throw new Error(
-          "Votre demande mairie est en attente de validation. Le compte n’est pas encore activé.",
+          mairie?.approval_status === "rejected"
+            ? "Votre demande mairie a été refusée. Contactez l’administrateur PCS pour obtenir des informations."
+            : "Votre demande mairie est en attente de validation. Le compte n’est pas encore activé.",
         );
       }
     } catch (error) {
