@@ -36,7 +36,7 @@ export async function listOrganizationSignupRequests(){
 }
 export async function approveOrganizationSignupRequest(id:string,note?:string){
  if(!supabase)throw new Error("Supabase n’est pas configuré.");
- const {data,error}=await supabase.rpc("approve_organization_signup_request",{p_request_id:id,p_note:note?.trim()||null});
+ const {data,error}=await supabase.rpc("approve_organization_signup_request",{p_request_id:id,p_note:note?.trim()||undefined});
  if(error)throw error; return data;
 }
 export async function rejectOrganizationSignupRequest(id:string,note:string){
