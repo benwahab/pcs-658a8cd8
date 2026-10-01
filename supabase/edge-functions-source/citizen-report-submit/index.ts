@@ -148,7 +148,7 @@ Deno.serve(async(req)=>{
     const title=String(form.get("title")??"").trim(),description=String(form.get("description")??"").trim();
     const locationLabel=String(form.get("location_label")??"").trim()||null;
     const latitude=Number(form.get("latitude")),longitude=Number(form.get("longitude"));
-    if(!categoryId||!regionId||!communeId||title.length<5||title.length>120||description.length<10||description.length>5000||!Number.isFinite(latitude)||!Number.isFinite(longitude))return json({error:"Informations du signalement invalides."},400);
+    if(!categoryId||!regionId||!communeId||title.length<5||title.length>120||description.length<10||description.length>5000||(locationLabel!==null&&locationLabel.length>250)||!Number.isFinite(latitude)||!Number.isFinite(longitude)||latitude < -90||latitude > 90||longitude < -180||longitude > 180)return json({error:"Informations du signalement invalides."},400);
     const {data:category}=await admin.from("categories").select("id").eq("id",categoryId).eq("is_active",true).maybeSingle();if(!category)return json({error:"Catégorie invalide."},400);
     const {data:commune}=await admin.from("communes").select("id,region_id,is_active").eq("id",communeId).eq("region_id",regionId).eq("is_active",true).maybeSingle();if(!commune)return json({error:"Localité invalide pour cette région."},400);
     const photoFiles=form.getAll("photos").filter((v):v is File=>v instanceof File);
