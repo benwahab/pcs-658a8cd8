@@ -569,8 +569,6 @@ export default function ReportForm() {
         )}
 
         <fieldset className="mediaPicker" data-pcs-tour="photo">
-          <legend>Photos et vidéo du signalement</legend>
-
           <div className="mediaPickerRow">
             <button
               type="button"
