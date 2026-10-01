@@ -16,16 +16,33 @@ export default function Home() {
   const [headerScrolled, setHeaderScrolled] = useState(false);
 
   useEffect(() => {
-    listPublicReports()
-      .then(setReports)
-      .catch((error) =>
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Impossible de charger les signalements publics.",
-        ),
-      )
-      .finally(() => setLoading(false));
+    let active = true;
+    const refreshReports = async () => {
+      try {
+        const nextReports = await listPublicReports();
+        if (active) {
+          setReports(nextReports);
+          setError("");
+        }
+      } catch (error) {
+        if (active) setError(error instanceof Error ? error.message : "Impossible de charger les signalements publics.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void refreshReports();
+    };
+    void refreshReports();
+    const timer = window.setInterval(() => void refreshReports(), 30000);
+    window.addEventListener("focus", refreshReports);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refreshReports);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, []);
 
   useEffect(() => {
@@ -151,7 +168,19 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     { id: string; url: string; media_role: string; media_type: string }[]
   >([]);
   const [mediaReady, setMediaReady] = useState(false);
+  const [mediaRefresh, setMediaRefresh] = useState(0);
   const slideRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!mediaReady) return;
+    const refresh = () => setMediaRefresh((value) => value + 1);
+    const timer = window.setInterval(refresh, 30000);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [mediaReady]);
 
   useEffect(() => {
     const slide = slideRef.current;
@@ -217,7 +246,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     return () => {
       cancelled = true;
     };
-  }, [mediaReady, report.id]);
+  }, [mediaReady, mediaRefresh, report.id]);
 
   return (
     <article ref={slideRef} className="citizenSlide citizenSlideTrack">
