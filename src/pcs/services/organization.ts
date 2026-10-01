@@ -83,8 +83,25 @@ export async function listAgencyAgents(organizationId:string,unitId:string){
 }
 
 export async function createAgencyAgent(input:{first_name:string;last_name:string;matricule:string;qualification:string;phone?:string;password:string}){
- if(!supabase) throw new Error("Supabase non configuré.");
- const {data:{session}}=await supabase.auth.getSession(); if(!session) throw new Error("Session requise.");
- const r=await fetch((import.meta.env.VITE_SUPABASE_URL as string)+"/functions/v1/agency-create-agent",{method:"POST",headers:{"content-type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify(input)});
- const body=await r.json(); if(!r.ok) throw new Error(body.error||"Création impossible"); return body.agent;
+ if(!supabase)throw new Error("Supabase non configuré.");
+ const{data:{session},error:sessionError}=await supabase.auth.getSession();
+ if(sessionError)throw new Error("Impossible de vérifier la session : "+sessionError.message);
+ if(!session)throw new Error("Session requise. Reconnectez-vous puis réessayez.");
+ const{data,error}=await supabase.functions.invoke("agency-create-agent",{body:input,headers:{Authorization:"Bearer "+session.access_token}});
+ if(error){
+  const context=(error as any).context;
+  let message=error.message||"La création de l’agent a échoué.";
+  if(context instanceof Response){
+   try{
+    const payload=await context.clone().json();
+    if(typeof payload?.error==="string"&&payload.error.trim())message=payload.error.trim();
+    else if(typeof payload?.message==="string"&&payload.message.trim())message=payload.message.trim();
+   }catch{
+    message="Le service de création d’agent a renvoyé une réponse inattendue. Vérifiez la configuration Supabase puis réessayez.";
+   }
+  }
+  throw new Error(message);
+ }
+ if(!data?.agent)throw new Error(typeof data?.error==="string"?data.error:"Le service n’a pas confirmé la création de l’agent.");
+ return data.agent;
 }
