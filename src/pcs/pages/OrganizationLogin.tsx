@@ -89,7 +89,7 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
 
       if (loginError) throw loginError;
 
-      const membership = await getMyOrganizationMembership().catch(() => null);
+      const membership = await getMyOrganizationMembership();
 
       if (!membership || membership.organization?.code?.toUpperCase() !== org) {
         await supabase.auth.signOut();
