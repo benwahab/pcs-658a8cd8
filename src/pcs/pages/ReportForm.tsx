@@ -431,7 +431,6 @@ export default function ReportForm() {
         region_id: region,
         commune_id: commune,
         title: title.trim(),
-        description: title.trim(),
         location_label: location.trim() || null,
         latitude: coords.lat,
         longitude: coords.lng,
