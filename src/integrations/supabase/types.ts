@@ -551,6 +551,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          approval_status: string
           latitude: number | null
           location_label: string | null
           longitude: number | null
@@ -566,6 +567,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          approval_status?: string
           latitude?: number | null
           location_label?: string | null
           longitude?: number | null
