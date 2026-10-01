@@ -19,7 +19,15 @@ export default function MairieDashboard(){
  const[error,setError]=useState(""),[query,setQuery]=useState(""),[filter,setFilter]=useState("all"),[busy,setBusy]=useState(false),[mayorName,setMayorName]=useState(""),[transmitOrg,setTransmitOrg]=useState<Record<string,string>>({});
  const[newAgent,setNewAgent]=useState({first_name:"",last_name:"",matricule:"",qualification:"",phone:"",password:""});
  async function load(){try{const[a,b,c,d]=await Promise.all([getMyMairie(),listMairieReports(),listMyAgents(),listActiveOrganizations()]);if(!a){await supabase?.auth.signOut();nav("/connexion-operationnelle");return;}setM(a);setMayorName(a?.mayor_name??"");setRows(b);setAgents(c);setOrganizations(d);}catch(e){setError(e instanceof Error?e.message:"Erreur de chargement");}}
- useEffect(()=>{load();},[]);
+ useEffect(()=>{
+  let active=true;
+  const refresh=()=>{if(active&&document.visibilityState==="visible")void load();};
+  void load();
+  const timer=window.setInterval(refresh,30000);
+  window.addEventListener("focus",refresh);
+  document.addEventListener("visibilitychange",refresh);
+  return()=>{active=false;window.clearInterval(timer);window.removeEventListener("focus",refresh);document.removeEventListener("visibilitychange",refresh);};
+ },[]);
  async function createAgent(){setError("");setBusy(true);try{await createFieldAgent(newAgent);setNewAgent({first_name:"",last_name:"",matricule:"",qualification:"",phone:"",password:""});await load();}catch(e){setError(e instanceof Error?e.message:"Création impossible");}finally{setBusy(false);}}
  async function assign(r:string,a:string){if(!a)return;setError("");try{await assignMission(r,a);await load();}catch(e){setError(e instanceof Error?e.message:"Affectation impossible");}}
  async function transmit(r:string){const organizationId=transmitOrg[r];if(!organizationId)return;setError("");setBusy(true);try{await transmitReportToOrganization(r,organizationId);setTransmitOrg(v=>({...v,[r]:""}));await load();}catch(e){setError(e instanceof Error?e.message:"Transmission impossible");}finally{setBusy(false);}}
