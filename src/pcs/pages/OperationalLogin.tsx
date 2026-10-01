@@ -188,7 +188,20 @@ export default function OperationalLogin() {
         );
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Connexion impossible");
+      // Afficher les erreurs Supabase/PostgREST même si elles ne sont pas des
+      // instances natives de Error, afin de diagnostiquer la connexion mairie.
+      const details =
+        error instanceof Error
+          ? error.message
+          : error && typeof error === "object" && "message" in error &&
+              typeof (error as { message?: unknown }).message === "string"
+            ? (error as { message: string }).message
+            : error && typeof error === "object" && "details" in error &&
+                typeof (error as { details?: unknown }).details === "string"
+              ? (error as { details: string }).details
+              : "Une erreur inattendue est survenue pendant la connexion.";
+      console.error("[PCS mairie login]", error);
+      setError(details);
     } finally {
       setBusy(false);
     }
