@@ -19,12 +19,25 @@ const cors={
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
 
 const recentByIp=new Map<string,number[]>();
-function allowedByRate(req:Request){
-  const ip=req.headers.get("cf-connecting-ip")??req.headers.get("x-forwarded-for")??"unknown";
+function localRateFallback(key:string){
   const now=Date.now(),windowStart=now-10*60*1000;
-  const current=(recentByIp.get(ip)||[]).filter(t=>t>windowStart);
+  // Bound memory and discard expired windows so random IPs cannot grow this map forever.
+  for(const [stored,times] of recentByIp){const fresh=times.filter(t=>t>windowStart);if(fresh.length)recentByIp.set(stored,fresh);else recentByIp.delete(stored);}
+  const current=(recentByIp.get(key)||[]).filter(t=>t>windowStart);
   if(current.length>=5)return false;
-  current.push(now);recentByIp.set(ip,current);return true;
+  current.push(now);recentByIp.set(key,current);return true;
+}
+async function allowedByRate(req:Request,admin:ReturnType<typeof createClient>,serviceKey:string){
+  // Prefer the platform-provided client IP; use the first forwarded IP only as a fallback.
+  const ip=req.headers.get("cf-connecting-ip")?.trim()||req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"unknown";
+  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(ip+"|"+serviceKey));
+  const keyHash=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  const {data,error}=await admin.rpc("consume_citizen_report_rate_limit",{p_key_hash:keyHash,p_max_events:5,p_window_seconds:600});
+  if(!error&&typeof data==="boolean")return data;
+  // Compatibility fallback keeps submissions working before the new SQL migration is applied.
+  // It is process-local and therefore not a distributed limit; logs make the missing migration visible.
+  console.error("citizen-report-submit shared rate limiter unavailable; using temporary local fallback",error?.message||"unexpected RPC result");
+  return localRateFallback(keyHash);
 }
 function extOf(name:string){return name.split(".").pop()?.toLowerCase()||"";}
 function validExt(file:File){return (EXTENSIONS[file.type]??[]).includes(extOf(file.name));}
@@ -139,9 +152,9 @@ async function validateVideo(file:File){
 Deno.serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
   if(req.method!=="POST")return json({error:"Méthode non autorisée."},405);
-  if(!allowedByRate(req))return json({error:"Trop de signalements depuis cette connexion. Réessayez plus tard."},429);
   const url=Deno.env.get("SUPABASE_URL")!,serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const admin=createClient(url,serviceKey,{auth:{autoRefreshToken:false,persistSession:false}});
+  if(!await allowedByRate(req,admin,serviceKey))return json({error:"Trop de signalements depuis cette connexion. Réessayez plus tard."},429);
   try{
     const form=await req.formData();
     const categoryId=String(form.get("category_id")??"").trim(),regionId=String(form.get("region_id")??"").trim(),communeId=String(form.get("commune_id")??"").trim();
