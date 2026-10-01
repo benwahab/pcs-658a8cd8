@@ -25,7 +25,6 @@ interface Commune {
 const MAX_PHOTOS = 5;
 const MAX_TITLE_LENGTH = 120;
 const MAX_LOCATION_LENGTH = 250;
-const CAPTURE_VIDEO_MAX_SECONDS = 8;
 const CAPTURE_VIDEO_STOP_MS = 8500;
 
 export default function ReportForm() {
@@ -34,7 +33,6 @@ export default function ReportForm() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<number | null>(null);
-  const intervalRef = useRef<number | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const stoppingRef = useRef(false);
 
@@ -59,7 +57,6 @@ export default function ReportForm() {
   const [submitted, setSubmitted] = useState(false);
   const [recording, setRecording] = useState(false);
   const [finalizingVideo, setFinalizingVideo] = useState(false);
-  const [recordingSeconds, setRecordingSeconds] = useState(0);
 
   useEffect(() => {
     Promise.all([listCategories(), listRegions(), listAllCommunes()])
@@ -92,10 +89,6 @@ export default function ReportForm() {
       timerRef.current = null;
     }
 
-    if (intervalRef.current !== null) {
-      window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
   }
 
   function detachPreview() {
@@ -124,14 +117,12 @@ export default function ReportForm() {
     detachPreview();
     resetRecorder();
     setRecording(false);
-    setRecordingSeconds(0);
   }
 
   function finishVideo(file: File | null) {
     stopCameraTracks();
     detachPreview();
     setRecording(false);
-    setRecordingSeconds(0);
     setFinalizingVideo(false);
 
     if (!file) {
@@ -286,19 +277,7 @@ export default function ReportForm() {
 
       setRecording(true);
       setFinalizingVideo(false);
-      setRecordingSeconds(0);
       recorder.start(500);
-
-      const startedAt = Date.now();
-
-      intervalRef.current = window.setInterval(() => {
-        setRecordingSeconds(
-          Math.min(
-            CAPTURE_VIDEO_MAX_SECONDS,
-            Math.floor((Date.now() - startedAt) / 1000),
-          ),
-        );
-      }, 200);
 
       timerRef.current = window.setTimeout(
         stopRecording,
