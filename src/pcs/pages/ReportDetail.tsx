@@ -1,4 +1,4 @@
-import {MediaCarousel} from "../App";
+import {MediaCarousel} from "../components/MediaCarousel";
 import {useEffect,useState} from "react";
 import {useParams,Link} from "@/pcs/router";
 import {supabase} from "../lib/supabase";
