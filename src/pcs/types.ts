@@ -51,7 +51,6 @@ export interface Report {
   id: string;
   reference_code: string;
   title: string;
-  description: string;
   status: ReportStatus;
   priority: ReportPriority;
   category_id: string;
@@ -71,7 +70,6 @@ export interface PublicReport {
   id: string | null;
   reference_code: string | null;
   title: string | null;
-  description: string | null;
   status: ReportStatus | null;
   priority: ReportPriority | null;
   category_id: string | null;
