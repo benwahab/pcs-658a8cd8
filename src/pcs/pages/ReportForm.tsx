@@ -183,10 +183,19 @@ export default function ReportForm() {
   }
 
   function finalizeInactiveRecorder(recorder: MediaRecorder) {
-    const type = recorder.mimeType || "video/webm";
+    const type = (recorder.mimeType || "video/webm")
+      .split(";")[0]
+      .trim()
+      .toLowerCase();
+    const extension =
+      type === "video/mp4"
+        ? "mp4"
+        : type === "video/quicktime"
+          ? "mov"
+          : "webm";
     const blob = new Blob(chunksRef.current, { type });
-    const file = new File([blob], "signalement-video.webm", {
-      type: "video/webm",
+    const file = new File([blob], `signalement-video.${extension}`, {
+      type,
     });
 
     resetRecorder();
