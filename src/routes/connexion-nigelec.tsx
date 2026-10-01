@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { OrganizationLogin } from "@/pcs/App";
+import OrganizationLogin from "@/pcs/pages/OrganizationLogin";
 
 export const Route = createFileRoute("/connexion-nigelec")({
   head: () => ({
