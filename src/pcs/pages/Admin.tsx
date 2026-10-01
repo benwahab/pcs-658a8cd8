@@ -8,7 +8,16 @@ const nextStatuses:Record<ReportStatus,ReportStatus[]>={submitted:["received","r
 
 export default function Admin(){
  const [rows,setRows]=useState<Row[]>([]);const [departments,setDepartments]=useState<any[]>([]);const [agents,setAgents]=useState<any[]>([]);const [orgRequests,setOrgRequests]=useState<OrganizationSignupRequest[]>([]);const [mairieRequests,setMairieRequests]=useState<MairieSignupRequest[]>([]);const [error,setError]=useState("");
- async function load(){try{setRows(await listAllReports() as Row[]);setOrgRequests(await listOrganizationSignupRequests());setMairieRequests(await listPendingMairieRequests())}catch(e){setError(e instanceof Error?e.message:"Accès refusé.")}}
+ async function load(){
+  const [reportsResult,orgResult,mairieResult]=await Promise.allSettled([
+   listAllReports(),listOrganizationSignupRequests(),listPendingMairieRequests()
+  ]);
+  const errors:string[]=[];
+  if(reportsResult.status==="fulfilled")setRows(reportsResult.value as Row[]);else errors.push("Signalements : "+(reportsResult.reason instanceof Error?reportsResult.reason.message:"chargement impossible."));
+  if(orgResult.status==="fulfilled")setOrgRequests(orgResult.value);else errors.push("Demandes NIGELEC/NDE : "+(orgResult.reason instanceof Error?orgResult.reason.message:"chargement impossible."));
+  if(mairieResult.status==="fulfilled")setMairieRequests(mairieResult.value);else errors.push("Demandes mairie : "+(mairieResult.reason instanceof Error?mairieResult.reason.message:"chargement impossible."));
+  setError(errors.join(" "));
+ }
  useEffect(()=>{load();Promise.all([listDepartments(),listAssignableAgents()]).then(([d,a])=>{setDepartments(d);setAgents(a)}).catch(e=>setError(e.message))},[]);
  async function status(id:string,value:ReportStatus){setError("");try{await updateReportStatus(id,value);await load()}catch(e){setError(e instanceof Error?e.message:"Transition refusée.")}}
  async function priority(id:string,value:ReportPriority){setError("");try{await updateReportPriority(id,value);await load()}catch(e){setError(e instanceof Error?e.message:"Mise à jour impossible.")}}
