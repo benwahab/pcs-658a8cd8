@@ -544,9 +544,34 @@ export type Database = {
           },
         ]
       }
+      mairie_signup_rate_limits: {
+        Row: {
+          attempts: number
+          blocked_until: string | null
+          key_hash: string
+          updated_at: string
+          window_started_at: string
+        }
+        Insert: {
+          attempts?: number
+          blocked_until?: string | null
+          key_hash: string
+          updated_at?: string
+          window_started_at?: string
+        }
+        Update: {
+          attempts?: number
+          blocked_until?: string | null
+          key_hash?: string
+          updated_at?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
       mairies: {
         Row: {
           account_user_id: string | null
+          approval_status: string
           commune_id: string
           created_at: string
           id: string
@@ -562,6 +587,7 @@ export type Database = {
         }
         Insert: {
           account_user_id?: string | null
+          approval_status?: string
           commune_id: string
           created_at?: string
           id?: string
@@ -577,6 +603,7 @@ export type Database = {
         }
         Update: {
           account_user_id?: string | null
+          approval_status?: string
           commune_id?: string
           created_at?: string
           id?: string
@@ -703,6 +730,56 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_signup_requests: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          organization_id: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          organization_id: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          organization_id?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_signup_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1064,49 +1141,6 @@ export type Database = {
           },
         ]
       }
-      report_confirmations: {
-        Row: {
-          citizen_id: string
-          created_at: string
-          id: string
-          report_id: string
-        }
-        Insert: {
-          citizen_id: string
-          created_at?: string
-          id?: string
-          report_id: string
-        }
-        Update: {
-          citizen_id?: string
-          created_at?: string
-          id?: string
-          report_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "report_confirmations_citizen_id_fkey"
-            columns: ["citizen_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "report_confirmations_report_id_fkey"
-            columns: ["report_id"]
-            isOneToOne: false
-            referencedRelation: "public_reports"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "report_confirmations_report_id_fkey"
-            columns: ["report_id"]
-            isOneToOne: false
-            referencedRelation: "reports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       report_field_verifications: {
         Row: {
           accuracy_m: number | null
@@ -1434,11 +1468,9 @@ export type Database = {
       reports: {
         Row: {
           category_id: string
-          citizen_id: string
           commune_id: string
           created_at: string
           department_id: string | null
-          description: string
           id: string
           is_public: boolean
           latitude: number | null
@@ -1455,11 +1487,9 @@ export type Database = {
         }
         Insert: {
           category_id: string
-          citizen_id: string
           commune_id: string
           created_at?: string
           department_id?: string | null
-          description: string
           id?: string
           is_public?: boolean
           latitude?: number | null
@@ -1476,11 +1506,9 @@ export type Database = {
         }
         Update: {
           category_id?: string
-          citizen_id?: string
           commune_id?: string
           created_at?: string
           department_id?: string | null
-          description?: string
           id?: string
           is_public?: boolean
           latitude?: number | null
@@ -1501,13 +1529,6 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reports_citizen_id_fkey"
-            columns: ["citizen_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1690,11 +1711,8 @@ export type Database = {
           commune_id: string | null
           created_at: string | null
           department_id: string | null
-          description: string | null
           id: string | null
-          latitude: number | null
           location_label: string | null
-          longitude: number | null
           priority: string | null
           reference_code: string | null
           region_id: string | null
@@ -1709,11 +1727,8 @@ export type Database = {
           commune_id?: string | null
           created_at?: string | null
           department_id?: string | null
-          description?: string | null
           id?: string | null
-          latitude?: number | null
           location_label?: string | null
-          longitude?: number | null
           priority?: string | null
           reference_code?: string | null
           region_id?: string | null
@@ -1728,11 +1743,8 @@ export type Database = {
           commune_id?: string | null
           created_at?: string | null
           department_id?: string | null
-          description?: string | null
           id?: string | null
-          latitude?: number | null
           location_label?: string | null
-          longitude?: number | null
           priority?: string | null
           reference_code?: string | null
           region_id?: string | null
@@ -1827,11 +1839,9 @@ export type Database = {
         }
         Returns: {
           category_id: string
-          citizen_id: string
           commune_id: string
           created_at: string
           department_id: string | null
-          description: string
           id: string
           is_public: boolean
           latitude: number | null
@@ -1849,6 +1859,65 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "reports"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      apply_cst_media_moderation: {
+        Args: {
+          p_action: string
+          p_media_id: string
+          p_moderator_id: string
+          p_reason?: string
+        }
+        Returns: {
+          status: string
+          storage_path: string
+        }[]
+      }
+      approve_mairie_request: {
+        Args: { p_mairie_id: string }
+        Returns: {
+          account_user_id: string | null
+          approval_status: string
+          commune_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          latitude: number | null
+          location_label: string | null
+          longitude: number | null
+          mayor_name: string | null
+          name: string
+          phone: string | null
+          region_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "mairies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      approve_organization_signup_request: {
+        Args: { p_note?: string; p_request_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          organization_id: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_signup_requests"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1879,10 +1948,57 @@ export type Database = {
         }
         Returns: boolean
       }
+      consume_mairie_signup_rate_limit: {
+        Args: {
+          p_block_seconds?: number
+          p_key_hash: string
+          p_max_attempts?: number
+          p_window_seconds?: number
+        }
+        Returns: boolean
+      }
       cst_database_metrics: { Args: never; Returns: Json }
       cst_system_snapshot: { Args: never; Returns: Json }
+      earth: { Args: never; Returns: number }
       has_role: { Args: { required_role: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      list_organization_signup_requests: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          organization_code: string
+          organization_id: string
+          organization_name: string
+          review_note: string
+          reviewed_at: string
+          reviewed_by: string
+          status: string
+          user_id: string
+        }[]
+      }
+      list_pending_mairie_requests: {
+        Args: never
+        Returns: {
+          account_user_id: string
+          approval_status: string
+          commune_id: string
+          commune_name: string
+          created_at: string
+          id: string
+          is_active: boolean
+          latitude: number
+          location_label: string
+          longitude: number
+          mayor_name: string
+          name: string
+          phone: string
+          region_id: string
+          region_name: string
+        }[]
+      }
       mairie_transmit_report: {
         Args: {
           p_note?: string
@@ -1922,6 +2038,53 @@ export type Database = {
       organization_decline_transfer: {
         Args: { p_note: string; p_transfer_id: string }
         Returns: string
+      }
+      reject_mairie_request: {
+        Args: { p_mairie_id: string }
+        Returns: {
+          account_user_id: string | null
+          approval_status: string
+          commune_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          latitude: number | null
+          location_label: string | null
+          longitude: number | null
+          mayor_name: string | null
+          name: string
+          phone: string | null
+          region_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "mairies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      reject_organization_signup_request: {
+        Args: { p_note: string; p_request_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          organization_id: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_signup_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       resolve_commune_from_gps: {
         Args: { p_latitude: number; p_longitude: number }
