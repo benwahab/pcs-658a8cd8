@@ -76,6 +76,9 @@ export async function validateCitizenVideo(file: File) {
   if (file.size <= 0) {
     throw new Error("La vidéo est vide.");
   }
+  if (file.size > MAX_VIDEO_SIZE_BYTES) {
+    throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
+  }
 
   const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
   const allowedExtensions = VIDEO_EXTENSIONS[file.type] ?? [];
