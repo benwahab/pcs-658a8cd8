@@ -68,6 +68,12 @@ export default function AgentTerrain(){
  }
 
  useEffect(()=>()=>{if(timerRef.current!==null)window.clearInterval(timerRef.current);if(recorderRef.current?.state==="recording")recorderRef.current.stop();streamRef.current?.getTracks().forEach(t=>t.stop());if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);},[]);
+ useEffect(()=>{
+  if(cameraReady&&cameraRef.current&&streamRef.current){
+   cameraRef.current.srcObject=streamRef.current;
+   void cameraRef.current.play().catch(()=>setCameraError("Impossible d’afficher l’aperçu caméra."));
+  }
+ },[cameraReady]);
  useEffect(()=>{if(previewRef.current&&videoPreviewUrl)previewRef.current.src=videoPreviewUrl;},[videoPreviewUrl]);
  useEffect(()=>{
   void load();
