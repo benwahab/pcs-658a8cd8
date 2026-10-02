@@ -73,7 +73,7 @@ export async function validateCitizenVideo(file: File) {
   }
 
   if (file.size <= 0 || file.size > MAX_VIDEO_SIZE_BYTES) {
-    throw new Error("Vidéo trop volumineuse. Maximum : 50 Mo.");
+    throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
   }
 
   const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
@@ -138,7 +138,7 @@ export async function uploadResolutionVideo(
   }
 
   if (file.size <= 0 || file.size > MAX_VIDEO_SIZE_BYTES) {
-    throw new Error("Vidéo trop volumineuse. Maximum : 50 Mo.");
+    throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
   }
 
   if (accuracyM == null || !Number.isFinite(accuracyM) || accuracyM < 0 || accuracyM > 20) {
