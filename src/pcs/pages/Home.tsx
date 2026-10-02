@@ -259,30 +259,32 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
           </div>
         )}
 
-        <p className="eyebrow feedEyebrow">
-          {report.status ? statusLabels[report.status] : "Signalement"}
-        </p>
+        <div className="slideOverlay">
+          <p className="eyebrow feedEyebrow">
+            {report.status ? statusLabels[report.status] : "Signalement"}
+          </p>
 
-        <div className="row">
-          <strong>{report.reference_code ?? "PCS"}</strong>
-          <span className="badge" data-pcs-tour="status">
-            {report.priority ?? "normal"}
-          </span>
+          <div className="row">
+            <strong>{report.reference_code ?? "PCS"}</strong>
+            <span className="badge" data-pcs-tour="status">
+              {report.priority ?? "normal"}
+            </span>
+          </div>
+
+          <h2>{report.title}</h2>
+
+          {report.location_label && (
+            <p>
+              <strong>📍</strong> {report.location_label}
+            </p>
+          )}
+
+          {report.resolution_note && (
+            <p>
+              <strong>Résolution :</strong> {report.resolution_note}
+            </p>
+          )}
         </div>
-
-        <h2>{report.title}</h2>
-
-        {report.location_label && (
-          <p>
-            <strong>📍</strong> {report.location_label}
-          </p>
-        )}
-
-        {report.resolution_note && (
-          <p>
-            <strong>Résolution :</strong> {report.resolution_note}
-          </p>
-        )}
       </div>
     </article>
   );
