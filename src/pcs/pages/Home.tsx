@@ -131,16 +131,18 @@ export default function Home() {
             <span className="feedAccessChevron">▾</span>
           </summary>
           <div>
-            <Link to="/cst">🖥️ CST — Supervision technique</Link>
-            <Link to="/connexion-operationnelle">🏛️ Mairie</Link>
-            <Link to="/connexion-operationnelle?mode=agent">
+            {/* Use native navigation for professional entry points so every
+                destination also works reliably in mobile preview/webviews. */}
+            <a href="/cst">🖥️ CST — Supervision technique</a>
+            <a href="/connexion-operationnelle">🏛️ Mairie</a>
+            <a href="/connexion-operationnelle?mode=agent">
               👷 Agent terrain
-            </Link>
-            <Link to="/connexion-operationnelle?mode=moderator">
+            </a>
+            <a href="/connexion-operationnelle?mode=moderator">
               🛡️ Modérateur
-            </Link>
-            <Link to="/connexion-nigelec">⚡ NIGELEC</Link>
-            <Link to="/connexion-nde">💧 NDE</Link>
+            </a>
+            <a href="/connexion-nigelec">⚡ NIGELEC</a>
+            <a href="/connexion-nde">💧 NDE</a>
           </div>
         </details>
       </div>
