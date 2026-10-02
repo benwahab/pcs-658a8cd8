@@ -11,6 +11,7 @@ import {
 } from "../services/mairie";
 import { supabase } from "../lib/supabase";
 import PasswordField from "../components/PasswordField";
+import AgentConnectionHelp from "../components/AgentConnectionHelp";
 
 type Mode = "mairie" | "agent" | "moderator";
 
@@ -236,6 +237,8 @@ export default function OperationalLogin() {
             {busy ? "Vérification…" : "Continuer"}
           </button>
         </form>
+
+        <AgentConnectionHelp />
 
         <Link className="button" to="/">
           Retour
@@ -473,6 +476,8 @@ export default function OperationalLogin() {
           Changer de numéro
         </button>
       )}
+
+      {mode === "agent" && <AgentConnectionHelp />}
     </section>
   );
 }
