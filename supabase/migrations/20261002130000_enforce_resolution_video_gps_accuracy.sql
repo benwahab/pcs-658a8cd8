@@ -12,9 +12,6 @@ alter table public.report_media
     or (accuracy_m is not null and accuracy_m >= 0 and accuracy_m <= 20)
   ) not valid;
 
-alter table public.report_media
-  validate constraint report_media_resolution_accuracy_check;
-
 create or replace function public.agent_resolve_report(
   p_report_id uuid,
   p_media_id uuid,
