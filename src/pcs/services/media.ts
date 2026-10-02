@@ -156,12 +156,16 @@ export async function uploadResolutionVideo(
     throw new Error("Vidéo MP4, WebM ou MOV requise.");
   }
 
-  if (file.size > MAX_VIDEO_SIZE_BYTES) {
+  if (file.size <= 0 || file.size > MAX_VIDEO_SIZE_BYTES) {
     throw new Error("Vidéo trop volumineuse. Maximum : 50 Mo.");
   }
 
-  if (accuracyM != null && accuracyM > 20) {
+  if (accuracyM == null || !Number.isFinite(accuracyM) || accuracyM < 0 || accuracyM > 20) {
     throw new Error("La précision GPS doit être de 20 mètres ou moins.");
+  }
+
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    throw new Error("Coordonnées GPS invalides.");
   }
 
   const extension = file.name.split(".").pop()?.toLowerCase() || "mp4";
@@ -193,6 +197,7 @@ export async function uploadResolutionVideo(
       moderation_status: "approved",
       captured_latitude: latitude,
       captured_longitude: longitude,
+      accuracy_m: accuracyM,
     } as any)
     .select("id")
     .single();
