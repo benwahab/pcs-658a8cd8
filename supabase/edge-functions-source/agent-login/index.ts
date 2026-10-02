@@ -40,8 +40,8 @@ Deno.serve(async(req)=>{
   if(qe||!row||row.consumed_at||new Date(row.expires_at).getTime()<=Date.now())return json({error:"Session de connexion expirée. Recommencez avec votre numéro."},401);
   const {data:agent,error:ae}=await admin.from("field_agents").select("user_id,is_active").eq("user_id",row.agent_user_id).maybeSingle();
   if(ae||!agent?.is_active)return json({error:"Connexion invalide."},401);
-  const {error:consumeError}=await admin.from("agent_login_challenges").update({consumed_at:new Date().toISOString()}).eq("id",row.id).is("consumed_at",null);
-  if(consumeError)return json({error:"Connexion invalide."},401);
+  const {data:consumed,error:consumeError}=await admin.from("agent_login_challenges").update({consumed_at:new Date().toISOString()}).eq("id",row.id).is("consumed_at",null).select("id").maybeSingle();
+  if(consumeError||!consumed)return json({error:"Session de connexion déjà utilisée. Recommencez avec votre numéro."},401);
   const internalEmail="agent-"+row.agent_user_id.replace(/-/g,"")+"@agent.pcs.local";
   const {data,error:loginError}=await auth.auth.signInWithPassword({email:internalEmail,password});
   if(loginError||!data.session)return json({error:"Mot de passe incorrect."},401);
