@@ -453,7 +453,21 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
               </button>
             </div>
             {commentsOpen && (
-              <div className="citizenPublicComments">
+              <section className="citizenPublicComments" aria-label="Commentaires du signalement">
+                <div className="citizenCommentsHeader">
+                  <h3>Commentaires ({publicComments.length})</h3>
+                  <button
+                    type="button"
+                    className="feedSecondary"
+                    onClick={() => {
+                      setCommentsOpen(false);
+                      setInteractionMessage("");
+                    }}
+                    aria-label="Fermer les commentaires"
+                  >
+                    Fermer ✕
+                  </button>
+                </div>
                 {publicComments.length === 0 ? <p>Aucun commentaire public pour le moment.</p> : publicComments.map((comment) => (
                   <article key={comment.id} className="citizenPublicComment">
                     {comment.display_name && <strong>{comment.display_name}</strong>}
