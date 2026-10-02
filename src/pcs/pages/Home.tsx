@@ -372,7 +372,10 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
   const submitPublicComment = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!supabase || !report.id) return;
+    if (!supabase || !report.id || !visitorToken) {
+      setInteractionMessage("Impossible de créer votre identifiant citoyen. Rechargez la page puis réessayez.");
+      return;
+    }
     const body = commentText.trim();
     if (body.length < 2 || body.length > 1000) {
       setInteractionMessage("Le commentaire doit contenir entre 2 et 1 000 caractères.");
@@ -385,6 +388,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         p_report_id: report.id!,
         p_body: body,
         p_display_name: null,
+        p_visitor_token: visitorToken,
       });
       if (error) throw error;
       setCommentText("");
