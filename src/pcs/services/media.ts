@@ -16,8 +16,6 @@ const VIDEO_EXTENSIONS: Record<string, string[]> = {
   "video/quicktime": ["mov", "qt"],
 };
 
-export const CITIZEN_VIDEO_MAX_SECONDS = Number.POSITIVE_INFINITY;
-
 export function getVideoDuration(file: File): Promise<number> {
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
