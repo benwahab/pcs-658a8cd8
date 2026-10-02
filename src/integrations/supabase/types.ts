@@ -2086,6 +2086,31 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_public_report_confirmation: {
+        Args: { p_report_id: string; p_visitor_token: string }
+        Returns: Json
+      }
+      list_public_report_comments: {
+        Args: { p_report_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          display_name: string | null
+          id: string
+        }[]
+      }
+      submit_public_report_comment: {
+        Args: {
+          p_body: string
+          p_display_name?: string | null
+          p_report_id: string
+        }
+        Returns: string
+      }
+      toggle_public_report_confirmation: {
+        Args: { p_report_id: string; p_visitor_token: string }
+        Returns: Json
+      }
       resolve_commune_from_gps: {
         Args: { p_latitude: number; p_longitude: number }
         Returns: string
