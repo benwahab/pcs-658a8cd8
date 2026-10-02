@@ -46,5 +46,8 @@ Deno.serve(async(req)=>{
   const {data,error:loginError}=await auth.auth.signInWithPassword({email:internalEmail,password});
   if(loginError||!data.session)return json({error:"Mot de passe incorrect."},401);
   return json({session:data.session,user:data.user});
- }catch(e){return json({error:e instanceof Error?e.message:"Erreur interne"},500)}
+ }catch(e){
+  console.error("agent-login request failed",e);
+  return json({error:"Erreur interne. Réessayez plus tard."},500);
+ }
 });
