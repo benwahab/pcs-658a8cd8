@@ -1170,7 +1170,14 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   min-height:0!important;
   max-height:100%!important;
   align-self:stretch!important;
+  justify-self:stretch!important;
+  grid-column:1 / -1!important;
+  grid-row:1 / -1!important;
   object-fit:contain!important;
+  object-position:center!important;
   transform:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
   box-sizing:border-box!important;
 }
