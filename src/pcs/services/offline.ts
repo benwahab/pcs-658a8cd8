@@ -116,8 +116,8 @@ export function getCachedAgentMissions<T=any>():T[]{
 export async function queueResolutionVideo(
  item:Omit<PendingResolution,"id"|"createdAt">
 ){
- if(item.video.size<=0||item.video.size>100*1024*1024){
-  throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
+ if(item.video.size<=0){
+  throw new Error("La vidéo est vide.");
  }
  const db=await openDb();
  await new Promise<void>((resolve,reject)=>{
