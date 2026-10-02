@@ -842,3 +842,8 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 @media(max-height:620px){
  .citizenSlideTrack .mediaCarouselItem,.citizenSlideTrack .mediaCarouselItem img,.citizenSlideTrack .mediaCarouselItem video{max-height:48dvh}
 }
+
+
+/* Le pied de page global ne doit pas gêner le défilement plein écran du flux citoyen. */
+.appFooter{position:static;inset:auto;z-index:auto;flex:0 0 auto}
+.app:has(.citizenFeed) > .appFooter{display:none}
