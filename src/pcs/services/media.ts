@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase";
 
 export const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
-export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
+// Aucun plafond applicatif de durée ou de taille. Les quotas effectifs dépendent du stockage Supabase.
 
 const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp"];
 const ALLOWED_VIDEOS = [
@@ -72,8 +72,8 @@ export async function validateCitizenVideo(file: File) {
     throw new Error("Type vidéo non autorisé. Utilisez MP4, WebM ou MOV.");
   }
 
-  if (file.size <= 0 || file.size > MAX_VIDEO_SIZE_BYTES) {
-    throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
+  if (file.size <= 0) {
+    throw new Error("La vidéo est vide.");
   }
 
   const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
@@ -137,8 +137,8 @@ export async function uploadResolutionVideo(
     throw new Error("Vidéo MP4, WebM ou MOV requise.");
   }
 
-  if (file.size <= 0 || file.size > MAX_VIDEO_SIZE_BYTES) {
-    throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
+  if (file.size <= 0) {
+    throw new Error("La vidéo est vide.");
   }
 
   if (accuracyM == null || !Number.isFinite(accuracyM) || accuracyM < 0 || accuracyM > 20) {
