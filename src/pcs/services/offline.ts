@@ -50,18 +50,21 @@ export async function queueFieldVerification(
  item:Omit<PendingVerification,"id"|"createdAt">
 ){
  const db=await openDb();
- await new Promise<void>((resolve,reject)=>{
-  const tx=db.transaction(STORE_VERIFICATIONS,"readwrite");
-  tx.objectStore(STORE_VERIFICATIONS).put({
-   ...item,
-   id:String(Date.now())+"-"+crypto.randomUUID(),
-   createdAt:new Date().toISOString()
+ try {
+  await new Promise<void>((resolve,reject)=>{
+   const tx=db.transaction(STORE_VERIFICATIONS,"readwrite");
+   tx.objectStore(STORE_VERIFICATIONS).put({
+    ...item,
+    id:String(Date.now())+"-"+crypto.randomUUID(),
+    createdAt:new Date().toISOString()
+   });
+   tx.oncomplete=()=>resolve();
+   tx.onerror=()=>reject(tx.error);
+   tx.onabort=()=>reject(tx.error);
   });
-  tx.oncomplete=()=>resolve();
-  tx.onerror=()=>reject(tx.error);
-  tx.onabort=()=>reject(tx.error);
- });
- closeDb(db);
+ } finally {
+  closeDb(db);
+ }
 }
 
 export async function flushFieldVerifications(
@@ -100,14 +103,16 @@ export async function flushFieldVerifications(
 
 export async function pendingFieldVerificationCount(){
  const db=await openDb();
- const count=await new Promise<number>((resolve,reject)=>{
-  const req=db.transaction(STORE_VERIFICATIONS,"readonly")
-   .objectStore(STORE_VERIFICATIONS).count();
-  req.onsuccess=()=>resolve(req.result);
-  req.onerror=()=>reject(req.error);
- });
- closeDb(db);
- return count;
+ try {
+  return await new Promise<number>((resolve,reject)=>{
+   const req=db.transaction(STORE_VERIFICATIONS,"readonly")
+    .objectStore(STORE_VERIFICATIONS).count();
+   req.onsuccess=()=>resolve(req.result);
+   req.onerror=()=>reject(req.error);
+  });
+ } finally {
+  closeDb(db);
+ }
 }
 
 const MISSIONS_KEY="pcs_offline_agent_missions_v1";
@@ -135,18 +140,21 @@ export async function queueResolutionVideo(
   throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
  }
  const db=await openDb();
- await new Promise<void>((resolve,reject)=>{
-  const tx=db.transaction(STORE_RESOLUTIONS,"readwrite");
-  tx.objectStore(STORE_RESOLUTIONS).put({
-   ...item,
-   id:String(Date.now())+"-"+crypto.randomUUID(),
-   createdAt:new Date().toISOString()
+ try {
+  await new Promise<void>((resolve,reject)=>{
+   const tx=db.transaction(STORE_RESOLUTIONS,"readwrite");
+   tx.objectStore(STORE_RESOLUTIONS).put({
+    ...item,
+    id:String(Date.now())+"-"+crypto.randomUUID(),
+    createdAt:new Date().toISOString()
+   });
+   tx.oncomplete=()=>resolve();
+   tx.onerror=()=>reject(tx.error);
+   tx.onabort=()=>reject(tx.error);
   });
-  tx.oncomplete=()=>resolve();
-  tx.onerror=()=>reject(tx.error);
-  tx.onabort=()=>reject(tx.error);
- });
- closeDb(db);
+ } finally {
+  closeDb(db);
+ }
 }
 
 export async function flushResolutionVideos(
@@ -185,12 +193,14 @@ export async function flushResolutionVideos(
 
 export async function pendingResolutionVideoCount(){
  const db=await openDb();
- const count=await new Promise<number>((resolve,reject)=>{
-  const req=db.transaction(STORE_RESOLUTIONS,"readonly")
-   .objectStore(STORE_RESOLUTIONS).count();
-  req.onsuccess=()=>resolve(req.result);
-  req.onerror=()=>reject(req.error);
- });
- closeDb(db);
- return count;
+ try {
+  return await new Promise<number>((resolve,reject)=>{
+   const req=db.transaction(STORE_RESOLUTIONS,"readonly")
+    .objectStore(STORE_RESOLUTIONS).count();
+   req.onsuccess=()=>resolve(req.result);
+   req.onerror=()=>reject(req.error);
+  });
+ } finally {
+  closeDb(db);
+ }
 }
