@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase";
 
 export const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
-export const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024;
+export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
 
 const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp"];
 const ALLOWED_VIDEOS = [
@@ -16,7 +16,7 @@ const VIDEO_EXTENSIONS: Record<string, string[]> = {
   "video/quicktime": ["mov", "qt"],
 };
 
-export const CITIZEN_VIDEO_MAX_SECONDS = 10;
+export const CITIZEN_VIDEO_MAX_SECONDS = Number.POSITIVE_INFINITY;
 
 export function getVideoDuration(file: File): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -104,25 +104,8 @@ export async function validateCitizenVideo(file: File) {
     );
   }
 
-  const duration = await getVideoDuration(file);
-
-  // Certains navigateurs mobiles renvoient Infinity pour la durée des WebM
-  // MediaRecorder sans métadonnées de durée. Ne pas bloquer ici : l'Edge
-  // Function analyse le conteneur réel et applique la limite stricte côté serveur.
-  if (Number.isFinite(duration) && duration > 0) {
-    if (duration > CITIZEN_VIDEO_MAX_SECONDS + 0.25) {
-      throw new Error(
-        "La vidéo doit durer " +
-          CITIZEN_VIDEO_MAX_SECONDS +
-          " secondes maximum (celle-ci dure " +
-          Math.ceil(duration) +
-          " s).",
-      );
-    }
-    return { duration, container };
-  }
-
-  return { duration: null, container };
+  const duration = await getVideoDuration(file).catch(() => null);
+  return { duration, container };
 }
 
 export async function createReportMediaUrl(
