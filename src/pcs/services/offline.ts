@@ -44,6 +44,8 @@ function openDb():Promise<IDBDatabase>{
 
 function closeDb(db:IDBDatabase){db.close();}
 
+type FlushResult={sent:number;failed:number};
+
 export async function queueFieldVerification(
  item:Omit<PendingVerification,"id"|"createdAt">
 ){
@@ -64,31 +66,36 @@ export async function queueFieldVerification(
 
 export async function flushFieldVerifications(
  send:(item:PendingVerification)=>Promise<void>
-){
- if(!navigator.onLine)return 0;
+):Promise<FlushResult>{
+ if(!navigator.onLine)return {sent:0,failed:0};
  const db=await openDb();
- const items=await new Promise<PendingVerification[]>((resolve,reject)=>{
-  const req=db.transaction(STORE_VERIFICATIONS,"readonly")
-   .objectStore(STORE_VERIFICATIONS).getAll();
-  req.onsuccess=()=>resolve(req.result);
-  req.onerror=()=>reject(req.error);
- });
- let sent=0;
- for(const item of items){
-  try{
-   await send(item);
-   await new Promise<void>((resolve,reject)=>{
-    const tx=db.transaction(STORE_VERIFICATIONS,"readwrite");
-    tx.objectStore(STORE_VERIFICATIONS).delete(item.id);
-    tx.oncomplete=()=>resolve();
-    tx.onerror=()=>reject(tx.error);
-    tx.onabort=()=>reject(tx.error);
-   });
-   sent++;
-  }catch{}
+ let sent=0,failed=0;
+ try{
+  const items=await new Promise<PendingVerification[]>((resolve,reject)=>{
+   const req=db.transaction(STORE_VERIFICATIONS,"readonly")
+    .objectStore(STORE_VERIFICATIONS).getAll();
+   req.onsuccess=()=>resolve(req.result);
+   req.onerror=()=>reject(req.error);
+  });
+  for(const item of items){
+   try{
+    await send(item);
+    await new Promise<void>((resolve,reject)=>{
+     const tx=db.transaction(STORE_VERIFICATIONS,"readwrite");
+     tx.objectStore(STORE_VERIFICATIONS).delete(item.id);
+     tx.oncomplete=()=>resolve();
+     tx.onerror=()=>reject(tx.error);
+     tx.onabort=()=>reject(tx.error);
+    });
+    sent++;
+   }catch{
+    failed++;
+   }
+  }
+  return {sent,failed};
+ }finally{
+  closeDb(db);
  }
- closeDb(db);
- return sent;
 }
 
 export async function pendingFieldVerificationCount(){
@@ -140,31 +147,36 @@ export async function queueResolutionVideo(
 
 export async function flushResolutionVideos(
  send:(item:PendingResolution)=>Promise<void>
-){
- if(!navigator.onLine)return 0;
+):Promise<FlushResult>{
+ if(!navigator.onLine)return {sent:0,failed:0};
  const db=await openDb();
- const items=await new Promise<PendingResolution[]>((resolve,reject)=>{
-  const req=db.transaction(STORE_RESOLUTIONS,"readonly")
-   .objectStore(STORE_RESOLUTIONS).getAll();
-  req.onsuccess=()=>resolve(req.result);
-  req.onerror=()=>reject(req.error);
- });
- let sent=0;
- for(const item of items){
-  try{
-   await send(item);
-   await new Promise<void>((resolve,reject)=>{
-    const tx=db.transaction(STORE_RESOLUTIONS,"readwrite");
-    tx.objectStore(STORE_RESOLUTIONS).delete(item.id);
-    tx.oncomplete=()=>resolve();
-    tx.onerror=()=>reject(tx.error);
-    tx.onabort=()=>reject(tx.error);
-   });
-   sent++;
-  }catch{}
+ let sent=0,failed=0;
+ try{
+  const items=await new Promise<PendingResolution[]>((resolve,reject)=>{
+   const req=db.transaction(STORE_RESOLUTIONS,"readonly")
+    .objectStore(STORE_RESOLUTIONS).getAll();
+   req.onsuccess=()=>resolve(req.result);
+   req.onerror=()=>reject(req.error);
+  });
+  for(const item of items){
+   try{
+    await send(item);
+    await new Promise<void>((resolve,reject)=>{
+     const tx=db.transaction(STORE_RESOLUTIONS,"readwrite");
+     tx.objectStore(STORE_RESOLUTIONS).delete(item.id);
+     tx.oncomplete=()=>resolve();
+     tx.onerror=()=>reject(tx.error);
+     tx.onabort=()=>reject(tx.error);
+    });
+    sent++;
+   }catch{
+    failed++;
+   }
+  }
+  return {sent,failed};
+ }finally{
+  closeDb(db);
  }
- closeDb(db);
- return sent;
 }
 
 export async function pendingResolutionVideoCount(){
