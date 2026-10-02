@@ -1181,3 +1181,31 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   border:0!important;
   box-sizing:border-box!important;
 }
+
+/* Interactions citoyennes : panneau lisible, accessible et adapté aux petits écrans. */
+.citizenReportInteractions{width:100%;min-width:0;display:flex;flex-direction:column;gap:9px;margin-top:8px;text-shadow:none}
+.citizenReportInteractions .feedActions{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+.citizenReportInteractions .feedActions button,
+.citizenReportInteractions form button{min-height:42px;border-radius:999px;padding:10px 16px;font-size:.88rem;font-weight:650;line-height:1.2;transition:transform .16s ease,background .16s ease;touch-action:manipulation}
+.citizenReportInteractions button:disabled{opacity:.58;cursor:wait}
+.citizenReportInteractions button:focus-visible,
+.citizenPublicComments textarea:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
+.citizenPublicComments{width:100%;min-width:0;max-height:min(38dvh,300px);overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid rgba(255,255,255,.2);border-radius:16px;background:rgba(15,23,42,.94);box-shadow:0 10px 30px rgba(0,0,0,.24);box-sizing:border-box}
+.citizenPublicComments>p{margin:0;color:#e2e8f0;font-size:.88rem;line-height:1.45}
+.citizenPublicComment{padding:10px 12px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.06);overflow-wrap:anywhere}
+.citizenPublicComment p{margin:0;color:#f8fafc;font-size:.9rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.citizenPublicComment small{display:block;margin-top:7px;color:#cbd5e1;font-size:.72rem}
+.citizenPublicComments form{display:flex;flex-direction:column;gap:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.14)}
+.citizenPublicComments label{font-size:.84rem;font-weight:650;color:#fff}
+.citizenPublicComments textarea{display:block;width:100%;min-height:84px;resize:vertical;box-sizing:border-box;padding:12px 14px;border:1px solid #64748b;border-radius:12px;background:#fff;color:#0f172a;font:inherit;font-size:.92rem;line-height:1.45;text-shadow:none}
+.citizenPublicComments textarea::placeholder{color:#64748b}
+.citizenReportInteractions>[role=status]{margin:0;padding:8px 11px;border-radius:10px;background:rgba(15,23,42,.92);color:#f8fafc;font-size:.82rem;line-height:1.4;overflow-wrap:anywhere}
+.citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){max-height:78%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+@media(max-width:700px){
+ .citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){max-height:82%;padding:54px 12px 16px;gap:6px}
+ .citizenReportInteractions{gap:7px;margin-top:5px}
+ .citizenReportInteractions .feedActions button{flex:1 1 auto;min-width:0;padding:10px 12px;font-size:.82rem}
+ .citizenPublicComments{max-height:32dvh;padding:9px;border-radius:13px}
+ .citizenPublicComments textarea{min-height:72px;padding:10px 12px}
+}
+@media(prefers-reduced-motion:reduce){.citizenReportInteractions button{transition:none}}
