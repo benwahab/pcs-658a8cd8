@@ -80,11 +80,21 @@ export default function Home() {
           data-pcs-tour="home"
           to="/"
           aria-label="Accueil — revenir au début du flux"
-          onClick={() => {
-            const feed = document.querySelector(".citizenFeed");
-            feed?.scrollTo({ top: 0, behavior: "smooth" });
+          onClick={(event) => {
+            // This is an in-page control, not a route change. Prevent router
+            // scroll restoration from racing with the feed reset.
+            event.preventDefault();
+            const feed = document.querySelector<HTMLElement>(".citizenFeed");
+            const intro = feed?.querySelector<HTMLElement>(".citizenSlideIntro");
+
             setHeaderHidden(false);
             setHeaderScrolled(false);
+
+            // Reset both possible scroll containers: the feed itself and the
+            // document. scrollIntoView is a final fallback for mobile layouts.
+            feed?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+            window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+            intro?.scrollIntoView({ block: "start", behavior: "smooth" });
           }}
         >
           <BrandLogo className="feedBrandLogo" />
