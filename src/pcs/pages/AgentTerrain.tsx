@@ -3,7 +3,7 @@ import {Link} from "@/pcs/router";
 import {listMyMissions,confirmFieldVerification,resolveMissionWithVideo} from "../services/mairie";
 import BrandLogo from "../components/BrandLogo";
 import {statusLabels} from "../types";
-import {MAX_VIDEO_SIZE_BYTES} from "../services/media";
+
 import {
  cacheAgentMissions,
  getCachedAgentMissions,
@@ -164,14 +164,13 @@ export default function AgentTerrain(){
   if(!mime){setCameraError("Aucun format MP4/WebM compatible sur ce navigateur. Essayez un navigateur récent.");return;}
   chunksRef.current=[];setCameraError("");
   try{
-   const r=new MediaRecorder(stream,{mimeType:mime});recorderRef.current=r;
-   r.ondataavailable=e=>{if(e.data?.size){chunksRef.current.push(e.data);const total=chunksRef.current.reduce((sum,chunk)=>sum+(chunk instanceof Blob?chunk.size:chunk instanceof ArrayBuffer?chunk.byteLength:0),0);if(total>MAX_VIDEO_SIZE_BYTES&&r.state==="recording"){setCameraError("Limite de 100 Mo atteinte : arrêt automatique de l’enregistrement.");r.stop();}}};
+   const r=new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:2500000, audioBitsPerSecond:128000});recorderRef.current=r;
+   r.ondataavailable=e=>{if(e.data?.size)chunksRef.current.push(e.data);};
    r.onerror=()=>setCameraError("Erreur d’enregistrement. Réessayez.");
    r.onstop=()=>{
     if(timerRef.current!==null){window.clearInterval(timerRef.current);timerRef.current=null;}setRecording(false);
     const blob=new Blob(chunksRef.current,{type:r.mimeType||mime});chunksRef.current=[];
     if(!blob.size){setCameraError("Vidéo vide. Réenregistrez.");stopCamera();return;}
-    if(blob.size>MAX_VIDEO_SIZE_BYTES){setVideo(null);setCameraError("La vidéo ne doit pas dépasser 100 Mo. Réenregistrez avec une qualité ou une durée adaptée.");stopCamera();return;}
     const type=blob.type.split(";")[0].toLowerCase(),ext=type==="video/mp4"?"mp4":type==="video/webm"?"webm":"";
     if(!ext){setCameraError("Format produit non accepté par PCS. Essayez un autre navigateur.");stopCamera();return;}
     const file=new File([blob],"resolution-"+Date.now()+"."+ext,{type});if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);
@@ -322,7 +321,7 @@ export default function AgentTerrain(){
          {cameraReady&&!recording&&!video&&<button type="button" className="feedActionButton primary" onClick={startRecording}>● Démarrer l’enregistrement</button>}
          {recording&&<><video ref={cameraRef} autoPlay muted playsInline style={{width:"100%",maxHeight:"42vh",borderRadius:12,background:"#111",objectFit:"cover"}}/><p>Enregistrement : {Math.floor(elapsed/60).toString().padStart(2,"0")}:{String(elapsed%60).padStart(2,"0")}</p><button type="button" className="feedActionButton primary" onClick={()=>recorderRef.current?.state==="recording"&&recorderRef.current.stop()}>■ Arrêter et prévisualiser</button></>}
          {video&&videoPreviewUrl&&<><video ref={previewRef} controls playsInline style={{width:"100%",maxHeight:"42vh",borderRadius:12,background:"#111",objectFit:"contain"}}/><p>Vidéo prête ({(video.size/1024/1024).toFixed(1)} Mo).</p><button type="button" className="feedActionButton" disabled={busy} onClick={()=>{setVideo(null);URL.revokeObjectURL(previewUrlRef.current);previewUrlRef.current="";setVideoPreviewUrl("");void openCamera();}}>Réenregistrer</button></>}
-         <div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"10px 0"}}><button type="button" className="feedActionButton" disabled={busy||recording} onClick={()=>document.getElementById("agent-resolution-video-import")?.click()}>Importer une vidéo</button><input id="agent-resolution-video-import" hidden type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" onChange={event=>{const file=event.target.files?.[0]??null;event.target.value="";if(!file)return;if(file.size<=0||file.size>MAX_VIDEO_SIZE_BYTES){setCameraError("La vidéo ne doit pas dépasser 100 Mo.");return;}if(!["video/mp4","video/webm","video/quicktime"].includes(file.type)){setCameraError("Format vidéo non pris en charge. Utilisez MP4, WebM ou MOV.");return;}setCameraError("");setVideo(file);if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);previewUrlRef.current=URL.createObjectURL(file);setVideoPreviewUrl(previewUrlRef.current);stopCamera();}} /></div><p>Durée non limitée par PCS. Taille maximale : 100 Mo. GPS précis requis à 20 mètres ou moins du signalement.</p>
+         <div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"10px 0"}}><button type="button" className="feedActionButton" disabled={busy||recording} onClick={()=>document.getElementById("agent-resolution-video-import")?.click()}>Importer une vidéo</button><input id="agent-resolution-video-import" hidden type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" onChange={event=>{const file=event.target.files?.[0]??null;event.target.value="";if(!file)return;if(file.size<=0){setCameraError("Le fichier vidéo est vide.");return;}if(!["video/mp4","video/webm","video/quicktime"].includes(file.type)){setCameraError("Format vidéo non pris en charge. Utilisez MP4, WebM ou MOV.");return;}setCameraError("");setVideo(file);if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);previewUrlRef.current=URL.createObjectURL(file);setVideoPreviewUrl(previewUrlRef.current);stopCamera();}} /></div><p>Aucune durée maximale imposée par PCS. L’enregistrement réduit le débit vidéo pour limiter la taille du fichier. La réception reste soumise aux capacités de stockage disponibles. GPS précis requis à 20 mètres ou moins du signalement.</p>
          <button className="feedActionButton primary" disabled={!video||busy||recording} onClick={()=>resolve(m)}>{busy?"Publication…":"Publier la résolution"}</button>
          <button type="button" className="feedActionButton" disabled={busy} onClick={cancelCapture}>Annuler</button>
         </div>}
