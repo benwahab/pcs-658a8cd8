@@ -36,21 +36,6 @@ export async function listPublicReports(): Promise<PublicReport[]> {
   }));
 }
 
-export async function changeStatus(
-  reportId: string,
-  status: ReportStatus,
-): Promise<void> {
-  if (!supabase) {
-    throw new Error("Supabase n'est pas configuré.");
-  }
-
-  const { error } = await supabase
-    .from("reports")
-    .update({ status })
-    .eq("id", reportId);
-
-  if (error) throw error;
-}
 
 interface CitizenReportInput {
   category_id: string;

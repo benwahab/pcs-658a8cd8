@@ -1,6 +1,5 @@
 import { supabase } from "../lib/supabase";
 
-export const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
 export const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024;
 
 const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp"];
