@@ -15,9 +15,7 @@ export function Shell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!supabase) return;
 
-    supabase.auth
-      .getUser()
-      .then(({ data }) => setEmail(data.user?.email ?? null));
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
 
     const {
       data: { subscription },
@@ -104,9 +102,7 @@ function ConnectionStatus() {
     window.addEventListener("online", update);
     window.addEventListener("offline", update);
 
-    const connection = (
-      navigator as Navigator & { connection?: EventTarget }
-    ).connection;
+    const connection = (navigator as Navigator & { connection?: EventTarget }).connection;
 
     connection?.addEventListener("change", updateConnection);
 
@@ -143,11 +139,7 @@ function App({ children }: { children: ReactNode }) {
     const endpoint = `${import.meta.env.VITE_SUPABASE_URL || ""}/functions/v1/cst-telemetry`;
     if (!endpoint.startsWith("http")) return;
 
-    const send = (
-      eventType: string,
-      message: string,
-      metadata: Record<string, unknown> = {},
-    ) => {
+    const send = (eventType: string, message: string, metadata: Record<string, unknown> = {}) => {
       void fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -178,9 +170,7 @@ function App({ children }: { children: ReactNode }) {
     const onRejection = (event: PromiseRejectionEvent) =>
       send(
         "unhandled_rejection",
-        event.reason instanceof Error
-          ? event.reason.message
-          : String(event.reason).slice(0, 500),
+        event.reason instanceof Error ? event.reason.message : String(event.reason).slice(0, 500),
       );
 
     window.addEventListener("error", onError);
@@ -200,8 +190,7 @@ function App({ children }: { children: ReactNode }) {
         <ConnectionStatus />
         {!isSupabaseConfigured && (
           <div className="dev-banner">
-            Configuration requise : renseignez les variables VITE_SUPABASE_*
-            avant déploiement.
+            Configuration requise : renseignez les variables VITE_SUPABASE_* avant déploiement.
           </div>
         )}
       </Shell>

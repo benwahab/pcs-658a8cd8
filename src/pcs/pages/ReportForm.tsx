@@ -2,19 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 import { supabase } from "../lib/supabase";
-import {
-  listCategories,
-  submitCitizenReport,
-} from "../lib/reports";
+import { listCategories, submitCitizenReport } from "../lib/reports";
 import type { Category, Region } from "../types";
-import {
-  listAllCommunes,
-  listRegions,
-} from "../services/mairie";
-import {
-  MAX_VIDEO_SIZE_BYTES,
-  validateCitizenVideo,
-} from "../services/media";
+import { listAllCommunes, listRegions } from "../services/mairie";
+import { MAX_VIDEO_SIZE_BYTES, validateCitizenVideo } from "../services/media";
 
 interface Commune {
   id: string;
@@ -46,9 +37,7 @@ export default function ReportForm() {
   const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    null,
-  );
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const [files, setFiles] = useState<File[]>([]);
   const [video, setVideo] = useState<File | null>(null);
@@ -76,11 +65,7 @@ export default function ReportForm() {
 
   useEffect(() => {
     setCommune("");
-    setCommunes(
-      region
-        ? allCommunes.filter((item) => item.region_id === region)
-        : [],
-    );
+    setCommunes(region ? allCommunes.filter((item) => item.region_id === region) : []);
   }, [region, allCommunes]);
 
   function clearTimers() {
@@ -88,7 +73,6 @@ export default function ReportForm() {
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-
   }
 
   function detachPreview() {
@@ -172,16 +156,8 @@ export default function ReportForm() {
   }
 
   function finalizeInactiveRecorder(recorder: MediaRecorder) {
-    const type = (recorder.mimeType || "video/webm")
-      .split(";")[0]
-      .trim()
-      .toLowerCase();
-    const extension =
-      type === "video/mp4"
-        ? "mp4"
-        : type === "video/quicktime"
-          ? "mov"
-          : "webm";
+    const type = (recorder.mimeType || "video/webm").split(";")[0].trim().toLowerCase();
+    const extension = type === "video/mp4" ? "mp4" : type === "video/quicktime" ? "mov" : "webm";
     const blob = new Blob(chunksRef.current, { type });
     const file = new File([blob], `signalement-video.${extension}`, {
       type,
@@ -196,7 +172,9 @@ export default function ReportForm() {
     if (videoBusy) return;
 
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError("L’accès à la caméra n’est pas disponible. Vérifiez les autorisations du navigateur puis réessayez.");
+      setError(
+        "L’accès à la caméra n’est pas disponible. Vérifiez les autorisations du navigateur puis réessayez.",
+      );
       return;
     }
 
@@ -224,10 +202,7 @@ export default function ReportForm() {
 
     if (recording || finalizingVideo) return;
 
-    if (
-      !navigator.mediaDevices?.getUserMedia ||
-      typeof MediaRecorder === "undefined"
-    ) {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
       setError("La caméra vidéo n’est pas disponible sur cet appareil.");
       return;
     }
@@ -279,10 +254,7 @@ export default function ReportForm() {
       setFinalizingVideo(false);
       recorder.start(500);
 
-      timerRef.current = window.setTimeout(
-        stopRecording,
-        CAPTURE_VIDEO_STOP_MS,
-      );
+      timerRef.current = window.setTimeout(stopRecording, CAPTURE_VIDEO_STOP_MS);
 
       requestAnimationFrame(() => {
         const videoElement = cameraPreviewRef.current;
@@ -299,9 +271,7 @@ export default function ReportForm() {
       cleanupCamera();
       setFinalizingVideo(false);
       setError(
-        captureError instanceof Error
-          ? captureError.message
-          : "Impossible d’accéder à la caméra.",
+        captureError instanceof Error ? captureError.message : "Impossible d’accéder à la caméra.",
       );
     }
   }
@@ -419,11 +389,7 @@ export default function ReportForm() {
       try {
         await validateCitizenVideo(video);
       } catch (videoError) {
-        setError(
-          videoError instanceof Error
-            ? videoError.message
-            : "La vidéo n’est pas valide.",
-        );
+        setError(videoError instanceof Error ? videoError.message : "La vidéo n’est pas valide.");
         return;
       }
     }
@@ -459,8 +425,7 @@ export default function ReportForm() {
     return (
       <section className="narrow authScreen reportScreen">
         <div className="card reportSuccess">
-          Votre signalement a bien été envoyé. Merci pour votre contribution
-          citoyenne.
+          Votre signalement a bien été envoyé. Merci pour votre contribution citoyenne.
         </div>
       </section>
     );
@@ -469,24 +434,17 @@ export default function ReportForm() {
   const videoBusy = recording || finalizingVideo;
 
   return (
-    <section
-      className="narrow authScreen reportScreen"
-      data-pcs-tour="report-form"
-    >
+    <section className="narrow authScreen reportScreen" data-pcs-tour="report-form">
       <h1>Faire un signalement</h1>
       <p>
-        Vous pouvez signaler sans créer de compte. Le signalement est enregistré
-        sans identité de citoyen.
+        Vous pouvez signaler sans créer de compte. Le signalement est enregistré sans identité de
+        citoyen.
       </p>
 
       <form className="card form" onSubmit={submit}>
         <label>
           Région du problème
-          <select
-            required
-            value={region}
-            onChange={(event) => setRegion(event.target.value)}
-          >
+          <select required value={region} onChange={(event) => setRegion(event.target.value)}>
             <option value="">Choisir…</option>
             {regions.map((item) => (
               <option key={item.id} value={item.id}>
@@ -558,12 +516,7 @@ export default function ReportForm() {
           />
         </label>
 
-        <button
-          type="button"
-          className="button"
-          data-pcs-tour="location"
-          onClick={locate}
-        >
+        <button type="button" className="button" data-pcs-tour="location" onClick={locate}>
           Utiliser ma position
         </button>
 
@@ -615,9 +568,7 @@ export default function ReportForm() {
           {recording && (
             <div className="cameraCapture">
               <video ref={cameraPreviewRef} autoPlay muted playsInline />
-              <p>
-                La vidéo est finalisée avant l’envoi.
-              </p>
+              <p>La vidéo est finalisée avant l’envoi.</p>
             </div>
           )}
 
@@ -635,11 +586,7 @@ export default function ReportForm() {
                   <button
                     type="button"
                     onClick={() =>
-                      setFiles((current) =>
-                        current.filter(
-                          (_, itemIndex) => itemIndex !== index,
-                        ),
-                      )
+                      setFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))
                     }
                   >
                     ×

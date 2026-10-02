@@ -25,7 +25,12 @@ export default function Home() {
           setError("");
         }
       } catch (error) {
-        if (active) setError(error instanceof Error ? error.message : "Impossible de charger les signalements publics.");
+        if (active)
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Impossible de charger les signalements publics.",
+          );
       } finally {
         if (active) setLoading(false);
       }
@@ -92,12 +97,8 @@ export default function Home() {
           <div>
             <Link to="/cst">🖥️ CST — Supervision technique</Link>
             <Link to="/connexion-operationnelle">🏛️ Mairie</Link>
-            <Link to="/connexion-operationnelle?mode=agent">
-              👷 Agent terrain
-            </Link>
-            <Link to="/connexion-operationnelle?mode=moderator">
-              🛡️ Modérateur
-            </Link>
+            <Link to="/connexion-operationnelle?mode=agent">👷 Agent terrain</Link>
+            <Link to="/connexion-operationnelle?mode=moderator">🛡️ Modérateur</Link>
             <Link to="/connexion-nigelec">⚡ NIGELEC</Link>
             <Link to="/connexion-nde">💧 NDE</Link>
           </div>
@@ -114,15 +115,11 @@ export default function Home() {
             <strong>visibles et suivis.</strong>
           </h1>
           <p>
-            Parcourez les signalements publiés dans tout le Niger, suivez leur
-            évolution et consultez les résolutions.
+            Parcourez les signalements publiés dans tout le Niger, suivez leur évolution et
+            consultez les résolutions.
           </p>
           <div className="feedActions">
-            <Link
-              className="feedPrimary"
-              data-pcs-tour="create-report"
-              to="/signaler"
-            >
+            <Link className="feedPrimary" data-pcs-tour="create-report" to="/signaler">
               ＋ Signaler un problème
             </Link>
           </div>
@@ -149,9 +146,7 @@ export default function Home() {
         <article className="citizenSlide">
           <div className="slideContent">
             <h2>Aucun signalement public pour le moment.</h2>
-            <p>
-              Les signalements publiés apparaîtront ici au fur et à mesure.
-            </p>
+            <p>Les signalements publiés apparaîtront ici au fur et à mesure.</p>
           </div>
         </article>
       )}
@@ -236,7 +231,12 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         );
 
         if (!cancelled) {
-          setMedia(urls.sort((a, b) => Number(b.media_type.startsWith("video")) - Number(a.media_type.startsWith("video"))));
+          setMedia(
+            urls.sort(
+              (a, b) =>
+                Number(b.media_type.startsWith("video")) - Number(a.media_type.startsWith("video")),
+            ),
+          );
         }
       } catch {
         if (!cancelled) setMedia([]);

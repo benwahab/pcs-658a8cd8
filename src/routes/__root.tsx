@@ -79,13 +79,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "PCS — Signalement citoyen" },
-      { name: "description", content: "Signaler, localiser et suivre les problèmes d’intérêt public." },
+      {
+        name: "description",
+        content: "Signaler, localiser et suivre les problèmes d’intérêt public.",
+      },
       { name: "theme-color", content: "#0f766e" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { property: "og:title", content: "PCS — Signalement citoyen" },
-      { property: "og:description", content: "Signaler, localiser et suivre les problèmes d’intérêt public." },
+      {
+        property: "og:description",
+        content: "Signaler, localiser et suivre les problèmes d’intérêt public.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -96,7 +102,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap",
+      },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", href: "/icons/icon-192.jpg", type: "image/jpeg" },
       { rel: "apple-touch-icon", href: "/icons/icon-192.jpg" },
@@ -120,7 +129,11 @@ function RootShell({ children }: { children: ReactNode }) {
         </div>
         {children}
         <Scripts />
-        <script dangerouslySetInnerHTML={{__html: `setTimeout(() => document.getElementById("pcs-splash")?.remove(), 1200);`}} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `setTimeout(() => document.getElementById("pcs-splash")?.remove(), 1200);`,
+          }}
+        />
       </body>
     </html>
   );

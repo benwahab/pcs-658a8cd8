@@ -1,98 +1,1037 @@
-import {useEffect,useMemo,useRef,useState} from "react";
-import {Link,useNavigate} from "@/pcs/router";
-import {supabase} from "@/pcs/lib/supabase";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "@/pcs/router";
+import { supabase } from "@/pcs/lib/supabase";
 
-async function callCst(body:Record<string,unknown>){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-auth",{body});if(error)throw new Error(error.message||"Service CST indisponible.");if(data?.error)throw new Error(data.error);return data as any;}
-async function health(){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-health",{method:"GET"});if(error||data?.error)throw new Error(data?.error??"Supervision indisponible.");return data as any;}
-async function mediaModeration(body:Record<string,unknown>={action:"list"}){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-media-moderation",{body});if(error||data?.error)throw new Error(data?.error??"Service de modération indisponible.");return data as any;}
-const Dot=({s}:{s:string})=><span className={"cstStatusDot "+s} aria-hidden="true"/>;
-const EyeIcon=({off=false}:{off?:boolean})=><svg viewBox="0 0 24 24" aria-hidden="true" className="cstEyeIcon"><path d="M2.2 12s3.3-5.2 9.8-5.2S21.8 12 21.8 12 18.5 17.2 12 17.2 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="2.8"/>{off&&<path d="m4 4 16 16"/>}</svg>;
-const unavailable="Source non connectée";
+async function callCst(body: Record<string, unknown>) {
+  if (!supabase) throw new Error("Supabase non configuré.");
+  const { data, error } = await supabase.functions.invoke("cst-auth", { body });
+  if (error) throw new Error(error.message || "Service CST indisponible.");
+  if (data?.error) throw new Error(data.error);
+  return data as any;
+}
+async function health() {
+  if (!supabase) throw new Error("Supabase non configuré.");
+  const { data, error } = await supabase.functions.invoke("cst-health", { method: "GET" });
+  if (error || data?.error) throw new Error(data?.error ?? "Supervision indisponible.");
+  return data as any;
+}
+async function mediaModeration(body: Record<string, unknown> = { action: "list" }) {
+  if (!supabase) throw new Error("Supabase non configuré.");
+  const { data, error } = await supabase.functions.invoke("cst-media-moderation", { body });
+  if (error || data?.error) throw new Error(data?.error ?? "Service de modération indisponible.");
+  return data as any;
+}
+const Dot = ({ s }: { s: string }) => <span className={"cstStatusDot " + s} aria-hidden="true" />;
+const EyeIcon = ({ off = false }: { off?: boolean }) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" className="cstEyeIcon">
+    <path d="M2.2 12s3.3-5.2 9.8-5.2S21.8 12 21.8 12 18.5 17.2 12 17.2 2.2 12 2.2 12Z" />
+    <circle cx="12" cy="12" r="2.8" />
+    {off && <path d="m4 4 16 16" />}
+  </svg>
+);
+const unavailable = "Source non connectée";
 
-export function CSTAccess(){
- const nav=useNavigate();const[setup,setSetup]=useState<boolean|null>(null);const[email,setEmail]=useState("");const[pw,setPw]=useState("");const[confirm,setConfirm]=useState("");const[showPw,setShowPw]=useState(false);const[showConfirm,setShowConfirm]=useState(false);const[busy,setBusy]=useState(true);const[error,setError]=useState("");const[info,setInfo]=useState("");const[recovery,setRecovery]=useState(false);const[recoveryChange,setRecoveryChange]=useState(false);
- useEffect(()=>{let active=true;const {data:{subscription}}=supabase!.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"&&active){setRecoveryChange(true);setRecovery(false);setBusy(false);}});(async()=>{try{const {data:sd}=await supabase!.auth.getSession();if(sd.session&&!recoveryChange){const {data:a}=await (supabase as any).from("cst_accounts").select("id").eq("user_id",sd.session.user.id).maybeSingle();if(a){nav("/cst/dashboard");return;}}const s=await callCst({action:"status"});setSetup(!s.configured);}catch(e){setError(e instanceof Error?e.message:"Accès CST indisponible.");}finally{if(active)setBusy(false)}})();return()=>{active=false;subscription.unsubscribe()}},[nav,recoveryChange]);
- async function submit(e:React.FormEvent){e.preventDefault();setError("");setInfo("");setBusy(true);try{
-   if(recovery){if(!email.trim())throw new Error("Saisissez votre identifiant professionnel.");const {error}=await supabase!.auth.resetPasswordForEmail(email.trim(),{redirectTo:window.location.origin+"/cst"});if(error)throw error;setInfo("Si cette adresse correspond au compte CST, un email de récupération a été envoyé.");setRecovery(false);return;}
-   if(recoveryChange){if(pw.length<12)throw new Error("Le nouveau mot de passe doit contenir au moins 12 caractères.");if(pw!==confirm)throw new Error("Les deux mots de passe ne correspondent pas.");const {error}=await supabase!.auth.updateUser({password:pw});if(error)throw error;await supabase!.auth.signOut();setRecoveryChange(false);setPw("");setConfirm("");setInfo("Mot de passe mis à jour. Vous pouvez maintenant vous reconnecter.");return;}
-   if(setup&&pw!==confirm){setError("Les deux mots de passe ne correspondent pas.");return}if(setup&&pw.length<12){setError("Le mot de passe doit contenir au moins 12 caractères.");return}
-   if(setup)await callCst({action:"bootstrap",email,password:pw});
-   const r=await callCst({action:"login",email,password:pw});const {error}=await supabase!.auth.setSession(r.session);if(error)throw error;nav("/cst/dashboard");
- }catch(e){setError(e instanceof Error?e.message:"Connexion CST impossible.")}finally{setBusy(false)}}
- if(setup===null&&!recoveryChange)return <section className="cstAuthPage"><div className="cstAuthCard"><div className="cstBrand"><span className="cstBrandMark">CST</span><div><p className="eyebrow">PCS</p><h1>Centre de Supervision Technique</h1></div></div>{error?<><div className="cstSecurityNote"><Dot s="critical"/>Impossible d’initialiser le CST.</div><p className="error">{error}</p><button className="button primary" type="button" onClick={()=>window.location.reload()}>Réessayer</button></>:<div className="cstSecurityNote"><Dot s="healthy"/>Initialisation du CST…</div>}</div></section>;
- return <section className="cstAuthPage"><div className="cstAuthCard"><div className="cstBrand"><span className="cstBrandMark">CST</span><div><p className="eyebrow">PCS</p><h1>Centre de Supervision Technique</h1></div></div><p className="cstLead">Espace sécurisé réservé à l’administration technique de PCS.</p>{!recoveryChange&&<div className="cstSecurityNote"><Dot s="healthy"/>{setup?"Première configuration — un seul compte sera créé.":"Compte CST configuré — inscription fermée."}</div>}{recoveryChange&&<div className="cstSecurityNote"><Dot s="healthy"/>Réinitialisation sécurisée du mot de passe CST.</div>}<form className="form" onSubmit={submit}>{!recoveryChange&&<label>Identifiant professionnel<input type="email" required value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></label>}{recoveryChange&&<label>Nouveau mot de passe<div className="cstPasswordField"><input type={showPw?"text":"password"} required minLength={12} value={pw} onChange={e=>setPw(e.target.value)} autoComplete="new-password"/><button type="button" className="cstPasswordToggle" onClick={()=>setShowPw(v=>!v)} aria-label={showPw?"Masquer le mot de passe":"Afficher le mot de passe"}><EyeIcon off={!showPw}/></button></div></label>}{recoveryChange&&<label>Confirmer le nouveau mot de passe<div className="cstPasswordField"><input type={showConfirm?"text":"password"} required minLength={12} value={confirm} onChange={e=>setConfirm(e.target.value)} autoComplete="new-password"/><button type="button" className="cstPasswordToggle" onClick={()=>setShowConfirm(v=>!v)} aria-label={showConfirm?"Masquer la confirmation":"Afficher la confirmation"}><EyeIcon off={!showConfirm}/></button></div></label>}{!recovery&&!recoveryChange&&<label>Mot de passe<div className="cstPasswordField"><input type={showPw?"text":"password"} required minLength={12} value={pw} onChange={e=>setPw(e.target.value)} autoComplete={setup?"new-password":"current-password"}/><button type="button" className="cstPasswordToggle" onClick={()=>setShowPw(v=>!v)} aria-label={showPw?"Masquer le mot de passe":"Afficher le mot de passe"}>{showPw?"Masquer":"Afficher"}</button></div></label>}{setup&&!recovery&&!recoveryChange&&<label>Confirmer le mot de passe<div className="cstPasswordField"><input type={showConfirm?"text":"password"} required minLength={12} value={confirm} onChange={e=>setConfirm(e.target.value)} autoComplete="new-password"/><button type="button" className="cstPasswordToggle" onClick={()=>setShowConfirm(v=>!v)} aria-label={showConfirm?"Masquer la confirmation":"Afficher la confirmation"}>{showConfirm?"Masquer":"Afficher"}</button></div></label>}{error&&<p className="error">{error}</p>}{info&&<p className="cstInfo">{info}</p>}<button className="button primary" disabled={busy}>{busy?"Veuillez patienter…":recoveryChange?"Mettre à jour le mot de passe":recovery?"Envoyer le lien de récupération":setup?"Créer le compte CST":"Se connecter"}</button></form>{!setup&&!recovery&&!recoveryChange&&<button className="button cstRecoveryButton" onClick={()=>{setRecovery(true);setError("");setInfo("");setPw("");setConfirm("")}}>Récupérer l’accès</button>}{(recovery||recoveryChange)&&<button className="button cstRecoveryButton" onClick={()=>{setRecovery(false);setRecoveryChange(false);setError("");setInfo("");setPw("");setConfirm("")}}>Retour à la connexion</button>}<Link className="button" to="/">Retour à PCS</Link></div></section>;
+export function CSTAccess() {
+  const nav = useNavigate();
+  const [setup, setSetup] = useState<boolean | null>(null);
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [busy, setBusy] = useState(true);
+  const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+  const [recovery, setRecovery] = useState(false);
+  const [recoveryChange, setRecoveryChange] = useState(false);
+  useEffect(() => {
+    let active = true;
+    const {
+      data: { subscription },
+    } = supabase!.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY" && active) {
+        setRecoveryChange(true);
+        setRecovery(false);
+        setBusy(false);
+      }
+    });
+    (async () => {
+      try {
+        const { data: sd } = await supabase!.auth.getSession();
+        if (sd.session && !recoveryChange) {
+          const { data: a } = await (supabase as any)
+            .from("cst_accounts")
+            .select("id")
+            .eq("user_id", sd.session.user.id)
+            .maybeSingle();
+          if (a) {
+            nav("/cst/dashboard");
+            return;
+          }
+        }
+        const s = await callCst({ action: "status" });
+        setSetup(!s.configured);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Accès CST indisponible.");
+      } finally {
+        if (active) setBusy(false);
+      }
+    })();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, [nav, recoveryChange]);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+    setBusy(true);
+    try {
+      if (recovery) {
+        if (!email.trim()) throw new Error("Saisissez votre identifiant professionnel.");
+        const { error } = await supabase!.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: window.location.origin + "/cst",
+        });
+        if (error) throw error;
+        setInfo(
+          "Si cette adresse correspond au compte CST, un email de récupération a été envoyé.",
+        );
+        setRecovery(false);
+        return;
+      }
+      if (recoveryChange) {
+        if (pw.length < 12)
+          throw new Error("Le nouveau mot de passe doit contenir au moins 12 caractères.");
+        if (pw !== confirm) throw new Error("Les deux mots de passe ne correspondent pas.");
+        const { error } = await supabase!.auth.updateUser({ password: pw });
+        if (error) throw error;
+        await supabase!.auth.signOut();
+        setRecoveryChange(false);
+        setPw("");
+        setConfirm("");
+        setInfo("Mot de passe mis à jour. Vous pouvez maintenant vous reconnecter.");
+        return;
+      }
+      if (setup && pw !== confirm) {
+        setError("Les deux mots de passe ne correspondent pas.");
+        return;
+      }
+      if (setup && pw.length < 12) {
+        setError("Le mot de passe doit contenir au moins 12 caractères.");
+        return;
+      }
+      if (setup) await callCst({ action: "bootstrap", email, password: pw });
+      const r = await callCst({ action: "login", email, password: pw });
+      const { error } = await supabase!.auth.setSession(r.session);
+      if (error) throw error;
+      nav("/cst/dashboard");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Connexion CST impossible.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (setup === null && !recoveryChange)
+    return (
+      <section className="cstAuthPage">
+        <div className="cstAuthCard">
+          <div className="cstBrand">
+            <span className="cstBrandMark">CST</span>
+            <div>
+              <p className="eyebrow">PCS</p>
+              <h1>Centre de Supervision Technique</h1>
+            </div>
+          </div>
+          {error ? (
+            <>
+              <div className="cstSecurityNote">
+                <Dot s="critical" />
+                Impossible d’initialiser le CST.
+              </div>
+              <p className="error">{error}</p>
+              <button
+                className="button primary"
+                type="button"
+                onClick={() => window.location.reload()}
+              >
+                Réessayer
+              </button>
+            </>
+          ) : (
+            <div className="cstSecurityNote">
+              <Dot s="healthy" />
+              Initialisation du CST…
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  return (
+    <section className="cstAuthPage">
+      <div className="cstAuthCard">
+        <div className="cstBrand">
+          <span className="cstBrandMark">CST</span>
+          <div>
+            <p className="eyebrow">PCS</p>
+            <h1>Centre de Supervision Technique</h1>
+          </div>
+        </div>
+        <p className="cstLead">Espace sécurisé réservé à l’administration technique de PCS.</p>
+        {!recoveryChange && (
+          <div className="cstSecurityNote">
+            <Dot s="healthy" />
+            {setup
+              ? "Première configuration — un seul compte sera créé."
+              : "Compte CST configuré — inscription fermée."}
+          </div>
+        )}
+        {recoveryChange && (
+          <div className="cstSecurityNote">
+            <Dot s="healthy" />
+            Réinitialisation sécurisée du mot de passe CST.
+          </div>
+        )}
+        <form className="form" onSubmit={submit}>
+          {!recoveryChange && (
+            <label>
+              Identifiant professionnel
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+              />
+            </label>
+          )}
+          {recoveryChange && (
+            <label>
+              Nouveau mot de passe
+              <div className="cstPasswordField">
+                <input
+                  type={showPw ? "text" : "password"}
+                  required
+                  minLength={12}
+                  value={pw}
+                  onChange={(e) => setPw(e.target.value)}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="cstPasswordToggle"
+                  onClick={() => setShowPw((v) => !v)}
+                  aria-label={showPw ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                >
+                  <EyeIcon off={!showPw} />
+                </button>
+              </div>
+            </label>
+          )}
+          {recoveryChange && (
+            <label>
+              Confirmer le nouveau mot de passe
+              <div className="cstPasswordField">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  required
+                  minLength={12}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="cstPasswordToggle"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  aria-label={showConfirm ? "Masquer la confirmation" : "Afficher la confirmation"}
+                >
+                  <EyeIcon off={!showConfirm} />
+                </button>
+              </div>
+            </label>
+          )}
+          {!recovery && !recoveryChange && (
+            <label>
+              Mot de passe
+              <div className="cstPasswordField">
+                <input
+                  type={showPw ? "text" : "password"}
+                  required
+                  minLength={12}
+                  value={pw}
+                  onChange={(e) => setPw(e.target.value)}
+                  autoComplete={setup ? "new-password" : "current-password"}
+                />
+                <button
+                  type="button"
+                  className="cstPasswordToggle"
+                  onClick={() => setShowPw((v) => !v)}
+                  aria-label={showPw ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                >
+                  {showPw ? "Masquer" : "Afficher"}
+                </button>
+              </div>
+            </label>
+          )}
+          {setup && !recovery && !recoveryChange && (
+            <label>
+              Confirmer le mot de passe
+              <div className="cstPasswordField">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  required
+                  minLength={12}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="cstPasswordToggle"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  aria-label={showConfirm ? "Masquer la confirmation" : "Afficher la confirmation"}
+                >
+                  {showConfirm ? "Masquer" : "Afficher"}
+                </button>
+              </div>
+            </label>
+          )}
+          {error && <p className="error">{error}</p>}
+          {info && <p className="cstInfo">{info}</p>}
+          <button className="button primary" disabled={busy}>
+            {busy
+              ? "Veuillez patienter…"
+              : recoveryChange
+                ? "Mettre à jour le mot de passe"
+                : recovery
+                  ? "Envoyer le lien de récupération"
+                  : setup
+                    ? "Créer le compte CST"
+                    : "Se connecter"}
+          </button>
+        </form>
+        {!setup && !recovery && !recoveryChange && (
+          <button
+            className="button cstRecoveryButton"
+            onClick={() => {
+              setRecovery(true);
+              setError("");
+              setInfo("");
+              setPw("");
+              setConfirm("");
+            }}
+          >
+            Récupérer l’accès
+          </button>
+        )}
+        {(recovery || recoveryChange) && (
+          <button
+            className="button cstRecoveryButton"
+            onClick={() => {
+              setRecovery(false);
+              setRecoveryChange(false);
+              setError("");
+              setInfo("");
+              setPw("");
+              setConfirm("");
+            }}
+          >
+            Retour à la connexion
+          </button>
+        )}
+        <Link className="button" to="/">
+          Retour à PCS
+        </Link>
+      </div>
+    </section>
+  );
 }
 
-function Status({value}:{value:string}){return <span className="cstStatus"><Dot s={value}/>{value==="healthy"?"Healthy":value==="degraded"?"Degraded":value==="critical"?"Critical":"Offline"}</span>}
+function Status({ value }: { value: string }) {
+  return (
+    <span className="cstStatus">
+      <Dot s={value} />
+      {value === "healthy"
+        ? "Healthy"
+        : value === "degraded"
+          ? "Degraded"
+          : value === "critical"
+            ? "Critical"
+            : "Offline"}
+    </span>
+  );
+}
 
-export function CSTDashboard(){
- const nav=useNavigate();const[data,setData]=useState<any>(null);const[error,setError]=useState("");const[last,setLast]=useState("");const[traceFilter,setTraceFilter]=useState("");const[mediaQueue,setMediaQueue]=useState<any[]>([]);const[mediaBusy,setMediaBusy]=useState(false);const[rejectingId,setRejectingId]=useState("");const[rejectReason,setRejectReason]=useState("");
- const queueLoadedAt=useRef(0);
- const refreshQueue=async(forceUrlRefresh=false)=>{
-  const result=await mediaModeration({action:"list"});
-  const now=Date.now();
-  setMediaQueue(previous=>{
-   const oldById=new Map(previous.map((item:any)=>[item.id,item]));
-   const refreshUrls=forceUrlRefresh||now-queueLoadedAt.current>=12*60*1000;
-   return (result?.items??[]).map((item:any)=>{
-    const old:any=oldById.get(item.id);
-    return old&&!refreshUrls&&old.preview_url?{...item,preview_url:old.preview_url}:item;
-   });
-  });
-  queueLoadedAt.current=now;
- };
- useEffect(()=>{
-  let active=true;
-  const verify=async()=>{
-   try{
-    const {data:s}=await supabase!.auth.getSession();
-    if(!s.session){nav("/cst");return}
-    const {data:a}=await (supabase as any).from("cst_accounts").select("id").eq("user_id",s.session.user.id).maybeSingle();
-    if(!a){nav("/cst");return}
-    if(active)await refreshQueue();
-   }catch(e){if(active)setError(e instanceof Error?e.message:"Impossible de charger la file de modération.")}
+export function CSTDashboard() {
+  const nav = useNavigate();
+  const [data, setData] = useState<any>(null);
+  const [error, setError] = useState("");
+  const [last, setLast] = useState("");
+  const [traceFilter, setTraceFilter] = useState("");
+  const [mediaQueue, setMediaQueue] = useState<any[]>([]);
+  const [mediaBusy, setMediaBusy] = useState(false);
+  const [rejectingId, setRejectingId] = useState("");
+  const [rejectReason, setRejectReason] = useState("");
+  const queueLoadedAt = useRef(0);
+  const refreshQueue = async (forceUrlRefresh = false) => {
+    const result = await mediaModeration({ action: "list" });
+    const now = Date.now();
+    setMediaQueue((previous) => {
+      const oldById = new Map(previous.map((item: any) => [item.id, item]));
+      const refreshUrls = forceUrlRefresh || now - queueLoadedAt.current >= 12 * 60 * 1000;
+      return (result?.items ?? []).map((item: any) => {
+        const old: any = oldById.get(item.id);
+        return old && !refreshUrls && old.preview_url
+          ? { ...item, preview_url: old.preview_url }
+          : item;
+      });
+    });
+    queueLoadedAt.current = now;
   };
-  void verify();
-  const healthCheck=async()=>{try{const h=await health();if(active){setData(h);setLast(new Date().toLocaleTimeString("fr-FR"));setError("")}}catch(e){if(active)setError(e instanceof Error?e.message:"Supervision indisponible.")}};
-  void healthCheck();
-  const healthTimer=window.setInterval(()=>void healthCheck(),5000);
-  const queueTimer=window.setInterval(()=>{if(active&&document.visibilityState==="visible")void refreshQueue().catch(e=>setError(e instanceof Error?e.message:"Impossible d’actualiser la file vidéo."))},60000);
-  const onFocus=()=>{if(document.visibilityState==="visible")void refreshQueue().catch(e=>setError(e instanceof Error?e.message:"Impossible d’actualiser la file vidéo."))};
-  window.addEventListener("focus",onFocus);
-  return()=>{active=false;window.clearInterval(healthTimer);window.clearInterval(queueTimer);window.removeEventListener("focus",onFocus)};
- },[nav]);
- async function logout(){await supabase?.auth.signOut();nav("/cst")}
- async function approveVideo(id:string){setMediaBusy(true);try{await mediaModeration({action:"approve",media_id:id});setMediaQueue(q=>q.filter(v=>v.id!==id));await refreshQueue(true)}catch(e){setError(e instanceof Error?e.message:"Approbation impossible.")}finally{setMediaBusy(false)}}
- async function rejectVideo(id:string){const reason=rejectReason.trim();if(reason.length<5){setError("Le motif de rejet doit contenir au moins 5 caractères.");return}setMediaBusy(true);try{await mediaModeration({action:"reject",media_id:id,reason});setMediaQueue(q=>q.filter(v=>v.id!==id));setRejectingId("");setRejectReason("");await refreshQueue(true)}catch(e){setError(e instanceof Error?e.message:"Rejet impossible.")}finally{setMediaBusy(false)}}
- const db=data?.database;const m=data?.metrics??{};const global=error?"degraded":db?.status??"offline";
- const requests=data?.live_requests??[];const frontend=data?.frontend_events??[];
- const traces=useMemo(()=>requests.filter((r:any)=>!traceFilter||r.trace_id?.toLowerCase().includes(traceFilter.toLowerCase())),[requests,traceFilter]);
- const alerts=[m.error_rate_percent>5?{severity:"critical",title:"ERROR RATE > 5%",detail:`Taux actuel : ${m.error_rate_percent}%`}:null,m.average_latency_ms>1000?{severity:"warning",title:"LATENCY > 1000 ms",detail:`Moyenne actuelle : ${m.average_latency_ms} ms`}:null,db?.connection_utilization_percent>80?{severity:"warning",title:"DATABASE CONNECTIONS > 80%",detail:`Utilisation : ${db.connection_utilization_percent}%`}:null].filter(Boolean) as any[];
- const api=data?.api_monitoring??[];
- return <section className="cstDashboard">
-  <header className="cstTopbar"><div><p className="eyebrow">PCS / CST</p><h1>Centre de Supervision Technique</h1><p className="cstSubtitle">Supervision technique — données réellement collectées.</p></div><div className="cstTopActions"><span className="cstEnv">PRODUCTION</span><a className="button primary" href="#moderation">Vidéos en attente</a><Link className="button" to="/cst/moderateurs">Comptes modérateurs</Link><Link className="button" to="/admin">Administration</Link><button className="button" onClick={logout}>Déconnexion</button></div></header>
-  {error&&<div className="cstBanner critical"><Dot s="critical"/>{error}</div>}
-  <section className="cstModules">
-  <article className="cstModuleCard"><div><p className="eyebrow">CST / PRODUCTION</p><h2>Production</h2><p>Supervision technique en temps réel : système, requêtes, API, frontend, backend, base de données, traces, alertes et incidents.</p></div><a className="button primary" href="#overview">Ouvrir Production</a></article>
-  <article className="cstModuleCard"><div><p className="eyebrow">CST / MODÉRATEUR</p><h2>Modérateur</h2><p>La file de vidéos de signalement est accessible directement depuis ce tableau de bord. Cette page sert uniquement à déléguer la modération par région.</p></div><div className="cstTopActions"><a className="button primary" href="#moderation">Ouvrir la file vidéo</a><Link className="button" to="/cst/moderateurs">Gérer les comptes</Link></div></article>
-  <article className="cstModuleCard"><div><p className="eyebrow">CST / ADMINISTRATION</p><h2>Administration</h2><p>Administration opérationnelle de PCS : demandes mairie, accès NIGELEC/NDE, signalements, affectations, priorités et statuts.</p></div><Link className="button" to="/admin">Ouvrir Administration</Link></article>
-</section>
-<div className="cstOverviewGrid"><article className="cstCard cstHero"><div><p className="eyebrow">SYSTEM STATUS</p><h2><Status value={global}/></h2><p>État calculé à partir des sources raccordées au CST.</p></div><span className="cstCheck">Dernier contrôle : {last||"—"}</span></article>
-   {[["Requêtes / min",m.requests_per_minute??0,"mesure réelle"],["Latence moyenne",m.average_latency_ms!=null?m.average_latency_ms+" ms":unavailable,m.average_latency_ms!=null?"mesure réelle":unavailable],["Taux d’erreur",m.error_rate_percent!=null?m.error_rate_percent+" %":unavailable,m.error_rate_percent!=null?"mesure réelle":unavailable],["Utilisateurs actifs",m.active_users??0,"activité observée (15 min)"]].map(([l,v,s])=><article className="cstCard cstMetric" key={String(l)}><span>{l}</span><strong>{v}</strong><small>{s}</small></article>)}
-  </div>
-  <nav className="cstNav">{[["overview","Vue système"],["moderation","Modération vidéo"],["requests","Live Requests"],["apis","API Monitoring"],["frontend","Frontend"],["backend","Backend"],["database","Database"],["traces","Trace Explorer"],["logs","Logs"],["alerts","Alerts"],["incidents","Incidents"]].map(([id,label])=><a key={id} href={"#"+id}>{label}</a>)}</nav>
-  <div className="cstSectionGrid">
-   <article className="cstCard cstWide" id="overview"><p className="eyebrow">SYSTEM MAP</p><h2>Architecture observée</h2><div className="cstFlow">{["Utilisateur","Frontend","API / Supabase","Backend / Edge Functions","Database"].map((x,i)=><div className="cstFlowNode" key={x}><strong>{x}</strong><span><Dot s={i===4?(db?.status??"offline"):"healthy"}/>{i===4?(db?.latency_ms??"—")+" ms":"Source raccordée"}</span>{i<4&&<b>↓</b>}</div>)}</div><p className="cstMuted">Le CST n’invente pas de statut pour les composants dont la source de métriques n’est pas encore raccordée.</p></article>
-   <article className="cstCard cstWide cstModerationCard" id="moderation"><div className="cstModerationHead"><div><p className="eyebrow">MODÉRATION VIDÉO</p><h2>Vidéos de signalement en attente</h2><p className="cstMuted">Les vidéos de signalement envoyées par les citoyens restent masquées du public jusqu’à validation CST. Les vidéos de résolution des agents restent hors de cette file.</p></div><span className="cstQueueBadge">{mediaQueue.length} en attente</span></div>{mediaQueue.length===0?<p className="cstMuted cstEmptyModeration">Aucune vidéo en attente de modération.</p>:<div className="cstVideoQueue">{mediaQueue.map((v:any)=><article className="cstVideoReview" key={v.id}><div className="cstVideoPreview">{v.preview_url?<video controls preload="metadata" playsInline style={{display:"block",width:"100%",aspectRatio:"16 / 9",height:"auto",maxHeight:"360px",objectFit:"contain",background:"#111"}} src={v.preview_url}/>:<div className="cstVideoUnavailable">Aperçu indisponible</div>}</div><div className="cstVideoMeta"><div className="cstVideoTitle"><div><span className="cstPendingBadge">EN ATTENTE</span><h3>{v.report?.reference_code??"Signalement"}</h3><p>{v.report?.title??"Vidéo de signalement"}</p></div><time>{new Date(v.created_at).toLocaleString("fr-FR")}</time></div><dl className="cstMediaFacts"><div><dt>Localisation</dt><dd>{v.report?.location_label??"Non renseignée"}</dd></div><div><dt>Taille</dt><dd>{v.file_size?Math.round(v.file_size/1024/1024*10)/10+" Mo":"—"}</dd></div><div><dt>GPS capture</dt><dd>{v.media_role==="citizen_evidence"?"Preuve vidéo citoyenne":"Non renseigné"}</dd></div><div><dt>Publication</dt><dd>{v.report?.is_public?"Signalement public":"Signalement non public"}</dd></div></dl>{rejectingId===v.id?<div className="cstRejectBox"><label>Motif du rejet<textarea value={rejectReason} onChange={e=>setRejectReason(e.target.value)} minLength={5} maxLength={500} placeholder="Expliquez clairement pourquoi cette vidéo est non conforme."/></label><div className="cstVideoActions"><button className="button" disabled={mediaBusy} onClick={()=>{setRejectingId("");setRejectReason("")}}>Annuler</button><button className="button cstDangerButton" disabled={mediaBusy||rejectReason.trim().length<5} onClick={()=>void rejectVideo(v.id)}>{mediaBusy?"Traitement…":"Confirmer le rejet et supprimer"}</button></div></div>:<div className="cstVideoActions"><button className="button primary" disabled={mediaBusy} onClick={()=>void approveVideo(v.id)}>✓ Approuver et publier</button><button className="button cstDangerButton" disabled={mediaBusy} onClick={()=>{setRejectingId(v.id);setRejectReason("");setError("")}}>✕ Rejeter / supprimer</button></div>}</div></article>)}</div>}</article>
-   <article className="cstCard cstWide" id="requests"><p className="eyebrow">LIVE REQUESTS</p><h2>Flux des requêtes</h2>{requests.length?<div className="cstTableWrap"><table><thead><tr><th>Heure</th><th>Méthode</th><th>Endpoint</th><th>Status</th><th>Latence</th><th>Trace ID</th></tr></thead><tbody>{requests.slice(0,40).map((r:any)=><tr key={r.id}><td>{new Date(r.occurred_at).toLocaleTimeString("fr-FR")}</td><td><code>{r.method}</code></td><td>{r.endpoint}</td><td><span className={Number(r.status_code)>=400?"cstHttpError":"cstHttpOk"}>{r.status_code||"ERR"}</span></td><td>{r.latency_ms??"—"} ms</td><td><code>{r.trace_id}</code></td></tr>)}</tbody></table></div>:<p className="cstMuted">Aucune requête observée sur la fenêtre actuelle. Le flux se remplira dès qu’une session PCS effectuera des requêtes depuis le navigateur.</p>}</article>
-   <article className="cstCard cstWide" id="apis"><p className="eyebrow">API MONITORING</p><h2>Endpoints réellement observés</h2>{api.length?<div className="cstTableWrap"><table><thead><tr><th>Méthode</th><th>Endpoint</th><th>Requêtes</th><th>Latence</th><th>Erreurs</th><th>Dernière activité</th></tr></thead><tbody>{api.map((a:any)=><tr key={a.method+" "+a.endpoint}><td>{a.method}</td><td>{a.endpoint}</td><td>{a.requests}</td><td>{a.avg_latency_ms??"—"} ms</td><td>{a.error_rate}%</td><td>{new Date(a.last_activity).toLocaleTimeString("fr-FR")}</td></tr>)}</tbody></table></div>:<p className="cstMuted">{unavailable}. Aucun endpoint n’a encore été observé.</p>}</article>
-   <article className="cstCard" id="frontend"><p className="eyebrow">FRONTEND MONITORING</p><h2>{frontend.length?"Événements détectés":"Aucune erreur détectée"}</h2>{frontend.length?<div className="cstEventList">{frontend.slice(0,20).map((e:any)=><div key={e.id}><strong>{e.event_type}</strong><span>{e.message||"—"}</span><small>{e.page||"—"} · {new Date(e.occurred_at).toLocaleTimeString("fr-FR")}</small></div>)}</div>:<p className="cstMuted">Aucun événement JavaScript ou rejet non géré observé sur les 15 dernières minutes.</p>}</article>
-   <article className="cstCard" id="backend"><p className="eyebrow">BACKEND MONITORING</p><h2>{data?.connected_sources?.backend_metrics?"Connecté":"Source non connectée"}</h2><p className="cstMuted">Les métriques d’exécution détaillées des Edge Functions nécessitent le raccordement de la source de logs/metrics de la plateforme.</p></article>
-   <article className="cstCard" id="database"><p className="eyebrow">DATABASE MONITORING</p><h2>Supabase PostgreSQL</h2><div className="cstRows"><div><span>Disponibilité</span><strong>{db?.status==="healthy"?"Healthy":"Degraded"}</strong></div><div><span>Latence</span><strong>{db?.latency_ms??"—"} ms</strong></div><div><span>Connexions</span><strong>{db?.connections??"—"} / {db?.max_connections??"—"}</strong></div><div><span>Saturation</span><strong>{db?.connection_utilization_percent!=null?db.connection_utilization_percent+" %":unavailable}</strong></div><div><span>Taille DB</span><strong>{db?.database_size_bytes?Math.round(db.database_size_bytes/1024/1024)+" MB":unavailable}</strong></div></div></article>
-   <article className="cstCard cstWide" id="traces"><p className="eyebrow">TRACE EXPLORER</p><h2>Recherche par Trace ID</h2><input className="cstTraceInput" value={traceFilter} onChange={e=>setTraceFilter(e.target.value)} placeholder="trace_…" />{traces.length?<div className="cstTableWrap"><table><thead><tr><th>Trace ID</th><th>Endpoint</th><th>Status</th><th>Latence</th><th>Horodatage</th></tr></thead><tbody>{traces.map((r:any)=><tr key={"t"+r.id}><td><code>{r.trace_id}</code></td><td>{r.endpoint}</td><td>{r.status_code||"ERR"}</td><td>{r.latency_ms??"—"} ms</td><td>{new Date(r.occurred_at).toLocaleString("fr-FR")}</td></tr>)}</tbody></table></div>:<p className="cstMuted">Aucune trace correspondant au filtre.</p>}</article>
-   <article className="cstCard cstWide" id="logs"><p className="eyebrow">LOG EXPLORER</p><h2>Logs applicatifs</h2><p className="cstMuted">Source plateforme non connectée dans l’application. Les événements frontend et les requêtes observées sont disponibles dans les modules dédiés, sans présenter de faux logs.</p></article>
-   <article className="cstCard" id="alerts"><p className="eyebrow">ALERTS</p><h2>{alerts.length?"Alertes actives":"Aucune alerte active"}</h2>{alerts.length?<div className="cstEventList">{alerts.map((a:any)=><div key={a.title} className="cstAlertRow"><strong>{a.title}</strong><span>{a.detail}</span></div>)}</div>:<p className="cstMuted">Seuils surveillés : erreur &gt; 5 %, latence &gt; 1000 ms, connexions DB &gt; 80 %.</p>}</article>
-   <article className="cstCard" id="incidents"><p className="eyebrow">INCIDENTS</p><h2>Historique</h2><p className="cstMuted">Aucune base d’incidents dédiée n’est encore raccordée. Les alertes calculées restent visibles tant qu’elles sont actives.</p></article>
-  </div>
- </section>;
+  useEffect(() => {
+    let active = true;
+    const verify = async () => {
+      try {
+        const { data: s } = await supabase!.auth.getSession();
+        if (!s.session) {
+          nav("/cst");
+          return;
+        }
+        const { data: a } = await (supabase as any)
+          .from("cst_accounts")
+          .select("id")
+          .eq("user_id", s.session.user.id)
+          .maybeSingle();
+        if (!a) {
+          nav("/cst");
+          return;
+        }
+        if (active) await refreshQueue();
+      } catch (e) {
+        if (active)
+          setError(e instanceof Error ? e.message : "Impossible de charger la file de modération.");
+      }
+    };
+    void verify();
+    const healthCheck = async () => {
+      try {
+        const h = await health();
+        if (active) {
+          setData(h);
+          setLast(new Date().toLocaleTimeString("fr-FR"));
+          setError("");
+        }
+      } catch (e) {
+        if (active) setError(e instanceof Error ? e.message : "Supervision indisponible.");
+      }
+    };
+    void healthCheck();
+    const healthTimer = window.setInterval(() => void healthCheck(), 5000);
+    const queueTimer = window.setInterval(() => {
+      if (active && document.visibilityState === "visible")
+        void refreshQueue().catch((e) =>
+          setError(e instanceof Error ? e.message : "Impossible d’actualiser la file vidéo."),
+        );
+    }, 60000);
+    const onFocus = () => {
+      if (document.visibilityState === "visible")
+        void refreshQueue().catch((e) =>
+          setError(e instanceof Error ? e.message : "Impossible d’actualiser la file vidéo."),
+        );
+    };
+    window.addEventListener("focus", onFocus);
+    return () => {
+      active = false;
+      window.clearInterval(healthTimer);
+      window.clearInterval(queueTimer);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [nav]);
+  async function logout() {
+    await supabase?.auth.signOut();
+    nav("/cst");
+  }
+  async function approveVideo(id: string) {
+    setMediaBusy(true);
+    try {
+      await mediaModeration({ action: "approve", media_id: id });
+      setMediaQueue((q) => q.filter((v) => v.id !== id));
+      await refreshQueue(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Approbation impossible.");
+    } finally {
+      setMediaBusy(false);
+    }
+  }
+  async function rejectVideo(id: string) {
+    const reason = rejectReason.trim();
+    if (reason.length < 5) {
+      setError("Le motif de rejet doit contenir au moins 5 caractères.");
+      return;
+    }
+    setMediaBusy(true);
+    try {
+      await mediaModeration({ action: "reject", media_id: id, reason });
+      setMediaQueue((q) => q.filter((v) => v.id !== id));
+      setRejectingId("");
+      setRejectReason("");
+      await refreshQueue(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Rejet impossible.");
+    } finally {
+      setMediaBusy(false);
+    }
+  }
+  const db = data?.database;
+  const m = data?.metrics ?? {};
+  const global = error ? "degraded" : (db?.status ?? "offline");
+  const requests = data?.live_requests ?? [];
+  const frontend = data?.frontend_events ?? [];
+  const traces = useMemo(
+    () =>
+      requests.filter(
+        (r: any) => !traceFilter || r.trace_id?.toLowerCase().includes(traceFilter.toLowerCase()),
+      ),
+    [requests, traceFilter],
+  );
+  const alerts = [
+    m.error_rate_percent > 5
+      ? {
+          severity: "critical",
+          title: "ERROR RATE > 5%",
+          detail: `Taux actuel : ${m.error_rate_percent}%`,
+        }
+      : null,
+    m.average_latency_ms > 1000
+      ? {
+          severity: "warning",
+          title: "LATENCY > 1000 ms",
+          detail: `Moyenne actuelle : ${m.average_latency_ms} ms`,
+        }
+      : null,
+    db?.connection_utilization_percent > 80
+      ? {
+          severity: "warning",
+          title: "DATABASE CONNECTIONS > 80%",
+          detail: `Utilisation : ${db.connection_utilization_percent}%`,
+        }
+      : null,
+  ].filter(Boolean) as any[];
+  const api = data?.api_monitoring ?? [];
+  return (
+    <section className="cstDashboard">
+      <header className="cstTopbar">
+        <div>
+          <p className="eyebrow">PCS / CST</p>
+          <h1>Centre de Supervision Technique</h1>
+          <p className="cstSubtitle">Supervision technique — données réellement collectées.</p>
+        </div>
+        <div className="cstTopActions">
+          <span className="cstEnv">PRODUCTION</span>
+          <a className="button primary" href="#moderation">
+            Vidéos en attente
+          </a>
+          <Link className="button" to="/cst/moderateurs">
+            Comptes modérateurs
+          </Link>
+          <Link className="button" to="/admin">
+            Administration
+          </Link>
+          <button className="button" onClick={logout}>
+            Déconnexion
+          </button>
+        </div>
+      </header>
+      {error && (
+        <div className="cstBanner critical">
+          <Dot s="critical" />
+          {error}
+        </div>
+      )}
+      <section className="cstModules">
+        <article className="cstModuleCard">
+          <div>
+            <p className="eyebrow">CST / PRODUCTION</p>
+            <h2>Production</h2>
+            <p>
+              Supervision technique en temps réel : système, requêtes, API, frontend, backend, base
+              de données, traces, alertes et incidents.
+            </p>
+          </div>
+          <a className="button primary" href="#overview">
+            Ouvrir Production
+          </a>
+        </article>
+        <article className="cstModuleCard">
+          <div>
+            <p className="eyebrow">CST / MODÉRATEUR</p>
+            <h2>Modérateur</h2>
+            <p>
+              La file de vidéos de signalement est accessible directement depuis ce tableau de bord.
+              Cette page sert uniquement à déléguer la modération par région.
+            </p>
+          </div>
+          <div className="cstTopActions">
+            <a className="button primary" href="#moderation">
+              Ouvrir la file vidéo
+            </a>
+            <Link className="button" to="/cst/moderateurs">
+              Gérer les comptes
+            </Link>
+          </div>
+        </article>
+        <article className="cstModuleCard">
+          <div>
+            <p className="eyebrow">CST / ADMINISTRATION</p>
+            <h2>Administration</h2>
+            <p>
+              Administration opérationnelle de PCS : demandes mairie, accès NIGELEC/NDE,
+              signalements, affectations, priorités et statuts.
+            </p>
+          </div>
+          <Link className="button" to="/admin">
+            Ouvrir Administration
+          </Link>
+        </article>
+      </section>
+      <div className="cstOverviewGrid">
+        <article className="cstCard cstHero">
+          <div>
+            <p className="eyebrow">SYSTEM STATUS</p>
+            <h2>
+              <Status value={global} />
+            </h2>
+            <p>État calculé à partir des sources raccordées au CST.</p>
+          </div>
+          <span className="cstCheck">Dernier contrôle : {last || "—"}</span>
+        </article>
+        {[
+          ["Requêtes / min", m.requests_per_minute ?? 0, "mesure réelle"],
+          [
+            "Latence moyenne",
+            m.average_latency_ms != null ? m.average_latency_ms + " ms" : unavailable,
+            m.average_latency_ms != null ? "mesure réelle" : unavailable,
+          ],
+          [
+            "Taux d’erreur",
+            m.error_rate_percent != null ? m.error_rate_percent + " %" : unavailable,
+            m.error_rate_percent != null ? "mesure réelle" : unavailable,
+          ],
+          ["Utilisateurs actifs", m.active_users ?? 0, "activité observée (15 min)"],
+        ].map(([l, v, s]) => (
+          <article className="cstCard cstMetric" key={String(l)}>
+            <span>{l}</span>
+            <strong>{v}</strong>
+            <small>{s}</small>
+          </article>
+        ))}
+      </div>
+      <nav className="cstNav">
+        {[
+          ["overview", "Vue système"],
+          ["moderation", "Modération vidéo"],
+          ["requests", "Live Requests"],
+          ["apis", "API Monitoring"],
+          ["frontend", "Frontend"],
+          ["backend", "Backend"],
+          ["database", "Database"],
+          ["traces", "Trace Explorer"],
+          ["logs", "Logs"],
+          ["alerts", "Alerts"],
+          ["incidents", "Incidents"],
+        ].map(([id, label]) => (
+          <a key={id} href={"#" + id}>
+            {label}
+          </a>
+        ))}
+      </nav>
+      <div className="cstSectionGrid">
+        <article className="cstCard cstWide" id="overview">
+          <p className="eyebrow">SYSTEM MAP</p>
+          <h2>Architecture observée</h2>
+          <div className="cstFlow">
+            {[
+              "Utilisateur",
+              "Frontend",
+              "API / Supabase",
+              "Backend / Edge Functions",
+              "Database",
+            ].map((x, i) => (
+              <div className="cstFlowNode" key={x}>
+                <strong>{x}</strong>
+                <span>
+                  <Dot s={i === 4 ? (db?.status ?? "offline") : "healthy"} />
+                  {i === 4 ? (db?.latency_ms ?? "—") + " ms" : "Source raccordée"}
+                </span>
+                {i < 4 && <b>↓</b>}
+              </div>
+            ))}
+          </div>
+          <p className="cstMuted">
+            Le CST n’invente pas de statut pour les composants dont la source de métriques n’est pas
+            encore raccordée.
+          </p>
+        </article>
+        <article className="cstCard cstWide cstModerationCard" id="moderation">
+          <div className="cstModerationHead">
+            <div>
+              <p className="eyebrow">MODÉRATION VIDÉO</p>
+              <h2>Vidéos de signalement en attente</h2>
+              <p className="cstMuted">
+                Les vidéos de signalement envoyées par les citoyens restent masquées du public
+                jusqu’à validation CST. Les vidéos de résolution des agents restent hors de cette
+                file.
+              </p>
+            </div>
+            <span className="cstQueueBadge">{mediaQueue.length} en attente</span>
+          </div>
+          {mediaQueue.length === 0 ? (
+            <p className="cstMuted cstEmptyModeration">Aucune vidéo en attente de modération.</p>
+          ) : (
+            <div className="cstVideoQueue">
+              {mediaQueue.map((v: any) => (
+                <article className="cstVideoReview" key={v.id}>
+                  <div className="cstVideoPreview">
+                    {v.preview_url ? (
+                      <video
+                        controls
+                        preload="metadata"
+                        playsInline
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          aspectRatio: "16 / 9",
+                          height: "auto",
+                          maxHeight: "360px",
+                          objectFit: "contain",
+                          background: "#111",
+                        }}
+                        src={v.preview_url}
+                      />
+                    ) : (
+                      <div className="cstVideoUnavailable">Aperçu indisponible</div>
+                    )}
+                  </div>
+                  <div className="cstVideoMeta">
+                    <div className="cstVideoTitle">
+                      <div>
+                        <span className="cstPendingBadge">EN ATTENTE</span>
+                        <h3>{v.report?.reference_code ?? "Signalement"}</h3>
+                        <p>{v.report?.title ?? "Vidéo de signalement"}</p>
+                      </div>
+                      <time>{new Date(v.created_at).toLocaleString("fr-FR")}</time>
+                    </div>
+                    <dl className="cstMediaFacts">
+                      <div>
+                        <dt>Localisation</dt>
+                        <dd>{v.report?.location_label ?? "Non renseignée"}</dd>
+                      </div>
+                      <div>
+                        <dt>Taille</dt>
+                        <dd>
+                          {v.file_size
+                            ? Math.round((v.file_size / 1024 / 1024) * 10) / 10 + " Mo"
+                            : "—"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>GPS capture</dt>
+                        <dd>
+                          {v.media_role === "citizen_evidence"
+                            ? "Preuve vidéo citoyenne"
+                            : "Non renseigné"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Publication</dt>
+                        <dd>
+                          {v.report?.is_public ? "Signalement public" : "Signalement non public"}
+                        </dd>
+                      </div>
+                    </dl>
+                    {rejectingId === v.id ? (
+                      <div className="cstRejectBox">
+                        <label>
+                          Motif du rejet
+                          <textarea
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            minLength={5}
+                            maxLength={500}
+                            placeholder="Expliquez clairement pourquoi cette vidéo est non conforme."
+                          />
+                        </label>
+                        <div className="cstVideoActions">
+                          <button
+                            className="button"
+                            disabled={mediaBusy}
+                            onClick={() => {
+                              setRejectingId("");
+                              setRejectReason("");
+                            }}
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            className="button cstDangerButton"
+                            disabled={mediaBusy || rejectReason.trim().length < 5}
+                            onClick={() => void rejectVideo(v.id)}
+                          >
+                            {mediaBusy ? "Traitement…" : "Confirmer le rejet et supprimer"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="cstVideoActions">
+                        <button
+                          className="button primary"
+                          disabled={mediaBusy}
+                          onClick={() => void approveVideo(v.id)}
+                        >
+                          ✓ Approuver et publier
+                        </button>
+                        <button
+                          className="button cstDangerButton"
+                          disabled={mediaBusy}
+                          onClick={() => {
+                            setRejectingId(v.id);
+                            setRejectReason("");
+                            setError("");
+                          }}
+                        >
+                          ✕ Rejeter / supprimer
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </article>
+        <article className="cstCard cstWide" id="requests">
+          <p className="eyebrow">LIVE REQUESTS</p>
+          <h2>Flux des requêtes</h2>
+          {requests.length ? (
+            <div className="cstTableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Heure</th>
+                    <th>Méthode</th>
+                    <th>Endpoint</th>
+                    <th>Status</th>
+                    <th>Latence</th>
+                    <th>Trace ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.slice(0, 40).map((r: any) => (
+                    <tr key={r.id}>
+                      <td>{new Date(r.occurred_at).toLocaleTimeString("fr-FR")}</td>
+                      <td>
+                        <code>{r.method}</code>
+                      </td>
+                      <td>{r.endpoint}</td>
+                      <td>
+                        <span
+                          className={Number(r.status_code) >= 400 ? "cstHttpError" : "cstHttpOk"}
+                        >
+                          {r.status_code || "ERR"}
+                        </span>
+                      </td>
+                      <td>{r.latency_ms ?? "—"} ms</td>
+                      <td>
+                        <code>{r.trace_id}</code>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="cstMuted">
+              Aucune requête observée sur la fenêtre actuelle. Le flux se remplira dès qu’une
+              session PCS effectuera des requêtes depuis le navigateur.
+            </p>
+          )}
+        </article>
+        <article className="cstCard cstWide" id="apis">
+          <p className="eyebrow">API MONITORING</p>
+          <h2>Endpoints réellement observés</h2>
+          {api.length ? (
+            <div className="cstTableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Méthode</th>
+                    <th>Endpoint</th>
+                    <th>Requêtes</th>
+                    <th>Latence</th>
+                    <th>Erreurs</th>
+                    <th>Dernière activité</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {api.map((a: any) => (
+                    <tr key={a.method + " " + a.endpoint}>
+                      <td>{a.method}</td>
+                      <td>{a.endpoint}</td>
+                      <td>{a.requests}</td>
+                      <td>{a.avg_latency_ms ?? "—"} ms</td>
+                      <td>{a.error_rate}%</td>
+                      <td>{new Date(a.last_activity).toLocaleTimeString("fr-FR")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="cstMuted">{unavailable}. Aucun endpoint n’a encore été observé.</p>
+          )}
+        </article>
+        <article className="cstCard" id="frontend">
+          <p className="eyebrow">FRONTEND MONITORING</p>
+          <h2>{frontend.length ? "Événements détectés" : "Aucune erreur détectée"}</h2>
+          {frontend.length ? (
+            <div className="cstEventList">
+              {frontend.slice(0, 20).map((e: any) => (
+                <div key={e.id}>
+                  <strong>{e.event_type}</strong>
+                  <span>{e.message || "—"}</span>
+                  <small>
+                    {e.page || "—"} · {new Date(e.occurred_at).toLocaleTimeString("fr-FR")}
+                  </small>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="cstMuted">
+              Aucun événement JavaScript ou rejet non géré observé sur les 15 dernières minutes.
+            </p>
+          )}
+        </article>
+        <article className="cstCard" id="backend">
+          <p className="eyebrow">BACKEND MONITORING</p>
+          <h2>{data?.connected_sources?.backend_metrics ? "Connecté" : "Source non connectée"}</h2>
+          <p className="cstMuted">
+            Les métriques d’exécution détaillées des Edge Functions nécessitent le raccordement de
+            la source de logs/metrics de la plateforme.
+          </p>
+        </article>
+        <article className="cstCard" id="database">
+          <p className="eyebrow">DATABASE MONITORING</p>
+          <h2>Supabase PostgreSQL</h2>
+          <div className="cstRows">
+            <div>
+              <span>Disponibilité</span>
+              <strong>{db?.status === "healthy" ? "Healthy" : "Degraded"}</strong>
+            </div>
+            <div>
+              <span>Latence</span>
+              <strong>{db?.latency_ms ?? "—"} ms</strong>
+            </div>
+            <div>
+              <span>Connexions</span>
+              <strong>
+                {db?.connections ?? "—"} / {db?.max_connections ?? "—"}
+              </strong>
+            </div>
+            <div>
+              <span>Saturation</span>
+              <strong>
+                {db?.connection_utilization_percent != null
+                  ? db.connection_utilization_percent + " %"
+                  : unavailable}
+              </strong>
+            </div>
+            <div>
+              <span>Taille DB</span>
+              <strong>
+                {db?.database_size_bytes
+                  ? Math.round(db.database_size_bytes / 1024 / 1024) + " MB"
+                  : unavailable}
+              </strong>
+            </div>
+          </div>
+        </article>
+        <article className="cstCard cstWide" id="traces">
+          <p className="eyebrow">TRACE EXPLORER</p>
+          <h2>Recherche par Trace ID</h2>
+          <input
+            className="cstTraceInput"
+            value={traceFilter}
+            onChange={(e) => setTraceFilter(e.target.value)}
+            placeholder="trace_…"
+          />
+          {traces.length ? (
+            <div className="cstTableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Trace ID</th>
+                    <th>Endpoint</th>
+                    <th>Status</th>
+                    <th>Latence</th>
+                    <th>Horodatage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {traces.map((r: any) => (
+                    <tr key={"t" + r.id}>
+                      <td>
+                        <code>{r.trace_id}</code>
+                      </td>
+                      <td>{r.endpoint}</td>
+                      <td>{r.status_code || "ERR"}</td>
+                      <td>{r.latency_ms ?? "—"} ms</td>
+                      <td>{new Date(r.occurred_at).toLocaleString("fr-FR")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="cstMuted">Aucune trace correspondant au filtre.</p>
+          )}
+        </article>
+        <article className="cstCard cstWide" id="logs">
+          <p className="eyebrow">LOG EXPLORER</p>
+          <h2>Logs applicatifs</h2>
+          <p className="cstMuted">
+            Source plateforme non connectée dans l’application. Les événements frontend et les
+            requêtes observées sont disponibles dans les modules dédiés, sans présenter de faux
+            logs.
+          </p>
+        </article>
+        <article className="cstCard" id="alerts">
+          <p className="eyebrow">ALERTS</p>
+          <h2>{alerts.length ? "Alertes actives" : "Aucune alerte active"}</h2>
+          {alerts.length ? (
+            <div className="cstEventList">
+              {alerts.map((a: any) => (
+                <div key={a.title} className="cstAlertRow">
+                  <strong>{a.title}</strong>
+                  <span>{a.detail}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="cstMuted">
+              Seuils surveillés : erreur &gt; 5 %, latence &gt; 1000 ms, connexions DB &gt; 80 %.
+            </p>
+          )}
+        </article>
+        <article className="cstCard" id="incidents">
+          <p className="eyebrow">INCIDENTS</p>
+          <h2>Historique</h2>
+          <p className="cstMuted">
+            Aucune base d’incidents dédiée n’est encore raccordée. Les alertes calculées restent
+            visibles tant qu’elles sont actives.
+          </p>
+        </article>
+      </div>
+    </section>
+  );
 }

@@ -26,9 +26,7 @@ export default function ProtectedOperations() {
   if (!canOperate(roles)) {
     return (
       <section className="narrow">
-        <div className="card error">
-          Accès réservé aux utilisateurs habilités.
-        </div>
+        <div className="card error">Accès réservé aux utilisateurs habilités.</div>
         <Link to="/">Retour à l’accueil</Link>
       </section>
     );

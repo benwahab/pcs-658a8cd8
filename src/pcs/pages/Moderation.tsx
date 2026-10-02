@@ -41,7 +41,10 @@ export default function Moderation() {
         ? await supabase
             .from("report_media")
             .select("id,report_id,storage_path,media_type,media_role,moderation_status")
-            .in("report_id", reports.map((report) => report.id))
+            .in(
+              "report_id",
+              reports.map((report) => report.id),
+            )
             .order("created_at", { ascending: true })
         : { data: [], error: null };
 
@@ -76,9 +79,7 @@ export default function Moderation() {
       setRows(withMedia);
     } catch (e) {
       setError(
-        e instanceof Error
-          ? e.message
-          : "Impossible de charger les signalements à modérer.",
+        e instanceof Error ? e.message : "Impossible de charger les signalements à modérer.",
       );
     } finally {
       setLoading(false);
@@ -98,11 +99,7 @@ export default function Moderation() {
       await addInternalComment(id, body);
       setComment((current) => ({ ...current, [id]: "" }));
     } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : "Impossible d’enregistrer la note.",
-      );
+      setError(e instanceof Error ? e.message : "Impossible d’enregistrer la note.");
     } finally {
       setSaving(null);
     }
@@ -115,13 +112,21 @@ export default function Moderation() {
           <p className="eyebrow">CONTRÔLE DU CONTENU</p>
           <h1>Modération des signalements</h1>
         </div>
-        <Link className="button" to="/admin">Traitement</Link>
+        <Link className="button" to="/admin">
+          Traitement
+        </Link>
       </div>
 
-      {error && <div className="card error" role="alert">{error}</div>}
+      {error && (
+        <div className="card error" role="alert">
+          {error}
+        </div>
+      )}
 
       {loading ? (
-        <div className="card" role="status">Chargement des signalements et de leurs médias…</div>
+        <div className="card" role="status">
+          Chargement des signalements et de leurs médias…
+        </div>
       ) : rows.length === 0 ? (
         <div className="card">Aucun signalement à afficher.</div>
       ) : (
@@ -159,7 +164,13 @@ export default function Moderation() {
                             controls
                             playsInline
                             preload="metadata"
-                            style={{ display: "block", width: "100%", maxHeight: 420, background: "#111", borderRadius: 8 }}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              maxHeight: 420,
+                              background: "#111",
+                              borderRadius: 8,
+                            }}
                           >
                             Votre navigateur ne prend pas en charge la lecture vidéo.
                           </video>
@@ -168,7 +179,13 @@ export default function Moderation() {
                             src={media.url}
                             alt={"Preuve du signalement " + report.reference_code}
                             loading="lazy"
-                            style={{ display: "block", width: "100%", maxHeight: 420, objectFit: "contain", borderRadius: 8 }}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              maxHeight: 420,
+                              objectFit: "contain",
+                              borderRadius: 8,
+                            }}
                           />
                         ) : (
                           <a href={media.url} target="_blank" rel="noreferrer">

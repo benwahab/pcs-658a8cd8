@@ -7,7 +7,10 @@ export const Route = createFileRoute("/admin")({
       { title: "Opérations — PCS" },
       { name: "description", content: "Espace opérations réservé aux utilisateurs habilités." },
       { property: "og:title", content: "Opérations — PCS" },
-      { property: "og:description", content: "Espace opérations réservé aux utilisateurs habilités." },
+      {
+        property: "og:description",
+        content: "Espace opérations réservé aux utilisateurs habilités.",
+      },
     ],
   }),
   component: ProtectedOperations,

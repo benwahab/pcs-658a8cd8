@@ -5,9 +5,15 @@ export const Route = createFileRoute("/connexion-nde")({
   head: () => ({
     meta: [
       { title: "Espace NDE — PCS" },
-      { name: "description", content: "Connexion et création de compte pour l’espace professionnel NDE." },
+      {
+        name: "description",
+        content: "Connexion et création de compte pour l’espace professionnel NDE.",
+      },
       { property: "og:title", content: "Espace NDE — PCS" },
-      { property: "og:description", content: "Connexion et création de compte pour l’espace professionnel NDE." },
+      {
+        property: "og:description",
+        content: "Connexion et création de compte pour l’espace professionnel NDE.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

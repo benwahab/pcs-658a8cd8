@@ -61,9 +61,7 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
           options: {
             emailRedirectTo:
               window.location.origin +
-              (org === "NIGELEC"
-                ? "/connexion-nigelec"
-                : "/connexion-nde"),
+              (org === "NIGELEC" ? "/connexion-nigelec" : "/connexion-nde"),
             data: {
               full_name: fullName.trim(),
               requested_organization: org,
@@ -112,10 +110,7 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
     <section className={`narrow authScreen orgSpace ${space.theme}`}>
       <p className="eyebrow">ESPACE {space.label}</p>
       <h1>
-        {space.icon}{" "}
-        {signup
-          ? `Création de compte ${space.label}`
-          : `Connexion ${space.label}`}
+        {space.icon} {signup ? `Création de compte ${space.label}` : `Connexion ${space.label}`}
       </h1>
       <p>{space.full}</p>
 

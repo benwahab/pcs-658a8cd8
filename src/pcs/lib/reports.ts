@@ -1,10 +1,5 @@
 import { supabase } from "./supabase";
-import type {
-  Category,
-  PublicReport,
-  ReportPriority,
-  ReportStatus,
-} from "../types";
+import type { Category, PublicReport, ReportPriority, ReportStatus } from "../types";
 
 export async function listCategories(): Promise<Category[]> {
   if (!supabase) return [];
@@ -36,7 +31,6 @@ export async function listPublicReports(): Promise<PublicReport[]> {
   }));
 }
 
-
 interface CitizenReportInput {
   category_id: string;
   region_id: string;
@@ -54,9 +48,7 @@ interface CitizenReportResult {
   reference_code: string;
 }
 
-export async function submitCitizenReport(
-  input: CitizenReportInput,
-): Promise<CitizenReportResult> {
+export async function submitCitizenReport(input: CitizenReportInput): Promise<CitizenReportResult> {
   if (!supabase) {
     throw new Error("Supabase n'est pas configuré.");
   }
@@ -74,18 +66,13 @@ export async function submitCitizenReport(
     body.append("location_label", input.location_label);
   }
 
-  input.photos
-    .slice(0, 5)
-    .forEach((file) => body.append("photos", file, file.name));
+  input.photos.slice(0, 5).forEach((file) => body.append("photos", file, file.name));
 
   if (input.video) {
     body.append("video", input.video, input.video.name);
   }
 
-  const { data, error } = await supabase.functions.invoke(
-    "citizen-report-submit",
-    { body },
-  );
+  const { data, error } = await supabase.functions.invoke("citizen-report-submit", { body });
 
   if (error) throw error;
   if (data?.error) throw new Error(String(data.error));

@@ -1,10 +1,5 @@
 export type ReportStatus =
-  | "submitted"
-  | "received"
-  | "verification"
-  | "in_progress"
-  | "resolved"
-  | "rejected";
+  "submitted" | "received" | "verification" | "in_progress" | "resolved" | "rejected";
 
 export type ReportPriority = "low" | "normal" | "high" | "urgent";
 

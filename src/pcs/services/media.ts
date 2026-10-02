@@ -3,11 +3,7 @@ import { supabase } from "../lib/supabase";
 export const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024;
 
 const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp"];
-const ALLOWED_VIDEOS = [
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-] as const;
+const ALLOWED_VIDEOS = ["video/mp4", "video/webm", "video/quicktime"] as const;
 
 const VIDEO_EXTENSIONS: Record<string, string[]> = {
   "video/mp4": ["mp4", "m4v"],
@@ -40,9 +36,7 @@ export function getVideoDuration(file: File): Promise<number> {
   });
 }
 
-async function detectVideoContainer(
-  file: File,
-): Promise<"mp4" | "webm" | null> {
+async function detectVideoContainer(file: File): Promise<"mp4" | "webm" | null> {
   const bytes = new Uint8Array(await file.slice(0, 32).arrayBuffer());
 
   if (
@@ -81,26 +75,20 @@ export async function validateCitizenVideo(file: File) {
   const allowedExtensions = VIDEO_EXTENSIONS[file.type] ?? [];
 
   if (!allowedExtensions.includes(extension)) {
-    throw new Error(
-      "L’extension de la vidéo ne correspond pas à son type MIME.",
-    );
+    throw new Error("L’extension de la vidéo ne correspond pas à son type MIME.");
   }
 
   const container = await detectVideoContainer(file);
 
   if (!container) {
-    throw new Error(
-      "Le fichier vidéo n’est pas reconnu comme un conteneur MP4/WebM valide.",
-    );
+    throw new Error("Le fichier vidéo n’est pas reconnu comme un conteneur MP4/WebM valide.");
   }
 
   if (
     (file.type === "video/webm" && container !== "webm") ||
     (file.type !== "video/webm" && container !== "mp4")
   ) {
-    throw new Error(
-      "Le contenu réel de la vidéo ne correspond pas à son type déclaré.",
-    );
+    throw new Error("Le contenu réel de la vidéo ne correspond pas à son type déclaré.");
   }
 
   const duration = await getVideoDuration(file);
@@ -124,10 +112,7 @@ export async function validateCitizenVideo(file: File) {
   return { duration: null, container };
 }
 
-export async function createReportMediaUrl(
-  path: string,
-  expiresIn = 3600,
-): Promise<string> {
+export async function createReportMediaUrl(path: string, expiresIn = 3600): Promise<string> {
   if (!supabase) {
     throw new Error("Supabase n’est pas configuré.");
   }
@@ -164,15 +149,12 @@ export async function uploadResolutionVideo(
   }
 
   const extension = file.name.split(".").pop()?.toLowerCase() || "mp4";
-  const path =
-    reportId + "/resolution-" + crypto.randomUUID() + "." + extension;
+  const path = reportId + "/resolution-" + crypto.randomUUID() + "." + extension;
 
-  const { error } = await supabase.storage
-    .from("report-media")
-    .upload(path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
+  const { error } = await supabase.storage.from("report-media").upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  });
 
   if (error) throw error;
 

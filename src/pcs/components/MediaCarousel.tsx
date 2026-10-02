@@ -26,8 +26,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       connection?.effectiveType === "2g";
 
     setAutoplayAllowed(
-      !slowNetwork &&
-        !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      !slowNetwork && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     );
 
     if (!("IntersectionObserver" in window)) {
@@ -97,25 +96,17 @@ export function MediaCarousel({ media }: { media: MediaItem[] }) {
   if (!media.length) return null;
 
   const poster = media.find(
-    (item) =>
-      !item.media_type?.startsWith("video") &&
-      item.media_role !== "resolution_video",
+    (item) => !item.media_type?.startsWith("video") && item.media_role !== "resolution_video",
   )?.url;
 
   return (
     <div className="mediaCarousel">
       {media.map((item, index) => (
         <div className="mediaCarouselItem" key={item.id}>
-          {item.media_type?.startsWith("video") ||
-          item.media_role === "resolution_video" ? (
+          {item.media_type?.startsWith("video") || item.media_role === "resolution_video" ? (
             <LazyFeedVideo src={item.url} poster={poster} />
           ) : (
-            <img
-              src={item.url}
-              alt="Pièce jointe du signalement"
-              loading="lazy"
-              decoding="async"
-            />
+            <img src={item.url} alt="Pièce jointe du signalement" loading="lazy" decoding="async" />
           )}
           {media.length > 1 && (
             <span className="mediaCount">

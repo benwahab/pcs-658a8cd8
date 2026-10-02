@@ -73,9 +73,7 @@ export default function OperationalLogin() {
 
   useEffect(() => {
     setCommune("");
-    setCommunes(
-      region ? allCommunes.filter((item) => item.region_id === region) : [],
-    );
+    setCommunes(region ? allCommunes.filter((item) => item.region_id === region) : []);
   }, [region, allCommunes]);
 
   async function identifyAgent(event: FormEvent) {
@@ -129,9 +127,7 @@ export default function OperationalLogin() {
 
       if (mode === "agent") {
         if (!agentChallenge) {
-          throw new Error(
-            "Session de connexion agent manquante. Recommencez avec votre numéro.",
-          );
+          throw new Error("Session de connexion agent manquante. Recommencez avec votre numéro.");
         }
 
         await loginAgent(agentChallenge, password);
@@ -151,17 +147,16 @@ export default function OperationalLogin() {
 
         if (loginError) throw loginError;
 
-        const { data: check, error: checkError } =
-          await supabase.functions.invoke("cst-media-moderation", {
+        const { data: check, error: checkError } = await supabase.functions.invoke(
+          "cst-media-moderation",
+          {
             body: { action: "list" },
-          });
+          },
+        );
 
         if (checkError || check?.error || check?.scope !== "regional") {
           await supabase.auth.signOut();
-          throw new Error(
-            check?.error ??
-              "Ce compte n’est pas un modérateur régional actif.",
-          );
+          throw new Error(check?.error ?? "Ce compte n’est pas un modérateur régional actif.");
         }
 
         navigate("/moderateur");
@@ -193,10 +188,14 @@ export default function OperationalLogin() {
       const details =
         error instanceof Error
           ? error.message
-          : error && typeof error === "object" && "message" in error &&
+          : error &&
+              typeof error === "object" &&
+              "message" in error &&
               typeof (error as { message?: unknown }).message === "string"
             ? (error as { message: string }).message
-            : error && typeof error === "object" && "details" in error &&
+            : error &&
+                typeof error === "object" &&
+                "details" in error &&
                 typeof (error as { details?: unknown }).details === "string"
               ? (error as { details: string }).details
               : "Une erreur inattendue est survenue pendant la connexion.";
@@ -211,10 +210,7 @@ export default function OperationalLogin() {
     return (
       <section className="narrow authScreen">
         <h1>Espace agent terrain</h1>
-        <p>
-          Entrez votre numéro de téléphone professionnel pour vérifier votre
-          compte.
-        </p>
+        <p>Entrez votre numéro de téléphone professionnel pour vérifier votre compte.</p>
 
         <form className="card form" onSubmit={identifyAgent}>
           <label>
@@ -269,12 +265,9 @@ export default function OperationalLogin() {
       {pending ? (
         <div className="card">
           <h2>Demande reçue</h2>
+          <p>Votre demande de création de compte mairie a bien été enregistrée.</p>
           <p>
-            Votre demande de création de compte mairie a bien été enregistrée.
-          </p>
-          <p>
-            Le compte reste inactif jusqu’à validation de l’habilitation par un
-            administrateur PCS.
+            Le compte reste inactif jusqu’à validation de l’habilitation par un administrateur PCS.
           </p>
           <button
             type="button"
@@ -333,11 +326,7 @@ export default function OperationalLogin() {
 
               <label>
                 Région
-                <select
-                  required
-                  value={region}
-                  onChange={(event) => setRegion(event.target.value)}
-                >
+                <select required value={region} onChange={(event) => setRegion(event.target.value)}>
                   <option value="">Choisir…</option>
                   {regions.map((item) => (
                     <option key={item.id} value={item.id}>
@@ -380,10 +369,7 @@ export default function OperationalLogin() {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
                       }),
-                    () =>
-                      setError(
-                        "Impossible d’obtenir la position GPS de la mairie.",
-                      ),
+                    () => setError("Impossible d’obtenir la position GPS de la mairie."),
                     {
                       enableHighAccuracy: true,
                       timeout: 10000,
@@ -397,8 +383,7 @@ export default function OperationalLogin() {
 
               {mairieCoords && (
                 <small>
-                  GPS : {mairieCoords.lat.toFixed(5)},{" "}
-                  {mairieCoords.lng.toFixed(5)}
+                  GPS : {mairieCoords.lat.toFixed(5)}, {mairieCoords.lng.toFixed(5)}
                 </small>
               )}
             </>
