@@ -1155,3 +1155,22 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   .citizenSlideTrack .slideOverlay h2{-webkit-line-clamp:1}
   .citizenSlideTrack .slideOverlay>p:not(.eyebrow){-webkit-line-clamp:1}
 }
+
+
+/* Garde chaque vidéo du flux citoyen dans une seule diapositive pleine largeur.
+   Le lecteur vidéo natif peut sinon conserver une largeur intrinsèque dans certains navigateurs mobiles. */
+.citizenSlideTrack .mediaCarouselItem > video{
+  display:block!important;
+  position:relative!important;
+  flex:0 0 100%!important;
+  width:100%!important;
+  min-width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:100%!important;
+  align-self:stretch!important;
+  object-fit:contain!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+}
