@@ -84,15 +84,13 @@ export async function assignMission(reportId: string, agentId: string, note?: st
     .single();
   if (ae) throw ae;
   if (!agent.is_active) throw new Error("Cet agent est inactif.");
-  const { error } = await supabase
-    .from("report_assignments")
-    .insert({
-      report_id: reportId,
-      agent_id: agent.user_id,
-      assigned_by: user.id,
-      mission_note: note?.trim() || null,
-      assignment_status: "assigned",
-    });
+  const { error } = await supabase.from("report_assignments").insert({
+    report_id: reportId,
+    agent_id: agent.user_id,
+    assigned_by: user.id,
+    mission_note: note?.trim() || null,
+    assignment_status: "assigned",
+  });
   if (error) throw error;
 }
 export async function listMyMissions() {
