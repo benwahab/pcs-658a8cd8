@@ -9,30 +9,21 @@ Deno.serve(async(req)=>{
   const url=Deno.env.get("SUPABASE_URL"),serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),anonKey=Deno.env.get("SUPABASE_ANON_KEY");
   if(!url||!serviceKey||!anonKey)return json({error:"Configuration serveur incomplète."},500);
   const authHeader=req.headers.get("Authorization");
-  if(!authHeader)return json({error:"Authentification CST requise."},401);
+  if(!authHeader)return json({error:"Authentification requise."},401);
   const auth=createClient(url,anonKey,{auth:{autoRefreshToken:false,persistSession:false},global:{headers:{Authorization:authHeader}}});
   const {data:{user},error:authError}=await auth.auth.getUser();
   if(authError||!user)return json({error:"Session invalide."},401);
   const admin=createClient(url,serviceKey,{auth:{autoRefreshToken:false,persistSession:false}});
   const {data:account}=await admin.from("cst_accounts").select("id").eq("user_id",user.id).maybeSingle();
-  if(!account)return json({error:"Accès aux archives réservé au CST."},403);
+  if(!account)return json({error:"Accès réservé au CST."},403);
   const body=await req.json().catch(()=>({}));
-  const action=String(body.action??"list");
-  if(action==="list"){
-    const {data,error}=await admin.from("cst_video_archives")
-      .select("id,media_id,report_id,archived_at,expires_at,hold_reason,deleted_at,report_media!inner(id,storage_path,media_type,file_size,created_at),reports!inner(id,reference_code,title,location_label,status,created_at,region_id)")
-      .is("deleted_at",null)
-      .order("archived_at",{ascending:false})
-      .limit(200);
-    if(error)return json({error:"Impossible de charger les archives vidéo."},500);
-    const items=[];
-    for(const row of data??[]){
-      const media=(row as any).report_media;
-      if(!media?.storage_path)continue;
-      const {data:signed,error:signedError}=await admin.storage.from("report-media").createSignedUrl(media.storage_path,900);
-      items.push({...row,media_type:media.media_type,file_size:media.file_size,media_created_at:media.created_at,preview_url:signedError?null:signed?.signedUrl??null,report:(row as any).reports,report_media:undefined,reports:undefined});
-    }
-    return json({items,scope:"cst-only",signed_url_ttl_seconds:900});
-  }
-  return json({error:"Action inconnue."},400);
+  if(body.action!=="hold"&&body.action!=="release")return json({error:"Action inconnue."},400);
+  const archiveId=String(body.archive_id??"");
+  if(!/^[0-9a-f-]{36}$/i.test(archiveId))return json({error:"Référence d'archive invalide."},400);
+  const holdReason=String(body.reason??"").trim().slice(0,500);
+  if(body.action==="hold"&&!holdReason)return json({error:"Une justification est obligatoire pour suspendre la suppression."},400);
+  const {data,error}=await admin.from("cst_video_archives").update({hold_reason:body.action==="hold"?holdReason:null}).eq("id",archiveId).is("deleted_at",null).select("id,hold_reason,expires_at").maybeSingle();
+  if(error)return json({error:"Impossible de mettre à jour la conservation."},500);
+  if(!data)return json({error:"Archive introuvable ou déjà supprimée."},404);
+  return json({archive:data});
 });
