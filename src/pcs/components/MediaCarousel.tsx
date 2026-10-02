@@ -88,7 +88,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       muted
       loop
       preload="none"
-      aria-label="Vidéo du média"
+      aria-label="Vidéo du signalement"
     />
   );
 }
