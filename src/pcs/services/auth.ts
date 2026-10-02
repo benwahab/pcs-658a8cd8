@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import { clearCachedAgentMissions } from "./offline";
 
 export async function getCurrentUser(){
   if(!supabase)return null;
@@ -6,7 +7,11 @@ export async function getCurrentUser(){
   return data.user??null;
 }
 export async function signOut(){
-  if(!supabase)return;
+  if(!supabase){
+    clearCachedAgentMissions();
+    return;
+  }
   const {error}=await supabase.auth.signOut();
   if(error)throw error;
+  clearCachedAgentMissions();
 }
