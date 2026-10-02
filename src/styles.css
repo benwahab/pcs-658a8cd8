@@ -1009,13 +1009,12 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   margin:0!important;
   padding:0!important;
   gap:0!important;
-  overflow-x:auto!important;
-  overflow-y:hidden!important;
+  overflow:hidden!important;
   overscroll-behavior-x:contain;
   -webkit-overflow-scrolling:touch;
   scroll-snap-type:x mandatory;
   scroll-padding:0;
-  touch-action:pan-x pan-y;
+  touch-action:pan-y;
   scrollbar-width:none;
   border-radius:0;
   background:#030605!important;
@@ -1026,10 +1025,10 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   position:relative!important;
   display:grid!important;
   place-items:center!important;
-  flex:0 0 100vw!important;
-  width:100vw!important;
-  min-width:100vw!important;
-  max-width:100vw!important;
+  flex:0 0 100%!important;
+  width:100%!important;
+  min-width:100%!important;
+  max-width:100%!important;
   height:100%!important;
   min-height:0!important;
   max-height:none!important;
@@ -1057,6 +1056,27 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   background:#030605!important;
   box-sizing:border-box!important;
 }
+.citizenSlideTrack .mediaCarouselNav{
+  position:absolute;
+  top:50%;
+  z-index:4;
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:54px;
+  padding:0;
+  transform:translateY(-50%);
+  border:1px solid #ffffff55;
+  border-radius:12px;
+  background:#00000055;
+  color:#fff;
+  font-size:2rem;
+  line-height:1;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.citizenSlideTrack .mediaCarouselPrev{left:12px}
+.citizenSlideTrack .mediaCarouselNext{right:12px}
 .citizenSlideTrack .mediaCount{top:78px;right:12px;z-index:3}
 .citizenSlideTrack .slideOverlay{
   position:absolute;
