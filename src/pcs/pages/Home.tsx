@@ -291,17 +291,31 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   useEffect(() => {
     if (!report.id) return;
     const storageKey = "pcs-citizen-token";
+    const createToken = () => {
+      // randomUUID n'est pas disponible dans certains navigateurs embarqués.
+      if (typeof window.crypto?.randomUUID === "function") return window.crypto.randomUUID();
+      if (typeof window.crypto?.getRandomValues === "function") {
+        const bytes = new Uint8Array(16);
+        window.crypto.getRandomValues(bytes);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        const hex = Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+        return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+      }
+      throw new Error("Ce navigateur ne permet pas de créer un identifiant sécurisé.");
+    };
     let token = "";
     try {
       token = window.localStorage.getItem(storageKey) ?? "";
       if (!token) {
-        token = window.crypto.randomUUID();
+        token = createToken();
         window.localStorage.setItem(storageKey, token);
       }
     } catch {
-      token = window.crypto.randomUUID();
+      try { token = createToken(); } catch { token = ""; }
     }
-    setVisitorToken(token);
+    setVisitorToken(token || null);
+    if (!token) setInteractionMessage("Activez un navigateur sécurisé pour confirmer ce signalement.");
   }, [report.id]);
 
   useEffect(() => {
@@ -330,7 +344,10 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   }, [report.id, visitorToken]);
 
   const toggleConfirmation = async () => {
-    if (!supabase || !report.id || !visitorToken) return;
+    if (!supabase || !report.id || !visitorToken) {
+      setInteractionMessage("Impossible de créer votre identifiant citoyen. Rechargez la page puis réessayez.");
+      return;
+    }
     setInteractionBusy(true);
     setInteractionMessage("");
     try {
@@ -339,11 +356,15 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         p_visitor_token: visitorToken,
       });
       if (error) throw error;
-      const result = data as { confirmed?: boolean; count?: number };
-      setConfirmed(Boolean(result?.confirmed));
-      setConfirmationCount(Number(result?.count ?? confirmationCount));
-    } catch {
-      setInteractionMessage("Impossible d’enregistrer votre confirmation. Réessayez.");
+      const result = data as { confirmed?: boolean; count?: number } | null;
+      if (!result || typeof result.confirmed !== "boolean" || typeof result.count !== "number") {
+        throw new Error("Réponse de confirmation invalide.");
+      }
+      setConfirmed(result.confirmed);
+      setConfirmationCount(result.count);
+    } catch (cause) {
+      console.error("[PCS] Confirmation du signalement impossible", cause);
+      setInteractionMessage("Impossible d’enregistrer votre confirmation. Vérifiez votre connexion puis réessayez.");
     } finally {
       setInteractionBusy(false);
     }
