@@ -84,7 +84,9 @@ export async function flushFieldVerifications(send: (item: PendingVerification) 
         tx.onabort = () => reject(tx.error);
       });
       sent++;
-    } catch {}
+    } catch {
+      // Échec d'envoi : l'élément reste en file d'attente pour la prochaine synchronisation.
+    }
   }
   closeDb(db);
   return sent;
@@ -109,7 +111,9 @@ const MISSIONS_KEY = "pcs_offline_agent_missions_v1";
 export function cacheAgentMissions(missions: unknown[]) {
   try {
     localStorage.setItem(MISSIONS_KEY, JSON.stringify(missions));
-  } catch {}
+  } catch {
+    // Cache local indisponible (quota ou mode privé) : sans effet sur le fonctionnement en ligne.
+  }
 }
 
 export function getCachedAgentMissions<T = any>(): T[] {
@@ -162,7 +166,9 @@ export async function flushResolutionVideos(send: (item: PendingResolution) => P
         tx.onabort = () => reject(tx.error);
       });
       sent++;
-    } catch {}
+    } catch {
+      // Échec d'envoi : l'élément reste en file d'attente pour la prochaine synchronisation.
+    }
   }
   closeDb(db);
   return sent;

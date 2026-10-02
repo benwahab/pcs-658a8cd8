@@ -205,7 +205,9 @@ export async function signupMairie(input: {
       try {
         const body = await context.json();
         if (typeof body?.error === "string" && body.error.trim()) message = body.error;
-      } catch {}
+      } catch {
+        // Corps d'erreur non JSON : on garde le message générique ci-dessus.
+      }
     }
     if (/already registered|already exists|user.*exist/i.test(message))
       message =
@@ -248,7 +250,9 @@ export async function createFieldAgent(input: {
         try {
           const raw = await context.clone().text();
           if (raw.trim()) message = raw.trim().slice(0, 300);
-        } catch {}
+        } catch {
+          // Corps d'erreur illisible : on garde le message générique ci-dessus.
+        }
       }
     }
     throw new Error(message);
