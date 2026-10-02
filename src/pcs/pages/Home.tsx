@@ -323,7 +323,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     let cancelled = false;
     void (async () => {
       const { data: reaction, error: reactionError } = await supabase.rpc("get_public_report_confirmation", {
-        p_report_id: report.id,
+        p_report_id: report.id!,
         p_visitor_token: visitorToken!,
       });
       if (reactionError) throw reactionError;
@@ -333,7 +333,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         setConfirmationCount(Number(result.count ?? 0));
       }
       const { data: comments, error: commentsError } = await supabase.rpc("list_public_report_comments", {
-        p_report_id: report.id,
+        p_report_id: report.id!,
       });
       if (commentsError) throw commentsError;
       if (!cancelled) setPublicComments((comments ?? []) as { id: string; display_name: string | null; body: string; created_at: string }[]);
@@ -352,7 +352,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     setInteractionMessage("");
     try {
       const { data, error } = await supabase.rpc("toggle_public_report_confirmation", {
-        p_report_id: report.id,
+        p_report_id: report.id!,
         p_visitor_token: visitorToken,
       });
       if (error) throw error;
@@ -382,14 +382,14 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     setInteractionMessage("");
     try {
       const { error } = await supabase.rpc("submit_public_report_comment", {
-        p_report_id: report.id,
+        p_report_id: report.id!,
         p_body: body,
         p_display_name: null,
       });
       if (error) throw error;
       setCommentText("");
       const { data, error: commentsError } = await supabase.rpc("list_public_report_comments", {
-        p_report_id: report.id,
+        p_report_id: report.id!,
       });
       if (commentsError) throw commentsError;
       setPublicComments((data ?? []) as { id: string; display_name: string | null; body: string; created_at: string }[]);
