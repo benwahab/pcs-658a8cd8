@@ -241,7 +241,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .mediaCarousel{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:14px;margin:12px 0;scrollbar-width:none}
 .mediaCarousel::-webkit-scrollbar{display:none}
 .mediaCarouselItem{position:relative;flex:0 0 100%;scroll-snap-align:center;border-radius:14px;overflow:hidden;background:#0000001a}
-.mediaCarouselItem img,.mediaCarouselItem video{display:block;width:100%;height:auto;max-height:68vh;object-fit:contain;object-position:center;background:#050807}.mediaCarouselItem{display:flex;align-items:center;justify-content:center;min-height:0}.mediaCarouselItem video{aspect-ratio:auto;max-width:100%;flex:0 1 auto}
+.mediaCarouselItem img,.mediaCarouselItem video{display:block;width:100%;height:auto;max-height:68vh;object-fit:contain;object-position:center;background:#050807}.mediaCarouselItem{display:flex;align-items:center;justify-content:center;min-height:0}.mediaCarouselItem video{aspect-ratio:auto;width:100%;min-width:100%;max-width:100%;flex:0 0 100%;align-self:stretch}
 .mediaCount{position:absolute;top:8px;right:8px;background:#000000a0;color:#fff;font-size:.75rem;padding:2px 8px;border-radius:999px}
 /* Choix des médias */
 .mediaPicker{border:1px dashed #0f766e55;border-radius:14px;padding:12px;display:grid;gap:10px}
