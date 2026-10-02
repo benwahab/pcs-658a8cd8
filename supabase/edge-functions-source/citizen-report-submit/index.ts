@@ -2,9 +2,9 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const MAX_IMAGE_SIZE=8*1024*1024;
-const MAX_VIDEO_SIZE=50*1024*1024;
+const MAX_VIDEO_SIZE=100*1024*1024;
 const MAX_PHOTOS=5;
-const MAX_VIDEO_SECONDS=10.25;
+
 const ALLOWED_IMAGES=new Set(["image/jpeg","image/png","image/webp"]);
 const ALLOWED_VIDEOS=new Set(["video/mp4","video/webm","video/quicktime"]);
 const EXTENSIONS:Record<string,string[]>={
@@ -135,7 +135,7 @@ function findWebmDuration(b:Uint8Array){
 }
 async function validateVideo(file:File){
   if(!ALLOWED_VIDEOS.has(file.type))throw new Error("Type vidéo non autorisé.");
-  if(file.size<=0||file.size>MAX_VIDEO_SIZE)throw new Error("Vidéo trop volumineuse. Maximum : 50 Mo.");
+  if(file.size<=0||file.size>MAX_VIDEO_SIZE)throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
   if(!validExt(file))throw new Error("L’extension de la vidéo ne correspond pas à son type.");
   const bytes=new Uint8Array(await file.arrayBuffer());
   let container:"mp4"|"webm"|null=null;
@@ -143,10 +143,8 @@ async function validateVideo(file:File){
   else if(bytes.length>=12&&bytes[4]===0x66&&bytes[5]===0x74&&bytes[6]===0x79&&bytes[7]===0x70)container="mp4";
   if(!container)throw new Error("Format vidéo réel non reconnu.");
   if((file.type==="video/webm"&&container!=="webm")||(file.type!=="video/webm"&&container!=="mp4"))throw new Error("Le contenu réel ne correspond pas au type déclaré.");
-  const duration=container==="mp4"?parseMp4Duration(bytes):findWebmDuration(bytes);
-  if(duration==null||!Number.isFinite(duration)||duration<=0)throw new Error("Durée réelle de la vidéo indéterminable.");
-  if(duration>MAX_VIDEO_SECONDS)throw new Error("La vidéo ne peut pas dépasser 10 secondes.");
-  return duration;
+  // La durée n'est pas limitée : on valide le conteneur et le poids, pas la durée.
+  return container;
 }
 
 Deno.serve(async(req)=>{
