@@ -165,7 +165,7 @@ export default function AgentTerrain(){
   chunksRef.current=[];setCameraError("");
   try{
    const r=new MediaRecorder(stream,{mimeType:mime});recorderRef.current=r;
-   r.ondataavailable=e=>{if(e.data?.size)chunksRef.current.push(e.data);};
+   r.ondataavailable=e=>{if(e.data?.size){chunksRef.current.push(e.data);const total=chunksRef.current.reduce((sum,chunk)=>sum+(chunk instanceof Blob?chunk.size:chunk instanceof ArrayBuffer?chunk.byteLength:0),0);if(total>MAX_VIDEO_SIZE_BYTES&&r.state==="recording"){setCameraError("Limite de 100 Mo atteinte : arrêt automatique de l’enregistrement.");r.stop();}}};
    r.onerror=()=>setCameraError("Erreur d’enregistrement. Réessayez.");
    r.onstop=()=>{
     if(timerRef.current!==null){window.clearInterval(timerRef.current);timerRef.current=null;}setRecording(false);
