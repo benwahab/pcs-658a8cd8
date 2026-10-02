@@ -75,7 +75,18 @@ export default function Home() {
       <div
         className={`citizenFeedTop${headerHidden ? " headerHidden" : ""}${headerScrolled ? " headerScrolled" : ""}`}
       >
-        <Link className="feedBrand" data-pcs-tour="home" to="/">
+        <Link
+          className="feedBrand"
+          data-pcs-tour="home"
+          to="/"
+          aria-label="Accueil — revenir au début du flux"
+          onClick={() => {
+            const feed = document.querySelector(".citizenFeed");
+            feed?.scrollTo({ top: 0, behavior: "smooth" });
+            setHeaderHidden(false);
+            setHeaderScrolled(false);
+          }}
+        >
           <BrandLogo className="feedBrandLogo" />
         </Link>
 
