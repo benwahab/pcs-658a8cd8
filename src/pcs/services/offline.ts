@@ -116,6 +116,10 @@ export function cacheAgentMissions(missions:unknown[]){
  try{localStorage.setItem(MISSIONS_KEY,JSON.stringify(missions));}catch{}
 }
 
+export function clearCachedAgentMissions(){
+ try{localStorage.removeItem(MISSIONS_KEY);}catch{}
+}
+
 export function getCachedAgentMissions<T=any>():T[]{
  try{return JSON.parse(localStorage.getItem(MISSIONS_KEY)||"[]") as T[];}
  catch{return[];}
