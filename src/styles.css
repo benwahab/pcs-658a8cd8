@@ -821,6 +821,8 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 
 /* Flux citoyen PCS — média prioritaire et informations visibles dans le même écran */
 .citizenSlideTrack{
+  height:100dvh;
+  min-height:100dvh;
   align-items:stretch;
   justify-content:center;
   padding:0;
