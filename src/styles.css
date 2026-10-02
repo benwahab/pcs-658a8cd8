@@ -845,3 +845,25 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 /* Le pied de page global ne doit pas gêner le défilement plein écran du flux citoyen. */
 .appFooter{position:static;inset:auto;z-index:auto;flex:0 0 auto}
 .app:has(.citizenFeed) > .appFooter{display:none}
+
+
+/* Correctif final du flux citoyen : aucun halo violet derrière les vidéos. */
+.citizenSlideTrack,
+.citizenSlideTrack:before,
+.citizenSlideTrack .mediaCarousel,
+.citizenSlideTrack .mediaCarouselItem,
+.citizenSlideTrack .mediaCarouselItem img,
+.citizenSlideTrack .mediaCarouselItem video{
+  background:#030605!important;
+}
+.citizenSlideTrack:before{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  opacity:0!important;
+}
+.citizenSlideTrack .mediaCarouselItem img,
+.citizenSlideTrack .mediaCarouselItem video{
+  object-fit:contain!important;
+  object-position:center!important;
+}
