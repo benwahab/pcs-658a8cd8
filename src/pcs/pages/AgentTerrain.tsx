@@ -53,18 +53,31 @@ export default function AgentTerrain(){
 
  async function syncPending(){
   if(!navigator.onLine)return;
-  await flushFieldVerifications(async item=>{
-   await confirmFieldVerification(
-    item.reportId,item.latitude,item.longitude,item.accuracy
-   );
-  });
-  await flushResolutionVideos(async item=>{
-   const file=new File([item.video],item.fileName,{type:item.fileType});
-   await resolveMissionWithVideo(
-    item.reportId,file,item.latitude,item.longitude,item.accuracy
-   );
-  });
-  await load();
+  let failed=0;
+  try{
+   const verifications=await flushFieldVerifications(async item=>{
+    await confirmFieldVerification(
+     item.reportId,item.latitude,item.longitude,item.accuracy
+    );
+   });
+   failed+=verifications.failed;
+   const videos=await flushResolutionVideos(async item=>{
+    const file=new File([item.video],item.fileName,{type:item.fileType});
+    await resolveMissionWithVideo(
+     item.reportId,file,item.latitude,item.longitude,item.accuracy
+    );
+   });
+   failed+=videos.failed;
+   await load();
+   if(failed>0){
+    setError(`Synchronisation incomplète : ${failed} élément(s) restent en attente. Vérifiez la connexion puis actualisez.`);
+   }
+  }catch(e){
+   await load();
+   setError(e instanceof Error
+    ?`Synchronisation impossible : ${e.message}`
+    :"Synchronisation impossible. Les éléments restent en attente.");
+  }
  }
 
  useEffect(()=>()=>{if(timerRef.current!==null)window.clearInterval(timerRef.current);if(recorderRef.current?.state==="recording")recorderRef.current.stop();streamRef.current?.getTracks().forEach(t=>t.stop());if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);},[]);
