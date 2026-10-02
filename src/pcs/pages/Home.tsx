@@ -190,9 +190,10 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   >([]);
   const [mediaReady, setMediaReady] = useState(false);
   const [mediaRefresh, setMediaRefresh] = useState(0);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [visitorToken, setVisitorToken] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
-  const [publicComments, setPublicComments] = useState<{ id: string; body: string; created_at: string }[]>([]);
+  const [publicComments, setPublicComments] = useState<{ id: string; display_name: string | null; body: string; created_at: string }[]>([]);
+  const [confirmationCount, setConfirmationCount] = useState(0);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [interactionBusy, setInteractionBusy] = useState(false);
@@ -288,40 +289,99 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
 
   useEffect(() => {
-    if (!supabase || !report.id) return;
-    let cancelled = false;
-
-    void (async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      const userId = authData.user?.id ?? null;
-      if (cancelled) return;
-      setCurrentUserId(userId);
-
-      if (userId) {
-        const { data: confirmation } = await supabase
-          .from("report_confirmations")
-          .select("report_id")
-          .eq("report_id", report.id)
-          .eq("user_id", userId)
-          .maybeSingle();
-        if (!cancelled) setConfirmed(Boolean(confirmation));
-      } else {
-        setConfirmed(false);
+    if (!report.id) return;
+    const storageKey = "pcs-citizen-token";
+    let token = "";
+    try {
+      token = window.localStorage.getItem(storageKey) ?? "";
+      if (!token) {
+        token = window.crypto.randomUUID();
+        window.localStorage.setItem(storageKey, token);
       }
+    } catch {
+      token = window.crypto.randomUUID();
+    }
+    setVisitorToken(token);
+  }, [report.id]);
 
-      const { data: comments } = await supabase
-        .from("report_comments")
-        .select("id,body,created_at")
-        .eq("report_id", report.id)
-        .eq("visibility", "public")
-        .order("created_at", { ascending: true })
-        .limit(30);
-      if (!cancelled) setPublicComments((comments ?? []) as { id: string; body: string; created_at: string }[]);
+  useEffect(() => {
+    if (!supabase || !report.id || !visitorToken) return;
+    let cancelled = false;
+    void (async () => {
+      const { data: reaction, error: reactionError } = await supabase.rpc("get_public_report_confirmation", {
+        p_report_id: report.id,
+        p_visitor_token: visitorToken,
+      });
+      if (reactionError) throw reactionError;
+      if (!cancelled && reaction && typeof reaction === "object") {
+        const result = reaction as { confirmed?: boolean; count?: number };
+        setConfirmed(Boolean(result.confirmed));
+        setConfirmationCount(Number(result.count ?? 0));
+      }
+      const { data: comments, error: commentsError } = await supabase.rpc("list_public_report_comments", {
+        p_report_id: report.id,
+      });
+      if (commentsError) throw commentsError;
+      if (!cancelled) setPublicComments((comments ?? []) as { id: string; display_name: string | null; body: string; created_at: string }[]);
     })().catch(() => {
       if (!cancelled) setInteractionMessage("Les interactions sont temporairement indisponibles.");
     });
-
     return () => { cancelled = true; };
+  }, [report.id, visitorToken]);
+
+  const toggleConfirmation = async () => {
+    if (!supabase || !report.id || !visitorToken) return;
+    setInteractionBusy(true);
+    setInteractionMessage("");
+    try {
+      const { data, error } = await supabase.rpc("toggle_public_report_confirmation", {
+        p_report_id: report.id,
+        p_visitor_token: visitorToken,
+      });
+      if (error) throw error;
+      const result = data as { confirmed?: boolean; count?: number };
+      setConfirmed(Boolean(result?.confirmed));
+      setConfirmationCount(Number(result?.count ?? confirmationCount));
+    } catch {
+      setInteractionMessage("Impossible d’enregistrer votre confirmation. Réessayez.");
+    } finally {
+      setInteractionBusy(false);
+    }
+  };
+
+  const submitPublicComment = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!supabase || !report.id) return;
+    const body = commentText.trim();
+    if (body.length < 2 || body.length > 1000) {
+      setInteractionMessage("Le commentaire doit contenir entre 2 et 1 000 caractères.");
+      return;
+    }
+    setInteractionBusy(true);
+    setInteractionMessage("");
+    try {
+      const { error } = await supabase.rpc("submit_public_report_comment", {
+        p_report_id: report.id,
+        p_body: body,
+        p_display_name: null,
+      });
+      if (error) throw error;
+      setCommentText("");
+      const { data, error: commentsError } = await supabase.rpc("list_public_report_comments", {
+        p_report_id: report.id,
+      });
+      if (commentsError) throw commentsError;
+      setPublicComments((data ?? []) as { id: string; display_name: string | null; body: string; created_at: string }[]);
+      setCommentsOpen(true);
+      setInteractionMessage("Votre commentaire a été publié.");
+    } catch {
+      setInteractionMessage("Impossible de publier le commentaire. Réessayez.");
+    } finally {
+      setInteractionBusy(false);
+    }
+  };
+
+  return () => { cancelled = true; };
   }, [report.id]);
 
   const toggleConfirmation = async () => {
@@ -435,7 +495,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
           <div className="citizenReportInteractions" aria-label="Interactions citoyennes">
             <div className="feedActions">
               <button type="button" className={confirmed ? "feedPrimary" : "feedSecondary"} onClick={toggleConfirmation} disabled={interactionBusy}>
-                {confirmed ? "✓ Je confirme" : "Je confirme"}
+                {confirmed ? "✓ Confirmé" : "Je confirme"}
               </button>
               <button type="button" className="feedSecondary" onClick={() => setCommentsOpen((open) => !open)} aria-expanded={commentsOpen}>
                 Commenter ({publicComments.length})
@@ -445,6 +505,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
               <div className="citizenPublicComments">
                 {publicComments.length === 0 ? <p>Aucun commentaire public pour le moment.</p> : publicComments.map((comment) => (
                   <article key={comment.id} className="citizenPublicComment">
+                    {comment.display_name && <strong>{comment.display_name}</strong>}
                     <p>{comment.body}</p>
                     <small>{new Date(comment.created_at).toLocaleString("fr-FR")}</small>
                   </article>
