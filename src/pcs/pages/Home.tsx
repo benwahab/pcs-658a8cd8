@@ -190,6 +190,13 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   >([]);
   const [mediaReady, setMediaReady] = useState(false);
   const [mediaRefresh, setMediaRefresh] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
+  const [publicComments, setPublicComments] = useState<{ id: string; body: string; created_at: string }[]>([]);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [interactionBusy, setInteractionBusy] = useState(false);
+  const [interactionMessage, setInteractionMessage] = useState("");
   const slideRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -279,6 +286,115 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     };
   }, [mediaReady, mediaRefresh, report.id]);
 
+
+  useEffect(() => {
+    if (!supabase || !report.id) return;
+    let cancelled = false;
+
+    void (async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData.user?.id ?? null;
+      if (cancelled) return;
+      setCurrentUserId(userId);
+
+      if (userId) {
+        const { data: confirmation } = await supabase
+          .from("report_confirmations")
+          .select("report_id")
+          .eq("report_id", report.id)
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (!cancelled) setConfirmed(Boolean(confirmation));
+      } else {
+        setConfirmed(false);
+      }
+
+      const { data: comments } = await supabase
+        .from("report_comments")
+        .select("id,body,created_at")
+        .eq("report_id", report.id)
+        .eq("visibility", "public")
+        .order("created_at", { ascending: true })
+        .limit(30);
+      if (!cancelled) setPublicComments((comments ?? []) as { id: string; body: string; created_at: string }[]);
+    })().catch(() => {
+      if (!cancelled) setInteractionMessage("Les interactions sont temporairement indisponibles.");
+    });
+
+    return () => { cancelled = true; };
+  }, [report.id]);
+
+  const toggleConfirmation = async () => {
+    if (!supabase || !report.id) return;
+    if (!currentUserId) {
+      setInteractionMessage("Connectez-vous à votre compte citoyen pour confirmer ce signalement.");
+      return;
+    }
+    setInteractionBusy(true);
+    setInteractionMessage("");
+    try {
+      if (confirmed) {
+        const { error } = await supabase
+          .from("report_confirmations")
+          .delete()
+          .eq("report_id", report.id)
+          .eq("user_id", currentUserId);
+        if (error) throw error;
+        setConfirmed(false);
+      } else {
+        const { error } = await supabase
+          .from("report_confirmations")
+          .insert({ report_id: report.id, user_id: currentUserId });
+        if (error && error.code !== "23505") throw error;
+        setConfirmed(true);
+      }
+    } catch {
+      setInteractionMessage("Impossible d’enregistrer votre confirmation. Réessayez.");
+    } finally {
+      setInteractionBusy(false);
+    }
+  };
+
+  const submitPublicComment = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!supabase || !report.id) return;
+    if (!currentUserId) {
+      setInteractionMessage("Connectez-vous à votre compte citoyen pour commenter.");
+      return;
+    }
+    const body = commentText.trim();
+    if (body.length < 2 || body.length > 1000) {
+      setInteractionMessage("Le commentaire doit contenir entre 2 et 1 000 caractères.");
+      return;
+    }
+    setInteractionBusy(true);
+    setInteractionMessage("");
+    try {
+      const { error } = await supabase.from("report_comments").insert({
+        report_id: report.id,
+        author_id: currentUserId,
+        body,
+        visibility: "public",
+      });
+      if (error) throw error;
+      setCommentText("");
+      const { data } = await supabase
+        .from("report_comments")
+        .select("id,body,created_at")
+        .eq("report_id", report.id)
+        .eq("visibility", "public")
+        .order("created_at", { ascending: true })
+        .limit(30);
+      setPublicComments((data ?? []) as { id: string; body: string; created_at: string }[]);
+      setCommentsOpen(true);
+      setInteractionMessage("Votre commentaire a été publié.");
+    } catch {
+      setInteractionMessage("Impossible de publier le commentaire. Vérifiez votre connexion puis réessayez.");
+    } finally {
+      setInteractionBusy(false);
+    }
+  };
+
   return (
     <article ref={slideRef} className="citizenSlide citizenSlideTrack">
       <div className="slideContent">
@@ -315,6 +431,44 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
               <strong>Résolution :</strong> {report.resolution_note}
             </p>
           )}
+
+          <div className="citizenReportInteractions" aria-label="Interactions citoyennes">
+            <div className="feedActions">
+              <button type="button" className={confirmed ? "feedPrimary" : "feedSecondary"} onClick={toggleConfirmation} disabled={interactionBusy}>
+                {confirmed ? "✓ Je confirme" : "Je confirme"}
+              </button>
+              <button type="button" className="feedSecondary" onClick={() => setCommentsOpen((open) => !open)} aria-expanded={commentsOpen}>
+                Commenter ({publicComments.length})
+              </button>
+            </div>
+            {commentsOpen && (
+              <div className="citizenPublicComments">
+                {publicComments.length === 0 ? <p>Aucun commentaire public pour le moment.</p> : publicComments.map((comment) => (
+                  <article key={comment.id} className="citizenPublicComment">
+                    <p>{comment.body}</p>
+                    <small>{new Date(comment.created_at).toLocaleString("fr-FR")}</small>
+                  </article>
+                ))}
+                <form onSubmit={submitPublicComment}>
+                  <label htmlFor={`public-comment-${report.id}`}>Votre commentaire</label>
+                  <textarea
+                    id={`public-comment-${report.id}`}
+                    value={commentText}
+                    onChange={(event) => setCommentText(event.target.value)}
+                    minLength={2}
+                    maxLength={1000}
+                    rows={3}
+                    placeholder="Partagez une information utile…"
+                    required
+                  />
+                  <button type="submit" className="feedPrimary" disabled={interactionBusy || commentText.trim().length < 2}>
+                    {interactionBusy ? "Envoi…" : "Publier le commentaire"}
+                  </button>
+                </form>
+              </div>
+            )}
+            {interactionMessage && <p role="status" aria-live="polite">{interactionMessage}</p>}
+          </div>
         </div>
       </div>
     </article>
