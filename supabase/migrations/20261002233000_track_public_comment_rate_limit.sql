@@ -55,4 +55,4 @@ END;
 $function$;
 
 REVOKE ALL ON FUNCTION public.submit_public_report_comment(uuid, text, text, uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.submit_public_report_comment(uuid, text, text, uuid) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.submit_public_report_comment(uuid, text, text, uuid) TO anon, authenticated, service_role;
