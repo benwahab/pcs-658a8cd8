@@ -30,7 +30,7 @@ Deno.serve(async(req)=>{
       const media=(row as any).report_media;
       if(!media?.storage_path)continue;
       const {data:signed,error:signedError}=await admin.storage.from("report-media").createSignedUrl(media.storage_path,900);
-      items.push({...row,preview_url:signedError?null:signed?.signedUrl??null,report:(row as any).reports,report_media:undefined,reports:undefined});
+      items.push({...row,media_type:media.media_type,file_size:media.file_size,media_created_at:media.created_at,preview_url:signedError?null:signed?.signedUrl??null,report:(row as any).reports,report_media:undefined,reports:undefined});
     }
     return json({items,scope:"cst-only",signed_url_ttl_seconds:900});
   }
