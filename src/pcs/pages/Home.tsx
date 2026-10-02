@@ -491,7 +491,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                     {interactionBusy ? "Envoi…" : "Publier le commentaire"}
                   </button>
                 </form>
-              </div>
+              </section>
             )}
             {interactionMessage && <p role="status" aria-live="polite">{interactionMessage}</p>}
           </div>
