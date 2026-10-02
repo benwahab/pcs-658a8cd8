@@ -1,8 +1,9 @@
-import {useEffect,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import {Link} from "@/pcs/router";
 import {listMyMissions,confirmFieldVerification,resolveMissionWithVideo} from "../services/mairie";
 import BrandLogo from "../components/BrandLogo";
 import {statusLabels} from "../types";
+import {MAX_VIDEO_SIZE_BYTES} from "../services/media";
 import {
  cacheAgentMissions,
  getCachedAgentMissions,
@@ -21,6 +22,11 @@ export default function AgentTerrain(){
  const [verifyId,setVerifyId]=useState<string|null>(null);
  const [videoId,setVideoId]=useState<string|null>(null);
  const [video,setVideo]=useState<File|null>(null);
+ const [cameraReady,setCameraReady]=useState(false),[recording,setRecording]=useState(false),[elapsed,setElapsed]=useState(0);
+ const [cameraError,setCameraError]=useState(""),[videoPreviewUrl,setVideoPreviewUrl]=useState("");
+ const cameraRef=useRef<HTMLVideoElement|null>(null),previewRef=useRef<HTMLVideoElement|null>(null);
+ const streamRef=useRef<MediaStream|null>(null),recorderRef=useRef<MediaRecorder|null>(null);
+ const chunksRef=useRef<BlobPart[]>([]),timerRef=useRef<number|null>(null),previewUrlRef=useRef("");
  const [busy,setBusy]=useState(false);
  const [index,setIndex]=useState(0);
 
@@ -61,6 +67,8 @@ export default function AgentTerrain(){
   await load();
  }
 
+ useEffect(()=>()=>{if(timerRef.current!==null)window.clearInterval(timerRef.current);if(recorderRef.current?.state==="recording")recorderRef.current.stop();streamRef.current?.getTracks().forEach(t=>t.stop());if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);},[]);
+ useEffect(()=>{if(previewRef.current&&videoPreviewUrl)previewRef.current.src=videoPreviewUrl;},[videoPreviewUrl]);
  useEffect(()=>{
   void load();
   void syncPending();
@@ -124,6 +132,49 @@ export default function AgentTerrain(){
   });
  }
 
+ function stopCamera(){
+  if(timerRef.current!==null){window.clearInterval(timerRef.current);timerRef.current=null;}
+  const r=recorderRef.current;if(r&&r.state!=="inactive"){try{r.stop();}catch{}}
+  streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;recorderRef.current=null;
+  if(cameraRef.current)cameraRef.current.srcObject=null;setCameraReady(false);setRecording(false);
+ }
+ function cancelCapture(){
+  stopCamera();setVideo(null);setElapsed(0);setCameraError("");setVideoId(null);
+  if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);previewUrlRef.current="";setVideoPreviewUrl("");
+ }
+ async function openCamera(){
+  setCameraError("");setVideo(null);setElapsed(0);
+  if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined"){setCameraError("Ce navigateur ne prend pas en charge l’enregistrement vidéo par caméra. Utilisez un navigateur récent sur téléphone.");return;}
+  try{
+   stopCamera();let stream:MediaStream;
+   try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:true});}
+   catch(e){if(e instanceof DOMException&&(e.name==="NotFoundError"||e.name==="OverconstrainedError"))stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});else throw e;}
+   streamRef.current=stream;if(cameraRef.current){cameraRef.current.srcObject=stream;await cameraRef.current.play();}setCameraReady(true);
+  }catch(e){stopCamera();const n=e instanceof DOMException?e.name:"";setCameraError(n==="NotAllowedError"||n==="SecurityError"?"Accès caméra/micro refusé. Autorisez-les dans les réglages du navigateur.":n==="NotFoundError"?"Aucune caméra ou aucun microphone disponible.":n==="NotReadableError"?"La caméra est utilisée par une autre application. Fermez-la puis réessayez.":"Impossible d’ouvrir la caméra. Vérifiez les autorisations et utilisez PCS en HTTPS.");}
+ }
+ function startRecording(){
+  const stream=streamRef.current;if(!stream){setCameraError("Ouvrez d’abord la caméra.");return;}
+  const mime=["video/mp4","video/webm;codecs=vp8,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t));
+  if(!mime){setCameraError("Aucun format MP4/WebM compatible sur ce navigateur. Essayez un navigateur récent.");return;}
+  chunksRef.current=[];setCameraError("");
+  try{
+   const r=new MediaRecorder(stream,{mimeType:mime});recorderRef.current=r;
+   r.ondataavailable=e=>{if(e.data?.size)chunksRef.current.push(e.data);};
+   r.onerror=()=>setCameraError("Erreur d’enregistrement. Réessayez.");
+   r.onstop=()=>{
+    if(timerRef.current!==null){window.clearInterval(timerRef.current);timerRef.current=null;}setRecording(false);
+    const blob=new Blob(chunksRef.current,{type:r.mimeType||mime});chunksRef.current=[];
+    if(!blob.size){setCameraError("Vidéo vide. Réenregistrez.");stopCamera();return;}
+    if(blob.size>MAX_VIDEO_SIZE_BYTES){setVideo(null);setCameraError("Vidéo supérieure à 50 Mo. Réenregistrez plus court.");stopCamera();return;}
+    const type=blob.type.split(";")[0].toLowerCase(),ext=type==="video/mp4"?"mp4":type==="video/webm"?"webm":"";
+    if(!ext){setCameraError("Format produit non accepté par PCS. Essayez un autre navigateur.");stopCamera();return;}
+    const file=new File([blob],"resolution-"+Date.now()+"."+ext,{type});if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current=URL.createObjectURL(file);setVideoPreviewUrl(previewUrlRef.current);setVideo(file);stopCamera();
+   };
+   r.start(1000);setRecording(true);setElapsed(0);
+   timerRef.current=window.setInterval(()=>setElapsed(v=>{if(v+1>=60){if(recorderRef.current?.state==="recording")recorderRef.current.stop();return 60;}return v+1;}),1000);
+  }catch{setCameraError("Impossible de démarrer l’enregistrement. Vérifiez les autorisations caméra.");}
+ }
  function resolve(m:any){
   if(!video){
    setError("Ajoutez la vidéo de résolution.");
@@ -246,7 +297,7 @@ export default function AgentTerrain(){
         {s==="verification"&&
          <button className="feedActionButton primary" disabled={busy} onClick={()=>setVerifyId(m.reports.id)}>✓ Confirmer sur place</button>}
         {s==="in_progress"&&
-         <button className="feedActionButton primary" disabled={busy} onClick={()=>setVideoId(m.id)}>● Publier la résolution</button>}
+         <button className="feedActionButton primary" disabled={busy} onClick={()=>{cancelCapture();setVideoId(m.id);}}>● Publier la résolution</button>}
        </div>
        {verifyId===m.reports?.id&&
         <div className="agentActionSheet">
@@ -258,14 +309,16 @@ export default function AgentTerrain(){
         </div>}
        {videoId===m.id&&
         <div className="agentActionSheet">
-         <strong>Publier la résolution</strong>
-         <label>Vidéo prise sur place
-          <input type="file" accept="video/mp4,video/webm,video/quicktime" capture="environment" onChange={e=>setVideo(e.target.files?.[0]??null)}/>
-         </label>
-         <p>Vidéo et position GPS obligatoires. La vidéo doit être prise à 20 mètres ou moins du lieu.</p>
-         <button className="feedActionButton primary" disabled={!video||busy} onClick={()=>resolve(m)}>
-          {busy?"Publication…":"Publier maintenant"}
-         </button>
+         <strong>Résolution vidéo — caméra obligatoire</strong>
+         {cameraError&&<p role="alert" style={{color:"#b91c1c"}}>{cameraError}</p>}
+         {!cameraReady&&!video&&<button type="button" className="feedActionButton primary" disabled={busy} onClick={openCamera}>Ouvrir la caméra</button>}
+         {cameraReady&&!recording&&!video&&<video ref={cameraRef} autoPlay muted playsInline style={{width:"100%",maxHeight:"42vh",borderRadius:12,background:"#111",objectFit:"cover"}}/>}
+         {cameraReady&&!recording&&!video&&<button type="button" className="feedActionButton primary" onClick={startRecording}>● Démarrer l’enregistrement</button>}
+         {recording&&<><video ref={cameraRef} autoPlay muted playsInline style={{width:"100%",maxHeight:"42vh",borderRadius:12,background:"#111",objectFit:"cover"}}/><p>Enregistrement : 00:{String(elapsed).padStart(2,"0")} / 01:00</p><button type="button" className="feedActionButton primary" onClick={()=>recorderRef.current?.state==="recording"&&recorderRef.current.stop()}>■ Arrêter et prévisualiser</button></>}
+         {video&&videoPreviewUrl&&<><video ref={previewRef} controls playsInline style={{width:"100%",maxHeight:"42vh",borderRadius:12,background:"#111"}}/><p>Vidéo prête ({(video.size/1024/1024).toFixed(1)} Mo).</p><button type="button" className="feedActionButton" disabled={busy} onClick={()=>{setVideo(null);URL.revokeObjectURL(previewUrlRef.current);previewUrlRef.current="";setVideoPreviewUrl("");void openCamera();}}>Réenregistrer</button></>}
+         <p>Capture directe obligatoire. Maximum 60 secondes et 50 Mo. GPS précis requis à 20 mètres ou moins.</p>
+         <button className="feedActionButton primary" disabled={!video||busy||recording} onClick={()=>resolve(m)}>{busy?"Publication…":"Publier la résolution"}</button>
+         <button type="button" className="feedActionButton" disabled={busy} onClick={cancelCapture}>Annuler</button>
         </div>}
       </div>
       <div className="missionRail">
