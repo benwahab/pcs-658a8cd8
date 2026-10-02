@@ -25,10 +25,11 @@ interface Commune {
 const MAX_PHOTOS = 5;
 const MAX_TITLE_LENGTH = 120;
 const MAX_LOCATION_LENGTH = 250;
-const CAPTURE_VIDEO_STOP_MS = 8500;
+
 
 export default function ReportForm() {
   const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const videoInputRef = useRef<HTMLInputElement | null>(null);
   const cameraPreviewRef = useRef<HTMLVideoElement | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -131,7 +132,7 @@ export default function ReportForm() {
     }
 
     if (file.size > MAX_VIDEO_SIZE_BYTES) {
-      setError("Vidéo trop volumineuse. Maximum : 50 Mo.");
+      setError("La vidéo ne doit pas dépasser 100 Mo.");
       setVideo(null);
       return;
     }
@@ -236,9 +237,8 @@ export default function ReportForm() {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: "environment" },
-          width: { ideal: 854, max: 854 },
-          height: { ideal: 480, max: 480 },
-          frameRate: { ideal: 24, max: 24 },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
         audio: false,
       });
@@ -252,7 +252,6 @@ export default function ReportForm() {
 
       const recorder = new MediaRecorder(stream, {
         ...(mime ? { mimeType: mime } : {}),
-        videoBitsPerSecond: 900000,
       });
 
       chunksRef.current = [];
@@ -278,11 +277,6 @@ export default function ReportForm() {
       setRecording(true);
       setFinalizingVideo(false);
       recorder.start(500);
-
-      timerRef.current = window.setTimeout(
-        stopRecording,
-        CAPTURE_VIDEO_STOP_MS,
-      );
 
       requestAnimationFrame(() => {
         const videoElement = cameraPreviewRef.current;
@@ -412,7 +406,7 @@ export default function ReportForm() {
 
     if (video) {
       if (video.size > MAX_VIDEO_SIZE_BYTES) {
-        setError("Vidéo trop volumineuse. Maximum : 50 Mo.");
+        setError("La vidéo ne doit pas dépasser 100 Mo.");
         return;
       }
 
@@ -610,14 +604,27 @@ export default function ReportForm() {
                   ? "⏳ Finalisation de la vidéo…"
                   : "🎥 Filmer une vidéo"}
             </button>
+            <button type="button" className="mediaPickBtn" disabled={videoBusy} onClick={() => videoInputRef.current?.click()}>
+              Importer une vidéo
+            </button>
+            <input ref={videoInputRef} hidden type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" onChange={event => {
+              const selected = event.target.files?.[0] ?? null;
+              event.target.value = "";
+              if (!selected) return;
+              if (selected.size <= 0 || selected.size > MAX_VIDEO_SIZE_BYTES) {
+                setError("La vidéo ne doit pas dépasser 100 Mo.");
+                return;
+              }
+              setError("");
+              setVideo(selected);
+            }} />
           </div>
 
           {recording && (
             <div className="cameraCapture">
               <video ref={cameraPreviewRef} autoPlay muted playsInline />
-              <p>
-                La vidéo est finalisée avant l’envoi.
-              </p>
+              <p>Enregistrement en cours. Arrêtez-le lorsque vous avez terminé.</p>
+              <button type="button" className="button" onClick={stopRecording}>■ Arrêter et prévisualiser</button>
             </div>
           )}
 
