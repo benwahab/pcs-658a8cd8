@@ -247,7 +247,17 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         );
 
         if (!cancelled) {
-          setMedia(urls.sort((a, b) => Number(b.media_type.startsWith("video")) - Number(a.media_type.startsWith("video"))));
+          setMedia(
+            urls.sort((a, b) => {
+              const aIsVideo =
+                a.media_type.startsWith("video") ||
+                a.media_role === "resolution_video";
+              const bIsVideo =
+                b.media_type.startsWith("video") ||
+                b.media_role === "resolution_video";
+              return Number(bIsVideo) - Number(aIsVideo);
+            }),
+          );
         }
       } catch {
         if (!cancelled) setMedia([]);
