@@ -324,7 +324,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     void (async () => {
       const { data: reaction, error: reactionError } = await supabase.rpc("get_public_report_confirmation", {
         p_report_id: report.id,
-        p_visitor_token: visitorToken,
+        p_visitor_token: visitorToken!,
       });
       if (reactionError) throw reactionError;
       if (!cancelled && reaction && typeof reaction === "object") {
