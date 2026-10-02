@@ -46,7 +46,17 @@ export function Shell({ children }: { children: ReactNode }) {
         </Link>
 
         <nav data-pcs-tour="app-nav">
-          <Link to="/">Accueil</Link>
+          <Link
+            to="/"
+            onClick={(event) => {
+              if (location.pathname === "/") {
+                event.preventDefault();
+                window.dispatchEvent(new Event("pcs-home-reset"));
+              }
+            }}
+          >
+            Accueil
+          </Link>
         </nav>
 
         <span className="session" data-pcs-tour="account">
