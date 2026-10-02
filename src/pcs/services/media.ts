@@ -1,7 +1,8 @@
 import { supabase } from "../lib/supabase";
 
 export const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
-// Aucun plafond applicatif de durée ou de taille. Les quotas effectifs dépendent du stockage Supabase.
+// Aucun plafond applicatif. Les quotas effectifs dépendent du stockage Supabase.
+export const MAX_VIDEO_SIZE_BYTES = Number.POSITIVE_INFINITY;
 
 const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp"];
 const ALLOWED_VIDEOS = [
