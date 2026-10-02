@@ -46,8 +46,25 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const feed = document.querySelector(".citizenFeed");
+    const feed = document.querySelector<HTMLElement>(".citizenFeed");
     if (!feed) return;
+
+    const resetHomePosition = () => {
+      setHeaderHidden(false);
+      setHeaderScrolled(false);
+      feed.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.querySelector<HTMLElement>("main")?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      feed.querySelector<HTMLElement>(".citizenSlideIntro")?.scrollIntoView({
+        block: "start",
+        behavior: "auto",
+      });
+      feed.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    };
+
+    // On entering the home route, always begin at the report-entry slide.
+    resetHomePosition();
+    window.addEventListener("pcs-home-reset", resetHomePosition);
 
     let lastScrollTop = feed.scrollTop;
 
@@ -67,7 +84,10 @@ export default function Home() {
     };
 
     feed.addEventListener("scroll", onScroll, { passive: true });
-    return () => feed.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("pcs-home-reset", resetHomePosition);
+      feed.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   return (
