@@ -94,36 +94,89 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
 }
 
 export function MediaCarousel({ media }: { media: MediaItem[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [media]);
+
   if (!media.length) return null;
 
+  const safeIndex = Math.min(activeIndex, media.length - 1);
+  const item = media[safeIndex];
+  const isVideo =
+    item.media_type?.startsWith("video") ||
+    item.media_role === "resolution_video";
   const poster = media.find(
-    (item) =>
-      !item.media_type?.startsWith("video") &&
-      item.media_role !== "resolution_video",
+    (candidate) =>
+      !candidate.media_type?.startsWith("video") &&
+      candidate.media_role !== "resolution_video",
   )?.url;
 
+  const changeSlide = (direction: -1 | 1) => {
+    setActiveIndex((current) =>
+      Math.max(0, Math.min(media.length - 1, current + direction)),
+    );
+  };
+
   return (
-    <div className="mediaCarousel">
-      {media.map((item, index) => (
-        <div className="mediaCarouselItem" key={item.id}>
-          {item.media_type?.startsWith("video") ||
-          item.media_role === "resolution_video" ? (
-            <LazyFeedVideo src={item.url} poster={poster} />
-          ) : (
-            <img
-              src={item.url}
-              alt="Pièce jointe du signalement"
-              loading="lazy"
-              decoding="async"
-            />
+    <div
+      className="mediaCarousel"
+      onTouchStart={(event) => {
+        const touch = event.changedTouches[0];
+        touchStart.current = { x: touch.clientX, y: touch.clientY };
+      }}
+      onTouchEnd={(event) => {
+        const startPoint = touchStart.current;
+        touchStart.current = null;
+        if (!startPoint) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - startPoint.x;
+        const dy = touch.clientY - startPoint.y;
+        if (Math.abs(dx) < 45 || Math.abs(dx) <= Math.abs(dy)) return;
+        changeSlide(dx < 0 ? 1 : -1);
+      }}
+      aria-label="Médias du signalement : glisser horizontalement pour changer de média"
+    >
+      <div className="mediaCarouselItem" key={item.id}>
+        {isVideo ? (
+          <LazyFeedVideo src={item.url} poster={poster} />
+        ) : (
+          <img
+            src={item.url}
+            alt="Pièce jointe du signalement"
+            decoding="async"
+          />
+        )}
+      </div>
+      {media.length > 1 && (
+        <>
+          <span className="mediaCount" aria-live="polite">
+            {safeIndex + 1}/{media.length}
+          </span>
+          {safeIndex > 0 && (
+            <button
+              type="button"
+              className="mediaCarouselNav mediaCarouselPrev"
+              aria-label="Média précédent"
+              onClick={() => changeSlide(-1)}
+            >
+              ‹
+            </button>
           )}
-          {media.length > 1 && (
-            <span className="mediaCount">
-              {index + 1}/{media.length}
-            </span>
+          {safeIndex < media.length - 1 && (
+            <button
+              type="button"
+              className="mediaCarouselNav mediaCarouselNext"
+              aria-label="Média suivant"
+              onClick={() => changeSlide(1)}
+            >
+              ›
+            </button>
           )}
-        </div>
-      ))}
+        </>
+      )}
     </div>
   );
 }
