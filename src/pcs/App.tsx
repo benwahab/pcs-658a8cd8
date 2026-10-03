@@ -153,7 +153,6 @@ function App({ children }: { children: ReactNode }) {
 
     // Brief startup screen only for the initial app mount; internal route
     // changes do not remount App. Always remove it after a short timeout.
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timeout = window.setTimeout(
       () => setShowSplash(false),
       5000,
