@@ -17,7 +17,15 @@ export default function Home() {
 
   useEffect(() => {
     let active = true;
-    const refreshReports = async () => {
+    let inFlight = false;
+    let lastRefreshAt = 0;
+    const refreshReports = async (force = false) => {
+      // Avoid overlapping requests when the timer, tab visibility and window focus
+      // fire close together. A short cooldown also prevents duplicate focus events.
+      const now = Date.now();
+      if (inFlight || (!force && now - lastRefreshAt < 5000)) return;
+      inFlight = true;
+      lastRefreshAt = now;
       try {
         const nextReports = await listPublicReports();
         if (active) {
@@ -27,20 +35,21 @@ export default function Home() {
       } catch (error) {
         if (active) setError(error instanceof Error ? error.message : "Impossible de charger les signalements publics.");
       } finally {
+        inFlight = false;
         if (active) setLoading(false);
       }
     };
     const onVisibility = () => {
       if (document.visibilityState === "visible") void refreshReports();
     };
-    void refreshReports();
+    void refreshReports(true);
     const timer = window.setInterval(() => void refreshReports(), 30000);
-    window.addEventListener("focus", refreshReports);
+    window.addEventListener("focus", onVisibility);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       active = false;
       window.clearInterval(timer);
-      window.removeEventListener("focus", refreshReports);
+      window.removeEventListener("focus", onVisibility);
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
@@ -224,12 +233,19 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
   useEffect(() => {
     if (!mediaReady) return;
-    const refresh = () => setMediaRefresh((value) => value + 1);
-    const timer = window.setInterval(refresh, 30000);
-    window.addEventListener("focus", refresh);
+    // Signed media URLs are valid for one hour; refresh every 45 minutes rather
+    // than querying Storage every 30 seconds for every visible report.
+    let lastRefreshAt = Date.now();
+    const refreshIfStale = () => {
+      if (Date.now() - lastRefreshAt < 45 * 60 * 1000) return;
+      lastRefreshAt = Date.now();
+      setMediaRefresh((value) => value + 1);
+    };
+    const timer = window.setInterval(refreshIfStale, 60 * 1000);
+    window.addEventListener("focus", refreshIfStale);
     return () => {
       window.clearInterval(timer);
-      window.removeEventListener("focus", refresh);
+      window.removeEventListener("focus", refreshIfStale);
     };
   }, [mediaReady]);
 
