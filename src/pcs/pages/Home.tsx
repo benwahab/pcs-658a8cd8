@@ -298,13 +298,12 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
         if (error) throw error;
 
-        // The public citizen feed must contain only approved citizen evidence.
-        // Resolution videos are private CST evidence and must never be requested here.
+        // The public feed contains approved citizen evidence and resolution videos approved by the responsible mairie.
         const publicEvidence = (data ?? []).filter(
           (item) =>
             item.id &&
             item.storage_path &&
-            item.media_role === "citizen_evidence" &&
+            (item.media_role === "citizen_evidence" || item.media_role === "resolution_video") &&
             !HIDDEN_TEST_MEDIA_IDS.has(item.id as string),
         );
 
