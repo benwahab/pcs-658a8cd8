@@ -131,18 +131,18 @@ export default function Home() {
             <span className="feedAccessChevron">▾</span>
           </summary>
           <div>
-            {/* Use native navigation for professional entry points so every
-                destination also works reliably in mobile preview/webviews. */}
-            <a href="/cst">🖥️ CST — Supervision technique</a>
-            <a href="/connexion-operationnelle">🏛️ Mairie</a>
-            <a href="/connexion-operationnelle?mode=agent">
+            {/* Keep professional navigation inside the PCS router so the selected
+                login screen opens without a full document reload. */}
+            <Link to="/cst">🖥️ CST — Supervision technique</Link>
+            <Link to="/connexion-operationnelle">🏛️ Mairie</Link>
+            <Link to="/connexion-operationnelle?mode=agent">
               👷 Agent terrain
-            </a>
-            <a href="/connexion-operationnelle?mode=moderator">
+            </Link>
+            <Link to="/connexion-operationnelle?mode=moderator">
               🛡️ Modérateur
-            </a>
-            <a href="/connexion-nigelec">⚡ NIGELEC</a>
-            <a href="/connexion-nde">💧 NDE</a>
+            </Link>
+            <Link to="/connexion-nigelec">⚡ NIGELEC</Link>
+            <Link to="/connexion-nde">💧 NDE</Link>
           </div>
         </details>
       </div>
