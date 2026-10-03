@@ -324,6 +324,11 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         if (!cancelled) {
           setMedia(
             urls.sort((a, b) => {
+              // Keep all original citizen evidence first; append the mairie-approved
+              // resolution video at the end of the same horizontal carousel.
+              const aIsResolution = a.media_role === "resolution_video";
+              const bIsResolution = b.media_role === "resolution_video";
+              if (aIsResolution !== bIsResolution) return Number(aIsResolution) - Number(bIsResolution);
               const aIsVideo = a.media_type.startsWith("video");
               const bIsVideo = b.media_type.startsWith("video");
               return Number(bIsVideo) - Number(aIsVideo);
