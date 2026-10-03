@@ -306,6 +306,37 @@ export default function ReportForm() {
           </select>
         </label>
 
+        <div className="mediaPicker">
+          <button
+            type="button"
+            className="mediaPickBtn"
+            disabled={saving}
+            onClick={() => {
+              const accepted = window.confirm(
+                "IMPORTANT — RÈGLES DES PHOTOS DE SIGNALEMENT\n\n" +
+                "Importez uniquement une photo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\n\n" +
+                "Toute photo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\n\n" +
+                "Voulez-vous choisir une photo depuis votre téléphone ?"
+              );
+              if (accepted) photoInputRef.current?.click();
+            }}
+          >
+            Importer une photo
+          </button>
+          <input
+            ref={photoInputRef}
+            hidden
+            type="file"
+            accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+            multiple
+            onChange={(event) => {
+              addPhotos(event.target.files);
+              event.target.value = "";
+              setError("");
+            }}
+          />
+        </div>
+
         <label>
           Titre
           <input
