@@ -2225,6 +2225,10 @@ export type Database = {
           id: string
         }[]
       }
+      mairie_review_resolution_video: {
+        Args: { p_approve: boolean; p_media_id: string }
+        Returns: undefined
+      }
       mairie_transmit_report: {
         Args: {
           p_note?: string
