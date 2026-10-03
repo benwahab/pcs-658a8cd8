@@ -36,7 +36,13 @@ export default function Home() {
       try {
         const nextReports = await listPublicReports();
         if (active) {
-          setReports(nextReports);
+          // Exclude the two empty test-video publications from the home feed entirely.
+          // Keep the underlying reports and the separate photo on the 30 September report intact.
+          const hiddenTestReportRefs = new Set([
+            "PCS-20261002-7A2D729F",
+            "PCS-20261001-F32BB56F",
+          ]);
+          setReports(nextReports.filter((report) => !hiddenTestReportRefs.has(report.reference_code ?? "")));
           setError("");
         }
       } catch (error) {
