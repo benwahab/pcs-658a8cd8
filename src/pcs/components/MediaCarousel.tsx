@@ -74,6 +74,8 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
+      // Stop playback when this slide is removed or replaced by another media item.
+      video.pause();
       if (activeFeedVideo === video) activeFeedVideo = null;
     };
   }, [active, autoplayAllowed]);
