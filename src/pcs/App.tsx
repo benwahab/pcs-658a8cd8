@@ -156,7 +156,7 @@ function App({ children }: { children: ReactNode }) {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timeout = window.setTimeout(
       () => setShowSplash(false),
-      reducedMotion ? 250 : 1500,
+      5000,
     );
 
     return () => window.clearTimeout(timeout);
@@ -248,7 +248,7 @@ function App({ children }: { children: ReactNode }) {
               display: grid;
               place-items: center;
               background: #fff;
-              animation: pcsSplashFadeOut .28s ease-out 1.22s forwards;
+              animation: pcsSplashFadeOut .28s ease-out 4.72s forwards;
             }
             .pcsSplash img {
               display: block;
