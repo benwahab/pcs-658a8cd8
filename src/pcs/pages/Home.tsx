@@ -298,26 +298,35 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
         if (error) throw error;
 
-        const urls = await Promise.all(
-          (data ?? [])
-            .filter((item) => item.id && item.storage_path && !HIDDEN_TEST_MEDIA_IDS.has(item.id as string))
-            .map(async (item) => ({
-              id: item.id as string,
-              url: await createReportMediaUrl(item.storage_path as string),
-              media_role: item.media_role ?? "evidence",
-              media_type: item.media_type ?? "image",
-            })),
+        // The public citizen feed must contain only approved citizen evidence.
+        // Resolution videos are private CST evidence and must never be requested here.
+        const publicEvidence = (data ?? []).filter(
+          (item) =>
+            item.id &&
+            item.storage_path &&
+            item.media_role === "citizen_evidence" &&
+            !HIDDEN_TEST_MEDIA_IDS.has(item.id as string),
+        );
+
+        // A broken/expired URL for one attachment must not hide the other valid
+        // photos or videos belonging to the same public report.
+        const settledUrls = await Promise.allSettled(
+          publicEvidence.map(async (item) => ({
+            id: item.id as string,
+            url: await createReportMediaUrl(item.storage_path as string),
+            media_role: item.media_role ?? "citizen_evidence",
+            media_type: item.media_type ?? "image",
+          })),
+        );
+        const urls = settledUrls.flatMap((result) =>
+          result.status === "fulfilled" ? [result.value] : [],
         );
 
         if (!cancelled) {
           setMedia(
             urls.sort((a, b) => {
-              const aIsVideo =
-                a.media_type.startsWith("video") ||
-                a.media_role === "resolution_video";
-              const bIsVideo =
-                b.media_type.startsWith("video") ||
-                b.media_role === "resolution_video";
+              const aIsVideo = a.media_type.startsWith("video");
+              const bIsVideo = b.media_type.startsWith("video");
               return Number(bIsVideo) - Number(aIsVideo);
             }),
           );
