@@ -409,7 +409,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
       const { error } = await supabase.rpc("submit_public_report_comment", {
         p_report_id: report.id!,
         p_body: body,
-        p_display_name: null,
+        p_display_name: null as unknown as string,
         p_visitor_token: visitorToken,
       });
       if (error) throw error;
