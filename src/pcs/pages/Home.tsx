@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@/pcs/router";
 import { supabase } from "../lib/supabase";
 import { listPublicReports } from "../lib/reports";
+
+// Hide the two explicitly archived citizen test videos from the public feed.
+// Keep the report records and the separate photo attached to the 30 September report untouched.
+const HIDDEN_TEST_MEDIA_IDS = new Set([
+  "3bc68590-9fc8-4fd6-add5-0fc2856840ea", // PCS-20261002-7A2D729F
+  "6c7a3f58-2f85-408e-8611-1a5fcce6a06a", // PCS-20261001-F32BB56F
+]);
 import type { PublicReport } from "../types";
 import { statusLabels } from "../types";
 import { createReportMediaUrl } from "../services/media";
@@ -293,7 +300,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
         const urls = await Promise.all(
           (data ?? [])
-            .filter((item) => item.id && item.storage_path)
+            .filter((item) => item.id && item.storage_path && !HIDDEN_TEST_MEDIA_IDS.has(item.id as string))
             .map(async (item) => ({
               id: item.id as string,
               url: await createReportMediaUrl(item.storage_path as string),
