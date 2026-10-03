@@ -83,6 +83,7 @@ using (
     join public.mairies m on m.commune_id = r.commune_id
     where rm.storage_path = objects.name
       and rm.media_role = 'resolution_video'
+      and rm.moderation_status = 'rejected'
       and m.account_user_id = auth.uid()
       and m.is_active = true
   )
