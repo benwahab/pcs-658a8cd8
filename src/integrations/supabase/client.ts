@@ -35,14 +35,24 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     headers.set('apikey', supabaseKey);
 
     const requestUrl = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    headers.delete('x-pcs-trace-id');
+    headers.delete('traceparent');
     const isBrowser = typeof window !== 'undefined';
     const isTelemetryRequest = requestUrl.includes('/functions/v1/cst-telemetry');
     const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
     const retryable = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
     const maxAttempts = retryable && !isTelemetryRequest ? 3 : 1;
     const trace = createTraceContext();
-    headers.set('x-pcs-trace-id', trace.traceId);
-    headers.set('traceparent', trace.traceparent);
+    // Edge Functions only allow a fixed list of CORS headers (authorization,
+    // x-client-info, apikey, content-type, x-supabase-api-version). Custom trace
+    // headers make the browser preflight fail ("Failed to send a request to the
+    // Edge Function"), so they are only attached to non-function requests. The
+    // trace id is still reported to cst-telemetry in the request body.
+    const isEdgeFunctionRequest = requestUrl.includes('/functions/v1/');
+    if (!isEdgeFunctionRequest) {
+      headers.set('x-pcs-trace-id', trace.traceId);
+      headers.set('traceparent', trace.traceparent);
+    }
     const started = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
     let response: Response | undefined;
