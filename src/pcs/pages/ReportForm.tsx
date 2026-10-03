@@ -331,19 +331,66 @@ export default function ReportForm() {
           />
         </label>
 
-        
-            <button type="button" className="mediaPickBtn" disabled={saving} onClick={() => {
+        <button type="button" className="mediaPickBtn" onClick={locate} disabled={saving}>
+          Utiliser ma position GPS
+        </button>
+        {coords && (
+          <p className="muted">
+            GPS : {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+          </p>
+        )}
+
+        <fieldset className="mediaPicker" disabled={saving}>
+          <legend>Photos et vidéo du signalement</legend>
+          <button
+            type="button"
+            className="mediaPickBtn"
+            onClick={() => {
               const accepted = window.confirm(
-                "IMPORTANT — RÈGLES DES VIDÉOS DE SIGNALEMENT\n\n" +
-                "Importez uniquement une vidéo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\n\n" +
-                "Toute vidéo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\n\n" +
+                "IMPORTANT — RÈGLES DES PHOTOS DE SIGNALEMENT\\n\\n" +
+                "Importez uniquement une photo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\\n\\n" +
+                "Toute photo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\\n\\n" +
+                "Voulez-vous choisir une photo depuis votre téléphone ?"
+              );
+              if (accepted) photoInputRef.current?.click();
+            }}
+          >
+            Importer une photo
+          </button>
+          <input
+            ref={photoInputRef}
+            hidden
+            type="file"
+            accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+            multiple
+            onChange={(event) => {
+              addPhotos(event.target.files);
+              event.target.value = "";
+              setError("");
+            }}
+          />
+
+          <button
+            type="button"
+            className="mediaPickBtn"
+            onClick={() => {
+              const accepted = window.confirm(
+                "IMPORTANT — RÈGLES DES VIDÉOS DE SIGNALEMENT\\n\\n" +
+                "Importez uniquement une vidéo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\\n\\n" +
+                "Toute vidéo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\\n\\n" +
                 "Voulez-vous choisir une vidéo depuis votre téléphone ?"
               );
               if (accepted) videoInputRef.current?.click();
-            }}>
-              Importer une vidéo
-            </button>
-            <input ref={videoInputRef} hidden type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" onChange={event => {
+            }}
+          >
+            Importer une vidéo
+          </button>
+          <input
+            ref={videoInputRef}
+            hidden
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v"
+            onChange={(event) => {
               const selected = event.target.files?.[0] ?? null;
               event.target.value = "";
               if (!selected) return;
@@ -353,8 +400,8 @@ export default function ReportForm() {
               }
               setError("");
               setVideo(selected);
-            }} />
-          </div>
+            }}
+          />
 
           {(files.length > 0 || video) && (
             <ul className="mediaChosen">
@@ -365,9 +412,7 @@ export default function ReportForm() {
                     type="button"
                     onClick={() =>
                       setFiles((current) =>
-                        current.filter(
-                          (_, itemIndex) => itemIndex !== index,
-                        ),
+                        current.filter((_, itemIndex) => itemIndex !== index),
                       )
                     }
                   >
@@ -375,7 +420,6 @@ export default function ReportForm() {
                   </button>
                 </li>
               ))}
-
               {video && (
                 <li>
                   🎥 {video.name}
