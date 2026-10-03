@@ -30,12 +30,6 @@ const MAX_LOCATION_LENGTH = 250;
 export default function ReportForm() {
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
-  const cameraPreviewRef = useRef<HTMLVideoElement | null>(null);
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const timerRef = useRef<number | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const stoppingRef = useRef(false);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
@@ -56,8 +50,6 @@ export default function ReportForm() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const [finalizingVideo, setFinalizingVideo] = useState(false);
 
   useEffect(() => {
     Promise.all([listCategories(), listRegions(), listAllCommunes()])
@@ -83,114 +75,6 @@ export default function ReportForm() {
         : [],
     );
   }, [region, allCommunes]);
-
-  function clearTimers() {
-    if (timerRef.current !== null) {
-      window.clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-
-  }
-
-  function detachPreview() {
-    const videoElement = cameraPreviewRef.current;
-    if (!videoElement) return;
-
-    videoElement.pause();
-    videoElement.srcObject = null;
-  }
-
-  function stopCameraTracks() {
-    const stream = streamRef.current;
-    streamRef.current = null;
-    stream?.getTracks().forEach((track) => track.stop());
-  }
-
-  function resetRecorder() {
-    recorderRef.current = null;
-    stoppingRef.current = false;
-    chunksRef.current = [];
-  }
-
-  function cleanupCamera() {
-    clearTimers();
-    stopCameraTracks();
-    detachPreview();
-    resetRecorder();
-    setRecording(false);
-  }
-
-  function finishVideo(file: File | null) {
-    stopCameraTracks();
-    detachPreview();
-    setRecording(false);
-    setFinalizingVideo(false);
-
-    if (!file) {
-      setVideo(null);
-      return;
-    }
-
-    if (file.size > MAX_VIDEO_SIZE_BYTES) {
-      setError("La vidéo ne doit pas dépasser 100 Mo.");
-      setVideo(null);
-      return;
-    }
-
-    setVideo(file);
-  }
-
-  function stopRecording() {
-    const recorder = recorderRef.current;
-    if (!recorder || stoppingRef.current) return;
-
-    stoppingRef.current = true;
-    clearTimers();
-    setRecording(false);
-    setFinalizingVideo(true);
-
-    if (recorder.state === "recording") {
-      try {
-        recorder.requestData();
-      } catch {
-        // Le navigateur peut déjà finaliser le dernier fragment.
-      }
-
-      try {
-        recorder.stop();
-      } catch {
-        setError("La vidéo n’a pas pu être finalisée.");
-        cleanupCamera();
-        setFinalizingVideo(false);
-      }
-
-      return;
-    }
-
-    if (recorder.state === "inactive") {
-      finalizeInactiveRecorder(recorder);
-    }
-  }
-
-  function finalizeInactiveRecorder(recorder: MediaRecorder) {
-    const type = (recorder.mimeType || "video/webm")
-      .split(";")[0]
-      .trim()
-      .toLowerCase();
-    const extension =
-      type === "video/mp4"
-        ? "mp4"
-        : type === "video/quicktime"
-          ? "mov"
-          : "webm";
-    const blob = new Blob(chunksRef.current, { type });
-    const file = new File([blob], `signalement-video.${extension}`, {
-      type,
-    });
-
-    resetRecorder();
-    finishVideo(file);
-  }
 
   async function requestPhotoCameraPermission() {
     setError("");
@@ -219,107 +103,6 @@ export default function ReportForm() {
       );
     }
   }
-
-  async function startVideoCapture() {
-    setError("");
-
-    if (recording || finalizingVideo) return;
-
-    if (
-      !navigator.mediaDevices?.getUserMedia ||
-      typeof MediaRecorder === "undefined"
-    ) {
-      setError("La caméra vidéo n’est pas disponible sur cet appareil.");
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        audio: false,
-      });
-
-      streamRef.current = stream;
-
-      const mime =
-        ["video/webm;codecs=vp8", "video/webm"].find((type) =>
-          MediaRecorder.isTypeSupported(type),
-        ) ?? "";
-
-      const recorder = new MediaRecorder(stream, {
-        ...(mime ? { mimeType: mime } : {}),
-      });
-
-      chunksRef.current = [];
-      recorderRef.current = recorder;
-      stoppingRef.current = false;
-
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunksRef.current.push(event.data);
-        }
-      };
-
-      recorder.onerror = () => {
-        setError("La caméra n’a pas pu enregistrer la vidéo.");
-        cleanupCamera();
-        setFinalizingVideo(false);
-      };
-
-      recorder.onstop = () => {
-        finalizeInactiveRecorder(recorder);
-      };
-
-      setRecording(true);
-      setFinalizingVideo(false);
-      recorder.start(500);
-
-      requestAnimationFrame(() => {
-        const videoElement = cameraPreviewRef.current;
-        if (!videoElement) return;
-
-        videoElement.autoplay = true;
-        videoElement.muted = true;
-        videoElement.defaultMuted = true;
-        videoElement.playsInline = true;
-        videoElement.srcObject = stream;
-        void videoElement.play().catch(() => undefined);
-      });
-    } catch (captureError) {
-      cleanupCamera();
-      setFinalizingVideo(false);
-      setError(
-        captureError instanceof Error
-          ? captureError.message
-          : "Impossible d’accéder à la caméra.",
-      );
-    }
-  }
-
-  useEffect(
-    () => () => {
-      clearTimers();
-
-      const recorder = recorderRef.current;
-
-      if (recorder && recorder.state === "recording") {
-        try {
-          recorder.stop();
-        } catch {
-          // Ignore les erreurs pendant le démontage du composant.
-        }
-      }
-
-      stopCameraTracks();
-      detachPreview();
-      resetRecorder();
-    },
-    [],
-  );
 
   function locate() {
     navigator.geolocation?.getCurrentPosition(
@@ -356,11 +139,6 @@ export default function ReportForm() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError("");
-
-    if (recording || finalizingVideo) {
-      setError("Attendez la fin de la finalisation de la vidéo.");
-      return;
-    }
 
     if (!supabase) {
       setError("Supabase n’est pas configuré.");
@@ -460,8 +238,6 @@ export default function ReportForm() {
     );
   }
 
-  const videoBusy = recording || finalizingVideo;
-
   return (
     <section
       className="narrow authScreen reportScreen"
@@ -552,59 +328,16 @@ export default function ReportForm() {
           />
         </label>
 
-        <button
-          type="button"
-          className="button"
-          data-pcs-tour="location"
-          onClick={locate}
-        >
-          Utiliser ma position
-        </button>
-
-        {coords && (
-          <small>
-            GPS : {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
-          </small>
-        )}
-
-        <fieldset className="mediaPicker" data-pcs-tour="photo">
-          <div className="mediaPickerRow">
-            <button
-              type="button"
-              className="mediaPickBtn"
-              onClick={() => void requestPhotoCameraPermission()}
-              disabled={videoBusy}
-            >
-              <span aria-hidden="true">📷</span> Prendre une photo
-            </button>
-
-            <input
-              ref={photoInputRef}
-              hidden
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              capture="environment"
-              onChange={(event) => {
-                addPhotos(event.target.files);
-                event.target.value = "";
-              }}
-            />
-          </div>
-
-          <div className="mediaPickerRow">
-            <button
-              type="button"
-              className="mediaPickBtn"
-              onClick={() => void startVideoCapture()}
-              disabled={videoBusy}
-            >
-              {recording
-                ? "🎥 Enregistrement en cours…"
-                : finalizingVideo
-                  ? "⏳ Finalisation de la vidéo…"
-                  : "🎥 Filmer une vidéo"}
-            </button>
-            <button type="button" className="mediaPickBtn" disabled={videoBusy} onClick={() => videoInputRef.current?.click()}>
+        
+            <button type="button" className="mediaPickBtn" disabled={saving} onClick={() => {
+              const accepted = window.confirm(
+                "IMPORTANT — RÈGLES DES VIDÉOS DE SIGNALEMENT\n\n" +
+                "Importez uniquement une vidéo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\n\n" +
+                "Toute vidéo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\n\n" +
+                "Voulez-vous choisir une vidéo depuis votre téléphone ?"
+              );
+              if (accepted) videoInputRef.current?.click();
+            }}>
               Importer une vidéo
             </button>
             <input ref={videoInputRef} hidden type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" onChange={event => {
@@ -619,20 +352,6 @@ export default function ReportForm() {
               setVideo(selected);
             }} />
           </div>
-
-          {recording && (
-            <div className="cameraCapture">
-              <video ref={cameraPreviewRef} autoPlay muted playsInline />
-              <p>Enregistrement en cours. Arrêtez-le lorsque vous avez terminé.</p>
-              <button type="button" className="button" onClick={stopRecording}>■ Arrêter et prévisualiser</button>
-            </div>
-          )}
-
-          {finalizingVideo && !recording && (
-            <div className="cameraCapture">
-              <p>⏳ Finalisation de la vidéo…</p>
-            </div>
-          )}
 
           {(files.length > 0 || video) && (
             <ul className="mediaChosen">
