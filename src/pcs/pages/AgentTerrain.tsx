@@ -31,7 +31,6 @@ export default function AgentTerrain(){
  const streamRef=useRef<MediaStream|null>(null),recorderRef=useRef<MediaRecorder|null>(null);
  const chunksRef=useRef<BlobPart[]>([]),timerRef=useRef<number|null>(null),previewUrlRef=useRef("");
  const [busy,setBusy]=useState(false);
- const [showLogoutConfirm,setShowLogoutConfirm]=useState(false);
  const [index,setIndex]=useState(0);
 
  async function logout(){
@@ -40,7 +39,6 @@ export default function AgentTerrain(){
    setError("Vous avez des éléments hors connexion en attente. Reconnectez-vous et synchronisez-les avant de vous déconnecter, afin de ne perdre aucune preuve de mission.");
    return;
   }
-  setShowLogoutConfirm(false);
   setBusy(true);
   try{
    if(!supabase)throw new Error("Service de connexion indisponible.");
@@ -305,18 +303,8 @@ export default function AgentTerrain(){
     <small>{missions.length} mission(s){offlinePending>0?` · ${offlinePending} en attente`: ""}</small>
    </div>
    <button className="agentRefresh" onClick={load} aria-label="Actualiser les missions" title="Actualiser">↻</button>
-   <button className="agentLogout" onClick={()=>setShowLogoutConfirm(true)} disabled={busy} style={{border:"1px solid #fecaca",borderRadius:10,padding:"8px 10px",background:"#fff",color:"#b91c1c",fontWeight:700,whiteSpace:"nowrap"}}>↪ Déconnexion</button>
+   <button className="agentLogout" onClick={logout} disabled={busy} style={{border:"1px solid #fecaca",borderRadius:10,padding:"8px 10px",background:"#fff",color:"#b91c1c",fontWeight:700,whiteSpace:"nowrap"}}>↪ Déconnexion</button>
   </header>
-  {showLogoutConfirm&&<div role="presentation" onClick={()=>setShowLogoutConfirm(false)} style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(15,23,42,.55)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-   <div role="dialog" aria-modal="true" aria-labelledby="agent-logout-title" onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:360,background:"#fff",borderRadius:18,padding:22,boxShadow:"0 20px 60px rgba(0,0,0,.25)",color:"#172033"}}>
-    <h2 id="agent-logout-title" style={{fontSize:20,margin:"0 0 10px"}}>Confirmer la déconnexion</h2>
-    <p style={{margin:"0 0 20px",lineHeight:1.5}}>Voulez-vous quitter votre espace Agent terrain ? Vous devrez vous reconnecter pour consulter vos missions.</p>
-    <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
-     <button onClick={()=>setShowLogoutConfirm(false)} disabled={busy} style={{border:"1px solid #cbd5e1",borderRadius:10,padding:"10px 14px",background:"#fff",color:"#334155",fontWeight:600}}>Annuler</button>
-     <button onClick={logout} disabled={busy} style={{border:0,borderRadius:10,padding:"10px 14px",background:"#b91c1c",color:"#fff",fontWeight:700}}>{busy?"Déconnexion…":"Oui, me déconnecter"}</button>
-    </div>
-   </div>
-  </div>}
   {error&&<div className="agentFeedError">{error}<button onClick={()=>setError("")}>×</button></div>}
   {!missions.length&&!error?
    <div className="agentEmpty">
