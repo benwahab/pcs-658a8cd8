@@ -76,34 +76,6 @@ export default function ReportForm() {
     );
   }, [region, allCommunes]);
 
-  async function requestPhotoCameraPermission() {
-    setError("");
-    if (videoBusy) return;
-
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setError("L’accès à la caméra n’est pas disponible. Vérifiez les autorisations du navigateur puis réessayez.");
-      return;
-    }
-
-    try {
-      // Demande explicitement l'autorisation caméra au clic sur « Prendre une photo ».
-      const permissionStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } },
-        audio: false,
-      });
-      permissionStream.getTracks().forEach((track) => track.stop());
-      photoInputRef.current?.click();
-    } catch (captureError) {
-      setError(
-        captureError instanceof Error
-          ? captureError.name === "NotAllowedError" || captureError.name === "PermissionDeniedError"
-            ? "Autorisez l’accès à la caméra dans les paramètres du navigateur ou du téléphone, puis réessayez."
-            : captureError.message
-          : "Impossible d’accéder à la caméra. Vérifiez l’autorisation puis réessayez.",
-      );
-    }
-  }
-
   function locate() {
     navigator.geolocation?.getCurrentPosition(
       (position) => {
@@ -420,7 +392,7 @@ export default function ReportForm() {
 
         <button
           data-pcs-tour="submit-report"
-          disabled={saving || videoBusy}
+          disabled={saving}
           className="button primary"
           type="submit"
         >
