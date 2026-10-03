@@ -341,7 +341,6 @@ export default function ReportForm() {
         )}
 
         <fieldset className="mediaPicker" disabled={saving}>
-          <legend>Photos et vidéo du signalement</legend>
           <button
             type="button"
             className="mediaPickBtn"
