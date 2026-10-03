@@ -143,9 +143,24 @@ function ConnectionStatus() {
 }
 
 function App({ children }: { children: ReactNode }) {
+  const [showSplash, setShowSplash] = useState(true);
   const logoStyle = {
     "--pcs-logo-url": `url("${pcsLogoUrl}")`,
   } as CSSProperties;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Brief startup screen only for the initial app mount; internal route
+    // changes do not remount App. Always remove it after a short timeout.
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timeout = window.setTimeout(
+      () => setShowSplash(false),
+      reducedMotion ? 250 : 1500,
+    );
+
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -215,6 +230,42 @@ function App({ children }: { children: ReactNode }) {
           </div>
         )}
       </Shell>
+      {showSplash && (
+        <>
+          <style>{`
+            @keyframes pcsSplashFadeOut {
+              from { opacity: 1; }
+              to { opacity: 0; visibility: hidden; }
+            }
+            @keyframes pcsSplashLogoIn {
+              from { opacity: 0; transform: scale(.96); }
+              to { opacity: 1; transform: scale(1); }
+            }
+            .pcsSplash {
+              position: fixed;
+              inset: 0;
+              z-index: 99999;
+              display: grid;
+              place-items: center;
+              background: #fff;
+              animation: pcsSplashFadeOut .28s ease-out 1.22s forwards;
+            }
+            .pcsSplash img {
+              display: block;
+              width: min(68vw, 300px);
+              max-height: 42vh;
+              object-fit: contain;
+              animation: pcsSplashLogoIn .45s ease-out both;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .pcsSplash, .pcsSplash img { animation: none; }
+            }
+          `}</style>
+          <div className="pcsSplash" role="status" aria-label="Chargement de PCS">
+            <img src={pcsLogoUrl} alt="PCS — Plateforme de Citoyenneté et de Signalement" />
+          </div>
+        </>
+      )}
     </div>
   );
 }
