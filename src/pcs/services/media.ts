@@ -182,7 +182,7 @@ export async function uploadResolutionVideo(
       file_size: file.size,
       uploaded_by: user?.id ?? null,
       media_role: "resolution_video",
-      moderation_status: "approved",
+      moderation_status: "pending",
       captured_latitude: latitude,
       captured_longitude: longitude,
       accuracy_m: accuracyM,
