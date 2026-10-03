@@ -315,9 +315,9 @@ export default function ReportForm() {
             className="mediaPickBtn"
             onClick={() => {
               const accepted = window.confirm(
-                "IMPORTANT — RÈGLES DES PHOTOS DE SIGNALEMENT\\n\\n" +
-                "Importez uniquement une photo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\\n\\n" +
-                "Toute photo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\\n\\n" +
+                "IMPORTANT — RÈGLES DES PHOTOS DE SIGNALEMENT\n\n" +
+                "Importez uniquement une photo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\n\n" +
+                "Toute photo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\n\n" +
                 "Voulez-vous choisir une photo depuis votre téléphone ?"
               );
               if (accepted) photoInputRef.current?.click();
@@ -343,9 +343,9 @@ export default function ReportForm() {
             className="mediaPickBtn"
             onClick={() => {
               const accepted = window.confirm(
-                "IMPORTANT — RÈGLES DES VIDÉOS DE SIGNALEMENT\\n\\n" +
-                "Importez uniquement une vidéo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\\n\\n" +
-                "Toute vidéo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\\n\\n" +
+                "IMPORTANT — RÈGLES DES VIDÉOS DE SIGNALEMENT\n\n" +
+                "Importez uniquement une vidéo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\n\n" +
+                "Toute vidéo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\n\n" +
                 "Voulez-vous choisir une vidéo depuis votre téléphone ?"
               );
               if (accepted) videoInputRef.current?.click();
