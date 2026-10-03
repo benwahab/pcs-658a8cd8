@@ -228,6 +228,39 @@ export type Database = {
         }
         Relationships: []
       }
+      cst_archive_cleanup_log: {
+        Row: {
+          archive_id: string
+          details: string | null
+          id: string
+          media_id: string | null
+          outcome: string
+          processed_at: string
+          report_id: string | null
+          storage_path: string | null
+        }
+        Insert: {
+          archive_id: string
+          details?: string | null
+          id?: string
+          media_id?: string | null
+          outcome: string
+          processed_at?: string
+          report_id?: string | null
+          storage_path?: string | null
+        }
+        Update: {
+          archive_id?: string
+          details?: string | null
+          id?: string
+          media_id?: string | null
+          outcome?: string
+          processed_at?: string
+          report_id?: string | null
+          storage_path?: string | null
+        }
+        Relationships: []
+      }
       cst_auth_rate_limits: {
         Row: {
           attempts: number
@@ -440,6 +473,68 @@ export type Database = {
           window_started_at?: string
         }
         Relationships: []
+      }
+      cst_video_archives: {
+        Row: {
+          archived_at: string
+          created_at: string
+          deleted_at: string | null
+          expires_at: string
+          hold_reason: string | null
+          id: string
+          media_id: string
+          report_id: string
+        }
+        Insert: {
+          archived_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          expires_at?: string
+          hold_reason?: string | null
+          id?: string
+          media_id: string
+          report_id: string
+        }
+        Update: {
+          archived_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          expires_at?: string
+          hold_reason?: string | null
+          id?: string
+          media_id?: string
+          report_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cst_video_archives_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: true
+            referencedRelation: "public_report_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cst_video_archives_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: true
+            referencedRelation: "report_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cst_video_archives_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cst_video_archives_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       departments: {
         Row: {
@@ -980,6 +1075,81 @@ export type Database = {
         }
         Relationships: []
       }
+      public_report_comments: {
+        Row: {
+          body: string
+          created_at: string
+          display_name: string | null
+          id: string
+          report_id: string
+          visitor_token: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          report_id: string
+          visitor_token?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          report_id?: string
+          visitor_token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_report_comments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_report_comments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_report_confirmations: {
+        Row: {
+          created_at: string
+          report_id: string
+          visitor_token: string
+        }
+        Insert: {
+          created_at?: string
+          report_id: string
+          visitor_token: string
+        }
+        Update: {
+          created_at?: string
+          report_id?: string
+          visitor_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_report_confirmations_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_report_confirmations_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       regions: {
         Row: {
           code: string | null
@@ -1141,6 +1311,46 @@ export type Database = {
           },
         ]
       }
+      report_confirmations: {
+        Row: {
+          created_at: string
+          report_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          report_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          report_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_confirmations_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_confirmations_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_confirmations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_field_verifications: {
         Row: {
           accuracy_m: number | null
@@ -1198,6 +1408,7 @@ export type Database = {
       }
       report_media: {
         Row: {
+          accuracy_m: number | null
           captured_latitude: number | null
           captured_longitude: number | null
           created_at: string
@@ -1214,6 +1425,7 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
+          accuracy_m?: number | null
           captured_latitude?: number | null
           captured_longitude?: number | null
           created_at?: string
@@ -1230,6 +1442,7 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
+          accuracy_m?: number | null
           captured_latitude?: number | null
           captured_longitude?: number | null
           created_at?: string
@@ -1960,6 +2173,10 @@ export type Database = {
       cst_database_metrics: { Args: never; Returns: Json }
       cst_system_snapshot: { Args: never; Returns: Json }
       earth: { Args: never; Returns: number }
+      get_public_report_confirmation: {
+        Args: { p_report_id: string; p_visitor_token: string }
+        Returns: Json
+      }
       has_role: { Args: { required_role: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       list_organization_signup_requests: {
@@ -1997,6 +2214,15 @@ export type Database = {
           phone: string
           region_id: string
           region_name: string
+        }[]
+      }
+      list_public_report_comments: {
+        Args: { p_report_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          display_name: string
+          id: string
         }[]
       }
       mairie_transmit_report: {
@@ -2086,34 +2312,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      get_public_report_confirmation: {
-        Args: { p_report_id: string; p_visitor_token: string }
-        Returns: Json
-      }
-      list_public_report_comments: {
-        Args: { p_report_id: string }
-        Returns: {
-          body: string
-          created_at: string
-          display_name: string | null
-          id: string
-        }[]
+      resolve_commune_from_gps: {
+        Args: { p_latitude: number; p_longitude: number }
+        Returns: string
       }
       submit_public_report_comment: {
         Args: {
           p_body: string
-          p_display_name?: string | null
+          p_display_name: string
           p_report_id: string
+          p_visitor_token: string
         }
         Returns: string
       }
       toggle_public_report_confirmation: {
         Args: { p_report_id: string; p_visitor_token: string }
         Returns: Json
-      }
-      resolve_commune_from_gps: {
-        Args: { p_latitude: number; p_longitude: number }
-        Returns: string
       }
     }
     Enums: {
