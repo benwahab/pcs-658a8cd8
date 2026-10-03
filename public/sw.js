@@ -1,5 +1,5 @@
-const CACHE_NAME="pcs-shell-v5";
-const APP_SHELL=["/","/index.html","/manifest.webmanifest","/assets/pcs-splash.jpg","/icons/icon-192.jpg","/icons/icon-512.jpg"];
+const CACHE_NAME="pcs-shell-v6";
+const APP_SHELL=["/","/manifest.webmanifest","/assets/pcs-splash.jpg","/icons/icon-192.jpg","/icons/icon-512.jpg","/icons/icon-192.svg","/icons/icon-512.svg"];
 
 async function cacheShell(){
   const cache=await caches.open(CACHE_NAME);
@@ -8,18 +8,27 @@ async function cacheShell(){
 
 async function networkFirst(request){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),3500);
+  const timer=setTimeout(()=>controller.abort(),5000);
+  const cache=await caches.open(CACHE_NAME);
+  const cacheKey=request.url;
   try{
     const response=await fetch(request,{signal:controller.signal});
-    if(response.ok){
-      const cache=await caches.open(CACHE_NAME);
-      await cache.put("/index.html",response.clone());
-    }
+    if(response.ok && response.type!=="opaque") await cache.put(cacheKey,response.clone());
     return response;
   }catch{
-    const cached=await caches.match("/index.html");
+    const cached=await cache.match(cacheKey);
     if(cached)return cached;
-    throw new Error("Offline");
+    const url=new URL(request.url);
+    if(request.mode==="navigate" && url.pathname==="/" && url.search===""){
+      const home=await cache.match(new URL("/",self.location.origin).href);
+      if(home)return home;
+    }
+    return new Response(
+      request.mode==="navigate"
+        ? "<!doctype html><html lang=\"fr\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>PCS hors connexion</title><body><main><h1>PCS</h1><p>Connexion indisponible. Reconnectez-vous pour consulter les pages et envoyer un signalement.</p></main></body></html>"
+        : "Ressource temporairement indisponible.",
+      {status:503,headers:{"Content-Type":request.mode==="navigate"?"text/html; charset=utf-8":"text/plain; charset=utf-8","Cache-Control":"no-store"}}
+    );
   }finally{clearTimeout(timer);}
 }
 
@@ -27,13 +36,13 @@ async function staleWhileRevalidate(request){
   const cache=await caches.open(CACHE_NAME);
   const cached=await cache.match(request);
   const update=fetch(request).then((response)=>{
-    if(response.ok)void cache.put(request,response.clone());
+    if(response.ok && response.type!=="opaque")void cache.put(request,response.clone());
     return response;
   }).catch(()=>null);
   if(cached){void update;return cached;}
   const response=await update;
   if(response)return response;
-  throw new Error("Resource unavailable");
+  return new Response("Ressource temporairement indisponible.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8","Cache-Control":"no-store"}});
 }
 
 self.addEventListener("install",(event)=>{
@@ -43,7 +52,7 @@ self.addEventListener("install",(event)=>{
 self.addEventListener("activate",(event)=>{
   event.waitUntil(
     caches.keys()
-      .then((keys)=>Promise.all(keys.filter((key)=>key!==CACHE_NAME).map((key)=>caches.delete(key))))
+      .then((keys)=>Promise.all(keys.filter((key)=>key.startsWith("pcs-shell-")&&key!==CACHE_NAME).map((key)=>caches.delete(key))))
       .then(()=>self.clients.claim())
   );
 });
@@ -53,6 +62,8 @@ self.addEventListener("fetch",(event)=>{
   if(request.method!=="GET")return;
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
+  // Do not cache API, authentication, or other application data endpoints.
+  if(url.pathname.startsWith("/api/")||url.pathname.startsWith("/auth/"))return;
 
   if(request.mode==="navigate"){
     event.respondWith(networkFirst(request));
@@ -61,11 +72,5 @@ self.addEventListener("fetch",(event)=>{
 
   const isCode=request.destination==="script"||request.destination==="style";
   const isStatic=request.destination==="image"||request.destination==="font"||request.destination==="manifest";
-  if(isCode){
-    event.respondWith(networkFirst(request));
-    return;
-  }
-  if(isStatic){
-    event.respondWith(staleWhileRevalidate(request));
-  }
+  if(isCode||isStatic)event.respondWith(isCode?networkFirst(request):staleWhileRevalidate(request));
 });
