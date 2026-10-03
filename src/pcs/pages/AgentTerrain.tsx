@@ -1,11 +1,13 @@
 import {useEffect,useRef,useState} from "react";
-import {Link} from "@/pcs/router";
+import {Link, useNavigate} from "@/pcs/router";
+import {supabase} from "../lib/supabase";
 import {listMyMissions,confirmFieldVerification,resolveMissionWithVideo} from "../services/mairie";
 import BrandLogo from "../components/BrandLogo";
 import {statusLabels} from "../types";
 
 import {
  cacheAgentMissions,
+ clearCachedAgentMissions,
  getCachedAgentMissions,
  queueFieldVerification,
  flushFieldVerifications,
@@ -16,6 +18,7 @@ import {
 } from "../services/offline";
 
 export default function AgentTerrain(){
+ const navigate=useNavigate();
  const [missions,setMissions]=useState<any[]>(()=>getCachedAgentMissions());
  const [error,setError]=useState("");
  const [offlinePending,setOfflinePending]=useState(0);
@@ -29,6 +32,27 @@ export default function AgentTerrain(){
  const chunksRef=useRef<BlobPart[]>([]),timerRef=useRef<number|null>(null),previewUrlRef=useRef("");
  const [busy,setBusy]=useState(false);
  const [index,setIndex]=useState(0);
+
+ async function logout(){
+  setError("");
+  if(offlinePending>0){
+   setError("Vous avez des éléments hors connexion en attente. Reconnectez-vous et synchronisez-les avant de vous déconnecter, afin de ne perdre aucune preuve de mission.");
+   return;
+  }
+  if(!window.confirm("Voulez-vous vraiment vous déconnecter de l’espace Agent terrain ?"))return;
+  setBusy(true);
+  try{
+   if(!supabase)throw new Error("Service de connexion indisponible.");
+   const {error:signOutError}=await supabase.auth.signOut();
+   if(signOutError)throw signOutError;
+   clearCachedAgentMissions();
+   navigate("/connexion-operationnelle?mode=agent");
+  }catch(e){
+   setError(e instanceof Error?e.message:"La déconnexion a échoué. Réessayez.");
+  }finally{
+   setBusy(false);
+  }
+ }
 
  async function load(){
   try{
@@ -279,7 +303,8 @@ export default function AgentTerrain(){
     <strong>Mes missions</strong>
     <small>{missions.length} mission(s){offlinePending>0?` · ${offlinePending} en attente`: ""}</small>
    </div>
-   <button className="agentRefresh" onClick={load}>↻</button>
+   <button className="agentRefresh" onClick={load} aria-label="Actualiser les missions" title="Actualiser">↻</button>
+   <button className="agentLogout" onClick={logout} disabled={busy} style={{border:"1px solid #fecaca",borderRadius:10,padding:"8px 10px",background:"#fff",color:"#b91c1c",fontWeight:700,whiteSpace:"nowrap"}}>↪ Déconnexion</button>
   </header>
   {error&&<div className="agentFeedError">{error}<button onClick={()=>setError("")}>×</button></div>}
   {!missions.length&&!error?
