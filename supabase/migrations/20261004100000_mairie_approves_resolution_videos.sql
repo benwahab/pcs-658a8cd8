@@ -40,9 +40,40 @@ using (
   )
 );
 
+drop policy if exists media_select_mairie_resolution_review on public.report_media;
+create policy media_select_mairie_resolution_review
+on public.report_media for select to authenticated
+using (
+  media_role = 'resolution_video'
+  and exists (
+    select 1 from public.reports r
+    join public.mairies mairie on mairie.commune_id = r.commune_id
+    where r.id = report_media.report_id
+      and mairie.account_user_id = auth.uid()
+      and mairie.is_active = true
+  )
+);
+
 drop policy if exists report_media_storage_mairie_resolution_read on storage.objects;
 create policy report_media_storage_mairie_resolution_read
 on storage.objects for select to authenticated
+using (
+  bucket_id = 'report-media'
+  and exists (
+    select 1
+    from public.report_media rm
+    join public.reports r on r.id = rm.report_id
+    join public.mairies m on m.commune_id = r.commune_id
+    where rm.storage_path = objects.name
+      and rm.media_role = 'resolution_video'
+      and m.account_user_id = auth.uid()
+      and m.is_active = true
+  )
+);
+
+drop policy if exists report_media_storage_mairie_resolution_delete on storage.objects;
+create policy report_media_storage_mairie_resolution_delete
+on storage.objects for delete to authenticated
 using (
   bucket_id = 'report-media'
   and exists (
