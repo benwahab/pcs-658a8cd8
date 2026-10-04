@@ -1248,3 +1248,38 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
     transition: none;
   }
 }
+
+
+/* Keep professional access attached to the same translucent global navbar. */
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader {
+  flex: 0 0 auto;
+  margin-left: auto;
+  z-index: 102;
+}
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader summary {
+  white-space: nowrap;
+  padding: 8px 12px 8px 9px;
+  font-size: .8rem;
+}
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader > div {
+  z-index: 103;
+}
+@media (max-width: 600px) {
+  .app:has(.citizenFeed) > header.feedImmersiveHeader {
+    gap: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader summary {
+    gap: 5px;
+    padding: 7px 8px;
+    font-size: .72rem;
+  }
+  .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader .feedAccessIcon {
+    width: 20px;
+    height: 20px;
+  }
+  .app:has(.citizenFeed) > header.feedImmersiveHeader .session {
+    display: none;
+  }
+}
