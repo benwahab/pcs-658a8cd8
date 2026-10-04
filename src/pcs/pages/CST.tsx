@@ -48,6 +48,9 @@ function Status({value}:{value:string}){return <span className="cstStatus"><Dot 
 export function CSTDashboard(){
  const nav=useNavigate();const[data,setData]=useState<any>(null);const[error,setError]=useState("");const[last,setLast]=useState("");const[traceFilter,setTraceFilter]=useState("");const[mediaQueue,setMediaQueue]=useState<any[]>([]);const[mediaBusy,setMediaBusy]=useState(false);const[archives,setArchives]=useState<any[]>([]);const[archivesBusy,setArchivesBusy]=useState(false);const[archiveSearch,setArchiveSearch]=useState("");const[rejectingId,setRejectingId]=useState("");const[rejectReason,setRejectReason]=useState("");const[orgRequests,setOrgRequests]=useState<any[]>([]);const[orgReviewBusy,setOrgReviewBusy]=useState(false);const[orgRejectingId,setOrgRejectingId]=useState("");const[orgRejectNote,setOrgRejectNote]=useState("");
  const queueLoadedAt=useRef(0);
+ const dashboardActive=useRef(true);
+ const timersRef=useRef<number[]>([]);
+ const stopDashboardWork=()=>{dashboardActive.current=false;timersRef.current.forEach(id=>window.clearInterval(id));timersRef.current=[];};
  const refreshOrganizationRequests=async()=>{if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.rpc("list_organization_signup_requests");if(error)throw error;setOrgRequests((data??[]).filter((r:any)=>r.status==="pending"));};
  async function reviewOrganizationRequest(id:string,approve:boolean){setOrgReviewBusy(true);setError("");try{if(!supabase)throw new Error("Supabase non configuré.");if(approve){const {error}=await supabase.rpc("approve_organization_signup_request",{p_request_id:id});if(error)throw error;}else{const note=orgRejectNote.trim();if(note.length<5)throw new Error("Le motif du refus doit contenir au moins 5 caractères.");const {error}=await supabase.rpc("reject_organization_signup_request",{p_request_id:id,p_note:note});if(error)throw error;}setOrgRejectingId("");setOrgRejectNote("");await refreshOrganizationRequests();}catch(e){setError(e instanceof Error?e.message:"Traitement de la demande NIGELEC/NDE impossible.");}finally{setOrgReviewBusy(false);}}
  const refreshQueue=async(forceUrlRefresh=false)=>{
@@ -65,6 +68,7 @@ export function CSTDashboard(){
  };
  useEffect(()=>{
   let active=true;
+  dashboardActive.current=true;
   const verify=async()=>{
    try{
     const {data:s}=await supabase!.auth.getSession();
@@ -79,14 +83,15 @@ export function CSTDashboard(){
   void verify();
   const healthCheck=async()=>{try{const h=await health();if(active){setData(h);setLast(new Date().toLocaleTimeString("fr-FR"));setError("")}}catch(e){if(active)setError(e instanceof Error?e.message:"Supervision indisponible.")}};
   void healthCheck();
-  const healthTimer=window.setInterval(()=>void healthCheck(),5000);
-  const queueTimer=window.setInterval(()=>{if(active&&document.visibilityState==="visible")void refreshQueue().catch(e=>setError(e instanceof Error?e.message:"Impossible d’actualiser la file vidéo."))},60000);
-  const archiveTimer=window.setInterval(()=>{if(active&&document.visibilityState==="visible"){setArchivesBusy(true);void listVideoArchives().then(v=>{if(active)setArchives(v.items??[])}).catch(e=>{if(active)setError(e instanceof Error?e.message:"Impossible de charger les archives.")}).finally(()=>{if(active)setArchivesBusy(false)})}},60000);
-  const onFocus=()=>{if(document.visibilityState==="visible")void refreshQueue().catch(e=>setError(e instanceof Error?e.message:"Impossible d’actualiser la file vidéo."))};
+  const healthTimer=window.setInterval(()=>{if(active&&dashboardActive.current)void healthCheck()},5000);
+  const queueTimer=window.setInterval(()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible")void refreshQueue().catch(e=>{if(active&&dashboardActive.current)setError(e instanceof Error?e.message:"Impossible d’actualiser la file vidéo.")})},60000);
+  const archiveTimer=window.setInterval(()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible"){setArchivesBusy(true);void listVideoArchives().then(v=>{if(active&&dashboardActive.current)setArchives(v.items??[])}).catch(e=>{if(active&&dashboardActive.current)setError(e instanceof Error?e.message:"Impossible de charger les archives.")}).finally(()=>{if(active&&dashboardActive.current)setArchivesBusy(false)})}},60000);
+  timersRef.current=[healthTimer,queueTimer,archiveTimer];
+  const onFocus=()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible")void refreshQueue().catch(e=>{if(active&&dashboardActive.current)setError(e instanceof Error?e.message:"Impossible d’actualiser la file vidéo.")})};
   window.addEventListener("focus",onFocus);
-  return()=>{active=false;window.clearInterval(healthTimer);window.clearInterval(queueTimer);window.clearInterval(archiveTimer);window.removeEventListener("focus",onFocus)};
+  return()=>{active=false;stopDashboardWork();window.removeEventListener("focus",onFocus)};
  },[nav]);
- async function logout(){await supabase?.auth.signOut();nav("/cst")}
+ async function logout(){stopDashboardWork();setMediaQueue([]);setArchives([]);setOrgRequests([]);try{await supabase?.auth.signOut();}finally{nav("/cst")}}
  async function approveVideo(id:string){setMediaBusy(true);try{await mediaModeration({action:"approve",media_id:id});setMediaQueue(q=>q.filter(v=>v.id!==id));await refreshQueue(true)}catch(e){setError(e instanceof Error?e.message:"Approbation impossible.")}finally{setMediaBusy(false)}}
  async function rejectVideo(id:string){const reason=rejectReason.trim();if(reason.length<5){setError("Le motif de rejet doit contenir au moins 5 caractères.");return}setMediaBusy(true);try{await mediaModeration({action:"reject",media_id:id,reason});setMediaQueue(q=>q.filter(v=>v.id!==id));setRejectingId("");setRejectReason("");await refreshQueue(true)}catch(e){setError(e instanceof Error?e.message:"Rejet impossible.")}finally{setMediaBusy(false)}}
  const db=data?.database;const m=data?.metrics??{};const global=error?"degraded":db?.status??"offline";
