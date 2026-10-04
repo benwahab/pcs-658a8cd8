@@ -18,7 +18,6 @@ function isInstalled() {
 
 export default function PwaInstallPrompt() {
   const [visible, setVisible] = useState(false);
-  const [canPrompt, setCanPrompt] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [ios, setIos] = useState(false);
   const [installed, setInstalled] = useState(false);
@@ -46,13 +45,11 @@ export default function PwaInstallPrompt() {
     const onBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
       (window as Window & { __pcsInstallPrompt?: InstallPromptEvent }).__pcsInstallPrompt = event as InstallPromptEvent;
-      setCanPrompt(true);
     };
 
     const onAppInstalled = () => {
       setInstalled(true);
       setVisible(false);
-      setCanPrompt(false);
       localStorage.setItem("pcs_pwa_installed_v1", "true");
     };
 
@@ -65,7 +62,7 @@ export default function PwaInstallPrompt() {
     // Existing citizens may have completed the guide before this install flow existed.
     const timer = window.setTimeout(() => {
       if (localStorage.getItem(ONBOARDING_KEY) === "true") showAfterOnboarding();
-    }, 900);
+    }, 5200);
 
     checkInstalled();
     return () => {
