@@ -83,7 +83,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
   return (
     <video
       ref={ref}
-      src={active ? src : undefined}
+      src={src}
       poster={poster}
       controls
       playsInline
