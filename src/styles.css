@@ -1209,3 +1209,59 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
  .citizenPublicComments textarea{min-height:72px;padding:10px 12px}
 }
 @media(prefers-reduced-motion:reduce){.citizenReportInteractions button{transition:none}}
+
+
+/* Correctif ciblé : garder toute la vidéo visible dans le flux citoyen,
+   sans que l'en-tête ou le panneau d'informations masque ses extrémités.
+   Le cadre s'adapte à la hauteur disponible sur mobiles et grands écrans. */
+.citizenSlideTrack .mediaCarousel,
+.citizenSlideTrack .mediaCarouselPlaceholder {
+  inset: calc(env(safe-area-inset-top, 0px) + 68px) 0 clamp(150px, 21dvh, 230px) !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: hidden !important;
+}
+.citizenSlideTrack .mediaCarouselItem,
+.citizenSlideTrack .mediaCarouselItem > video,
+.citizenSlideTrack .mediaCarouselItem > img {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+}
+.citizenSlideTrack .mediaCarouselItem > video,
+.citizenSlideTrack .mediaCarouselItem > img {
+  object-fit: contain !important;
+  object-position: center center !important;
+}
+.citizenSlideTrack .slideOverlay {
+  max-height: 44% !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px)) !important;
+}
+@media (max-width: 700px) {
+  .citizenSlideTrack .mediaCarousel,
+  .citizenSlideTrack .mediaCarouselPlaceholder {
+    inset: calc(env(safe-area-inset-top, 0px) + 62px) 0 clamp(138px, 19dvh, 205px) !important;
+  }
+  .citizenSlideTrack .slideOverlay {
+    max-height: 48% !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+@media (max-height: 620px) {
+  .citizenSlideTrack .mediaCarousel,
+  .citizenSlideTrack .mediaCarouselPlaceholder {
+    inset: calc(env(safe-area-inset-top, 0px) + 48px) 0 112px !important;
+  }
+  .citizenSlideTrack .slideOverlay {
+    max-height: 42% !important;
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
