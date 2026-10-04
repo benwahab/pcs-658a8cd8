@@ -1,14 +1,6 @@
--- Shared, atomic rate limiting for anonymous citizen report submissions.
--- Store only a keyed hash of the source IP; never persist raw IP addresses.
-create table if not exists public.citizen_report_rate_limits (
-  key_hash text primary key,
-  window_started_at timestamptz not null default now(),
-  events integer not null default 0 check (events >= 0)
-);
-
-alter table public.citizen_report_rate_limits enable row level security;
-revoke all on public.citizen_report_rate_limits from public, anon, authenticated;
-
+-- PCS: preserve the existing private, shared citizen-report limiter.
+-- The live implementation stores rolling event timestamps in private.citizen_report_rate_limits.
+-- Do not create a parallel public table or change the RPC's storage model.
 create or replace function public.consume_citizen_report_rate_limit(
   p_key_hash text,
   p_max_events integer default 5,
@@ -18,43 +10,49 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $function$
 declare
+  v_events timestamptz[];
   v_now timestamptz := clock_timestamp();
-  v_row public.citizen_report_rate_limits%rowtype;
+  v_cutoff timestamptz;
 begin
-  if p_key_hash is null or length(p_key_hash) <> 64
+  if p_key_hash is null
+     or length(p_key_hash) <> 64
      or p_max_events < 1 or p_max_events > 100
      or p_window_seconds < 1 or p_window_seconds > 86400 then
     return false;
   end if;
 
-  insert into public.citizen_report_rate_limits(key_hash, window_started_at, events)
-  values (p_key_hash, v_now, 0)
+  v_cutoff := v_now - pg_catalog.make_interval(secs => p_window_seconds);
+
+  insert into private.citizen_report_rate_limits(key_hash, event_times, updated_at)
+  values (p_key_hash, array[]::timestamptz[], v_now)
   on conflict (key_hash) do nothing;
 
-  select * into v_row
-  from public.citizen_report_rate_limits
+  select event_times into v_events
+  from private.citizen_report_rate_limits
   where key_hash = p_key_hash
   for update;
 
-  if v_row.window_started_at + make_interval(secs => p_window_seconds) <= v_now then
-    update public.citizen_report_rate_limits
-    set window_started_at = v_now, events = 1
-    where key_hash = p_key_hash;
-    return true;
-  end if;
+  select coalesce(array_agg(t), array[]::timestamptz[])
+    into v_events
+  from unnest(v_events) as t
+  where t > v_cutoff;
 
-  if v_row.events >= p_max_events then
+  if cardinality(v_events) >= p_max_events then
+    update private.citizen_report_rate_limits
+    set event_times = v_events, updated_at = v_now
+    where key_hash = p_key_hash;
     return false;
   end if;
 
-  update public.citizen_report_rate_limits
-  set events = events + 1
+  v_events := array_append(v_events, v_now);
+  update private.citizen_report_rate_limits
+  set event_times = v_events, updated_at = v_now
   where key_hash = p_key_hash;
   return true;
 end;
-$$;
+$function$;
 
 revoke all on function public.consume_citizen_report_rate_limit(text, integer, integer) from public, anon, authenticated;
 grant execute on function public.consume_citizen_report_rate_limit(text, integer, integer) to service_role;
