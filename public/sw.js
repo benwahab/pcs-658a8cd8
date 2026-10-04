@@ -1,4 +1,4 @@
-const CACHE_NAME="pcs-shell-v9";
+const CACHE_NAME="pcs-shell-v10";
 const APP_SHELL=["/","/manifest.webmanifest","/icons/icon-192.svg","/icons/icon-512.svg"];
 
 async function cacheShell(){
@@ -70,7 +70,10 @@ self.addEventListener("fetch",(event)=>{
     return;
   }
 
-  const isCode=request.destination==="script"||request.destination==="style";
+  // Never cache executable code: mixing old JS chunks with a newer HTML shell can
+  // break dynamic imports after a deployment. Let the browser fetch code directly.
+  if(request.destination==="script"||request.destination==="style")return;
+
   const isStatic=request.destination==="image"||request.destination==="font"||request.destination==="manifest";
-  if(isCode||isStatic)event.respondWith(isCode?networkFirst(request):staleWhileRevalidate(request));
+  if(isStatic)event.respondWith(staleWhileRevalidate(request));
 });
