@@ -34,10 +34,10 @@ begin
   where key_hash = p_key_hash
   for update;
 
-  select coalesce(array_agg(t), array[]::timestamptz[])
+  select coalesce(array_agg(event_at), array[]::timestamptz[])
     into v_events
-  from unnest(v_events) as t
-  where t > v_cutoff;
+  from unnest(v_events) as event_time(event_at)
+  where event_at > v_cutoff;
 
   if cardinality(v_events) >= p_max_events then
     update private.citizen_report_rate_limits
