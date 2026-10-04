@@ -100,6 +100,12 @@ export function Shell({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  function closeProfessionalMenu() {
+    document.querySelectorAll<HTMLDetailsElement>("details.feedAccessHeader, details.feedAccessSubmenu").forEach((menu) => {
+      menu.open = false;
+    });
+  }
+
   async function logout() {
     await supabase?.auth.signOut();
     setEmail(null);
@@ -138,12 +144,24 @@ export function Shell({ children }: { children: ReactNode }) {
             <span className="feedAccessChevron">▾</span>
           </summary>
           <div>
-            <Link to="/cst">🖥️ CST — Supervision technique</Link>
-            <Link to="/connexion-operationnelle">🏛️ Mairie</Link>
-            <Link to="/connexion-operationnelle?mode=agent">👷 Agent terrain</Link>
-            <Link to="/connexion-operationnelle?mode=moderator">🛡️ Modérateur</Link>
-            <Link to="/connexion-nigelec">⚡ NIGELEC</Link>
-            <Link to="/connexion-nde">💧 NDE</Link>
+            <Link to="/cst" onClick={closeProfessionalMenu}>🖥️ CST — Supervision technique</Link>
+            <Link to="/connexion-operationnelle" onClick={closeProfessionalMenu}>🏛️ Mairie</Link>
+            <Link to="/connexion-operationnelle?mode=agent" onClick={closeProfessionalMenu}>👷 Agent terrain</Link>
+            <Link to="/connexion-operationnelle?mode=moderator" onClick={closeProfessionalMenu}>🛡️ Modérateur</Link>
+            <details className="feedAccessSubmenu">
+              <summary>⚡ NIGELEC <span aria-hidden="true">▸</span></summary>
+              <div>
+                <Link to="/connexion-nigelec?type=central" onClick={closeProfessionalMenu}>Accès au compte central</Link>
+                <Link to="/connexion-nigelec?type=agency" onClick={closeProfessionalMenu}>Accès aux comptes agences</Link>
+              </div>
+            </details>
+            <details className="feedAccessSubmenu">
+              <summary>💧 NDE <span aria-hidden="true">▸</span></summary>
+              <div>
+                <Link to="/connexion-nde?type=central" onClick={closeProfessionalMenu}>Accès au compte central</Link>
+                <Link to="/connexion-nde?type=agency" onClick={closeProfessionalMenu}>Accès aux comptes agences</Link>
+              </div>
+            </details>
           </div>
         </details>
 
