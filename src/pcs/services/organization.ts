@@ -90,6 +90,7 @@ export async function listOrganizationUnits(organizationId:string,centralUnitId?
   if(!supabase) throw new Error("Supabase non configuré.");
   let query=supabase.from("organization_units").select("id,name,code,unit_type,region_id,commune_id,parent_unit_id,is_active").eq("organization_id",organizationId).eq("is_active",true).order("unit_type").order("name");
   if(centralUnitId) query=query.eq("parent_unit_id",centralUnitId);
+  const {data,error}=await query;
   if(error) throw error; return data??[];
 }
 export async function assignOrganizationAgency(transferId:string,unitId:string,note?:string){
