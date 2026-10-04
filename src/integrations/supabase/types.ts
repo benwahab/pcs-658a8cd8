@@ -1872,6 +1872,7 @@ export type Database = {
           id: string | null
           media_role: string | null
           media_type: string | null
+          moderation_status: string | null
           report_id: string | null
           storage_path: string | null
         }
