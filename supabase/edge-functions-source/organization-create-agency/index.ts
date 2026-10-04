@@ -39,7 +39,6 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Tous les champs sont obligatoires." }, 400);
     if (name.length < 2 || name.length > 150) return json({ error: "Le nom de l’agence doit contenir entre 2 et 150 caractères." }, 400);
     if (!/^[A-Z0-9_-]{2,40}$/.test(code)) return json({ error: "Le code doit contenir de 2 à 40 lettres, chiffres, tirets ou tirets bas." }, 400);
-    if (!/^\S+@\S+\.\S+$/.test(adminEmail) || adminEmail.length > 254) return json({ error: "Adresse email de connexion invalide." }, 400);
     if (adminPassword.length < 8 || adminPassword.length > 128) return json({ error: "Le mot de passe doit contenir entre 8 et 128 caractères." }, 400);
 
     const { data: membership, error: membershipError } = await db.from("organization_users")
