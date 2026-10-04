@@ -10,17 +10,55 @@ export type OrganizationMembership={
 
 export async function getMyOrganizationMembership():Promise<OrganizationMembership|null>{
   if(!supabase) return null;
-  const {data:{user}}=await supabase.auth.getUser();
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError) throw userError;
   if(!user) return null;
-  const {data,error}=await supabase.from("organization_users")
-    .select("organization_id,unit_id,role,organizations(id,name,code,type),organization_units(id,name,code,unit_type)")
-    .eq("user_id",user.id).eq("is_active",true).order("created_at",{ascending:true}).limit(1).maybeSingle();
+
+  const {data:memberships,error}=await supabase.from("organization_users")
+    .select("organization_id,unit_id,role,created_at")
+    .eq("user_id",user.id).eq("is_active",true)
+    .order("created_at",{ascending:false});
   if(error) throw error;
-  if(!data) return null;
+  if(!memberships?.length) return null;
+
+  const organizationIds=[...new Set(memberships.map((m:any)=>m.organization_id).filter(Boolean))];
+  const unitIds=[...new Set(memberships.map((m:any)=>m.unit_id).filter(Boolean))];
+  const [{data:organizations,error:orgError},{data:linkedUnits,error:unitError}] = await Promise.all([
+    supabase.from("organizations").select("id,name,code,type,is_active").in("id",organizationIds),
+    unitIds.length
+      ? supabase.from("organization_units").select("id,organization_id,name,code,unit_type,is_active").in("id",unitIds)
+      : Promise.resolve({data:[],error:null} as any)
+  ]);
+  if(orgError) throw orgError;
+  if(unitError) throw unitError;
+
+  const organizationById=new Map((organizations??[]).map((o:any)=>[o.id,o]));
+  const unitById=new Map((linkedUnits??[]).map((u:any)=>[u.id,u]));
+  const hydrated=memberships.map((m:any)=>({
+    membership:m,
+    organization:organizationById.get(m.organization_id)??null,
+    unit:m.unit_id ? unitById.get(m.unit_id)??null : null
+  })).filter((x:any)=>x.organization?.is_active!==false);
+
+  for(const item of hydrated){
+    if(item.unit || item.membership.unit_id) continue;
+    const {data:centralUnits,error:centralError}=await supabase.from("organization_units")
+      .select("id,organization_id,name,code,unit_type,is_active")
+      .eq("organization_id",item.membership.organization_id)
+      .eq("unit_type","central").eq("is_active",true);
+    if(centralError) throw centralError;
+    if(centralUnits?.length===1) item.unit=centralUnits[0];
+  }
+
+  hydrated.sort((a:any,b:any)=>Number(Boolean(b.unit))-Number(Boolean(a.unit)));
+  const selected=hydrated[0];
+  if(!selected?.organization) return null;
   return {
-    organization_id:data.organization_id,unit_id:data.unit_id,role:data.role as OrganizationMembership["role"],
-    organization:(data as any).organizations,
-    unit:(data as any).organization_units
+    organization_id:selected.membership.organization_id,
+    unit_id:selected.unit?.id??selected.membership.unit_id??null,
+    role:selected.membership.role as OrganizationMembership["role"],
+    organization:selected.organization,
+    unit:selected.unit
   };
 }
 
