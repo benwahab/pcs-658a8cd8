@@ -10,7 +10,7 @@ set approval_status = case when is_active then 'approved' else 'pending' end
 where approval_status is null;
 
 alter table public.mairies
-  alter column approval_status set default 'approved',
+  alter column approval_status set default 'pending',
   alter column approval_status set not null;
 
 alter table public.mairies
