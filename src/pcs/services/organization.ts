@@ -108,14 +108,14 @@ export async function createAgencyAgent(input:{first_name:string;last_name:strin
 
 
 export async function createOrganizationAgency(input:{
- organization_id:string;name:string;code:string;admin_email:string;admin_password:string;
+ organization_id:string;name:string;code:string;admin_password:string;
 }){
  if(!supabase)throw new Error("Supabase non configuré.");
  const {data:{session},error:sessionError}=await supabase.auth.getSession();
  if(sessionError)throw new Error("Impossible de vérifier la session : "+sessionError.message);
  if(!session)throw new Error("Session requise. Reconnectez-vous puis réessayez.");
  const {data,error}=await supabase.functions.invoke("organization-create-agency",{
-  body:input,
+  body:{organization_id:input.organization_id,name:input.name,code:input.code,admin_password:input.admin_password},
   headers:{Authorization:"Bearer "+session.access_token}
  });
  if(error){
