@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "@/pcs/router";
 import { supabase, isSupabaseConfigured } from "./lib/supabase";
 import OnboardingTour from "./components/OnboardingTour";
+import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import BrandLogo from "./components/BrandLogo";
 import { url as pcsLogoUrl } from "@/assets/pcs-logo.png.asset.json";
 
@@ -221,6 +222,7 @@ function App({ children }: { children: ReactNode }) {
       <Shell>
         {children}
         <OnboardingTour />
+        <PwaInstallPrompt />
         <ConnectionStatus />
         {!isSupabaseConfigured && (
           <div className="dev-banner">
