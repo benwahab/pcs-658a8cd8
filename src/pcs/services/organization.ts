@@ -33,7 +33,7 @@ export async function getMyOrganizationMembership():Promise<OrganizationMembersh
   if(unitError) throw unitError;
 
   const organizationById=new Map((organizations??[]).map((o:any)=>[o.id,o]));
-  const unitById=new Map((linkedUnits??[]).map((u:any)=>[u.id,u]));
+  const unitById=new Map<string, any>((linkedUnits??[]).map((u:any)=>[u.id,u]));
   const hydrated=memberships.map((m:any)=>({
     membership:m,
     organization:organizationById.get(m.organization_id)??null,
@@ -86,9 +86,11 @@ export async function declineOrganizationTransfer(id:string,note:string){
   const {data,error}=await supabase.rpc("organization_decline_transfer",{p_transfer_id:id,p_note:note});
   if(error) throw error; return data;
 }
-export async function listOrganizationUnits(organizationId:string){
+export async function listOrganizationUnits(organizationId:string,centralUnitId?:string|null){
   if(!supabase) throw new Error("Supabase non configuré.");
-  const {data,error}=await supabase.from("organization_units").select("id,name,code,unit_type,region_id,is_active").eq("organization_id",organizationId).eq("is_active",true).order("unit_type").order("name");
+  let query=supabase.from("organization_units").select("id,name,code,unit_type,region_id,commune_id,parent_unit_id,is_active").eq("organization_id",organizationId).eq("is_active",true).order("unit_type").order("name");
+  if(centralUnitId) query=query.eq("parent_unit_id",centralUnitId);
+  const {data,error}=await query;
   if(error) throw error; return data??[];
 }
 export async function assignOrganizationAgency(transferId:string,unitId:string,note?:string){
