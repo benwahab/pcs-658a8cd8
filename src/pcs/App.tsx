@@ -5,7 +5,7 @@ import { supabase, isSupabaseConfigured } from "./lib/supabase";
 import OnboardingTour from "./components/OnboardingTour";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import BrandLogo from "./components/BrandLogo";
-import { url as pcsLogoUrl } from "@/assets/pcs-logo.png.asset.json";
+
 
 export function Shell({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
@@ -136,7 +136,7 @@ function App({ children }: { children: ReactNode }) {
   const [showSplash, setShowSplash] = useState(true);
   const [isConnecting, setIsConnecting] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
   const logoStyle = {
-    "--pcs-logo-url": `url("${pcsLogoUrl}")`,
+    "--pcs-logo-url": 'url("/icons/icon-512.svg")',
   } as CSSProperties;
 
   useEffect(() => {
@@ -313,7 +313,7 @@ function App({ children }: { children: ReactNode }) {
           `}</style>
           <div className="pcsSplash" role="status" aria-label={isConnecting ? "Recherche de connexion" : "Chargement de PCS"}>
             <div className="pcsSplashContent">
-              <img src="/assets/pcs-logo.jpg" alt="PCS — Plateforme de Citoyenneté et de Signalement" />
+              <img src="/icons/icon-512.svg" alt="PCS — Plateforme de Citoyenneté et de Signalement" />
               {isConnecting && <div className="pcsSplashSpinner" aria-hidden="true" />}
             </div>
           </div>
