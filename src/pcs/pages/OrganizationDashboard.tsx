@@ -11,7 +11,7 @@ export default function OrganizationDashboard(){
  async function load(){
   try{
    const m=await getMyOrganizationMembership();setMembership(m);if(!m)throw new Error("Compte organisationnel non habilité.");
-   if(m.unit?.unit_type==="central"){
+   if(m.unit?.unit_type==="central" && m.organization_id && m.unit_id){
     const [t,u]=await Promise.all([listOrganizationTransfers(),listOrganizationUnits(m.organization_id,m.unit_id)]);setTransfers(t);setUnits(u.filter((x:any)=>x.unit_type==="agency"));
    }else{
     const [ms,as]=await Promise.all([listAgencyMissions(m.unit_id),listAgencyAgents(m.organization_id,m.unit_id)]);setMissions(ms);setAgents(as);
