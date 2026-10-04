@@ -294,7 +294,8 @@ function App({ children }: { children: ReactNode }) {
               width: min(68vw, 300px);
               max-height: 42vh;
               object-fit: contain;
-              animation: pcsSplashLogoIn .45s ease-out both;
+              opacity: 1;
+              transform: none;
             }
             .pcsSplashSpinner {
               width: 34px;
