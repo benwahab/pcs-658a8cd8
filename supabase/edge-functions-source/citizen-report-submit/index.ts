@@ -156,10 +156,10 @@ Deno.serve(async(req)=>{
   try{
     const form=await req.formData();
     const categoryId=String(form.get("category_id")??"").trim(),regionId=String(form.get("region_id")??"").trim(),communeId=String(form.get("commune_id")??"").trim();
-    const title=String(form.get("title")??"").trim(),description=String(form.get("description")??"").trim();
+    const title=String(form.get("title")??"").trim();
     const locationLabel=String(form.get("location_label")??"").trim()||null;
     const latitude=Number(form.get("latitude")),longitude=Number(form.get("longitude"));
-    if(!categoryId||!regionId||!communeId||title.length<5||title.length>120||description.length<10||description.length>5000||(locationLabel!==null&&locationLabel.length>250)||!Number.isFinite(latitude)||!Number.isFinite(longitude)||latitude < -90||latitude > 90||longitude < -180||longitude > 180)return json({error:"Informations du signalement invalides."},400);
+    if(!categoryId||!regionId||!communeId||title.length<5||title.length>120||(locationLabel!==null&&locationLabel.length>250)||!Number.isFinite(latitude)||!Number.isFinite(longitude)||latitude < -90||latitude > 90||longitude < -180||longitude > 180)return json({error:"Informations du signalement invalides."},400);
     const {data:category}=await admin.from("categories").select("id").eq("id",categoryId).eq("is_active",true).maybeSingle();if(!category)return json({error:"Catégorie invalide."},400);
     const {data:commune}=await admin.from("communes").select("id,region_id,is_active").eq("id",communeId).eq("region_id",regionId).eq("is_active",true).maybeSingle();if(!commune)return json({error:"Localité invalide pour cette région."},400);
     const photoFiles=form.getAll("photos").filter((v):v is File=>v instanceof File);
@@ -171,7 +171,7 @@ Deno.serve(async(req)=>{
     if(videoFile)await validateVideo(videoFile);
     const referenceCode="PCS-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+crypto.randomUUID().slice(0,8).toUpperCase();
     const {data:report,error:reportError}=await admin.from("reports").insert({
-      reference_code:referenceCode,category_id:categoryId,title,description,
+      reference_code:referenceCode,category_id:categoryId,title,
       location_label:locationLabel,latitude,longitude,region_id:regionId,commune_id:communeId,status:"submitted",is_public:true
     }).select("id,reference_code").single();
     if(reportError){
