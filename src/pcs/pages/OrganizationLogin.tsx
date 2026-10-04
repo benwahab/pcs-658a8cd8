@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "@/pcs/router";
 import { supabase } from "../lib/supabase";
 import { getMyOrganizationMembership } from "../services/organization";
 import PasswordField from "../components/PasswordField";
+import { listRegions, listCommunes } from "../services/mairie";
 
 const ORG_SPACES = {
   NIGELEC: {
@@ -35,6 +36,28 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [structureName, setStructureName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [regions, setRegions] = useState<any[]>([]);
+  const [communes, setCommunes] = useState<any[]>([]);
+  const [regionId, setRegionId] = useState("");
+  const [communeId, setCommuneId] = useState("");
+
+  useEffect(() => {
+    if (!signup) return;
+    let active = true;
+    listRegions().then((items) => { if (active) setRegions(items); }).catch((e) => { if (active) setError(e instanceof Error ? e.message : "Chargement des régions impossible."); });
+    return () => { active = false; };
+  }, [signup]);
+
+  useEffect(() => {
+    let active = true;
+    setCommunes([]);
+    setCommuneId("");
+    if (!regionId) return;
+    listCommunes(regionId).then((items) => { if (active) setCommunes(items); }).catch((e) => { if (active) setError(e instanceof Error ? e.message : "Chargement des localités impossible."); });
+    return () => { active = false; };
+  }, [regionId]);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -58,30 +81,38 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
 
     try {
       if (signup) {
-        const { error: signupError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo:
-              window.location.origin +
-              (org === "NIGELEC"
-                ? "/connexion-nigelec"
-                : "/connexion-nde"),
-            data: {
-              full_name: fullName.trim(),
-              requested_organization: org,
-            },
+        if (!regionId || !communeId) throw new Error("Sélectionnez une région et une localité valides.");
+        const { data, error: signupError } = await supabase.functions.invoke("organization-signup", {
+          body: {
+            organization_code: org,
+            structure_name: structureName.trim(),
+            full_name: fullName.trim(),
+            phone: phone.trim(),
+            region_id: regionId,
+            commune_id: communeId,
+            email: email.trim(),
+            password,
           },
         });
-
-        if (signupError) throw signupError;
-
-        await supabase.auth.signOut();
-        setInfo(
-          `Compte ${space.label} créé. Confirmez votre email ; l’accès sera actif dès que votre habilitation ${space.label} aura été enregistrée par un administrateur.`,
-        );
+        if (signupError) {
+          const context = (signupError as any).context;
+          let message = signupError.message || "Impossible d’enregistrer la demande.";
+          if (context instanceof Response) {
+            try { const payload = await context.clone().json(); if (typeof payload?.error === "string") message = payload.error; } catch {}
+          }
+          throw new Error(message);
+        }
+        if (data?.error) throw new Error(data.error);
+        setInfo(data?.message || "Demande reçue. Aucun accès professionnel avant approbation du CST.");
         setSignup(false);
         setPassword("");
+        setConfirmPassword("");
+        setStructureName("");
+        setFullName("");
+        setPhone("");
+        setRegionId("");
+        setCommuneId("");
+        setEmail("");
         return;
       }
 
@@ -140,14 +171,34 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
 
       <form className="card form" onSubmit={submit}>
         {signup && (
-          <label>
-            Nom complet
-            <input
-              required
-              value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
-            />
-          </label>
+          <>
+            <label>
+              Nom de la structure locale
+              <input required minLength={2} maxLength={150} value={structureName} onChange={(event) => setStructureName(event.target.value)} />
+            </label>
+            <label>
+              Nom du responsable
+              <input required minLength={2} maxLength={120} value={fullName} onChange={(event) => setFullName(event.target.value)} />
+            </label>
+            <label>
+              Région
+              <select required value={regionId} onChange={(event) => setRegionId(event.target.value)}>
+                <option value="">Choisir une région</option>
+                {regions.map((region) => <option key={region.id} value={region.id}>{region.name}</option>)}
+              </select>
+            </label>
+            <label>
+              Localité
+              <select required value={communeId} onChange={(event) => setCommuneId(event.target.value)} disabled={!regionId || communes.length === 0}>
+                <option value="">Choisir une localité</option>
+                {communes.map((commune) => <option key={commune.id} value={commune.id}>{commune.name}</option>)}
+              </select>
+            </label>
+            <label>
+              Téléphone du responsable (facultatif)
+              <input type="tel" maxLength={30} value={phone} onChange={(event) => setPhone(event.target.value)} />
+            </label>
+          </>
         )}
 
         <label>
