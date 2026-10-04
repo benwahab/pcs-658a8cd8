@@ -278,31 +278,20 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
       try {
         const { data, error } = await supabase
           .from("public_report_media")
-          .select("id,storage_path,media_role,media_type,moderation_status")
+          .select("id,storage_path,media_role,media_type")
           .eq("report_id", reportId)
           .order("created_at", { ascending: true });
 
         if (error) throw error;
 
-        // Public feed safety: never expose pending/rejected videos. Photos keep their
-        // existing visibility rules; moderation filtering here applies to videos only.
-        const publicEvidence = (data ?? []).filter((item) => {
-          if (
-            !item.id ||
-            !item.storage_path ||
-            (item.media_role !== "citizen_evidence" && item.media_role !== "resolution_video") ||
-            HIDDEN_TEST_MEDIA_IDS.has(item.id as string)
-          ) {
-            return false;
-          }
-
-          const isVideo =
-            String(item.media_type ?? "").startsWith("video/") ||
-            item.media_role === "resolution_video";
-          if (!isVideo) return true;
-
-          return item.moderation_status === "approved";
-        });
+        // The public feed contains approved citizen evidence and resolution videos approved by the responsible mairie.
+        const publicEvidence = (data ?? []).filter(
+          (item) =>
+            item.id &&
+            item.storage_path &&
+            (item.media_role === "citizen_evidence" || item.media_role === "resolution_video") &&
+            !HIDDEN_TEST_MEDIA_IDS.has(item.id as string),
+        );
 
         // A broken/expired URL for one attachment must not hide the other valid
         // photos or videos belonging to the same public report.
