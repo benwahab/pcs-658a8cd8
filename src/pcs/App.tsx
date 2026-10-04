@@ -88,6 +88,22 @@ export function Shell({ children }: { children: ReactNode }) {
           </Link>
         </nav>
 
+        <details className="feedAccess feedAccessHeader" data-pcs-tour="professional-access">
+          <summary>
+            <span className="feedAccessIcon">◈</span>
+            <span>Espace professionnel</span>
+            <span className="feedAccessChevron">▾</span>
+          </summary>
+          <div>
+            <Link to="/cst">🖥️ CST — Supervision technique</Link>
+            <Link to="/connexion-operationnelle">🏛️ Mairie</Link>
+            <Link to="/connexion-operationnelle?mode=agent">👷 Agent terrain</Link>
+            <Link to="/connexion-operationnelle?mode=moderator">🛡️ Modérateur</Link>
+            <Link to="/connexion-nigelec">⚡ NIGELEC</Link>
+            <Link to="/connexion-nde">💧 NDE</Link>
+          </div>
+        </details>
+
         <span className="session" data-pcs-tour="account">
           {email ? (
             <>
