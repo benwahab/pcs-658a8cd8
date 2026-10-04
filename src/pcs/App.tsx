@@ -23,6 +23,7 @@ export function Shell({ children }: { children: ReactNode }) {
     const feed = document.querySelector<HTMLElement>(".citizenFeed");
     if (!feed) return;
 
+    // Keep the shared header out of the way while citizens move down the full-screen feed.
     let lastScrollTop = feed.scrollTop;
     const onFeedScroll = () => {
       const current = Math.max(0, feed.scrollTop);
