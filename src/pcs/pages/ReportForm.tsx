@@ -107,7 +107,7 @@ export default function ReportForm() {
     if (!selected.length) return;
     try {
       const available = Math.max(0, MAX_PHOTOS - files.length);
-      if (selected.length > available) setError("Vous pouvez joindre au maximum 5 photos par signalement.");
+      const exceededLimit = selected.length > available;
       const snapshots: File[] = [];
       for (const file of selected.slice(0, available)) {
         if (!file.type.startsWith("image/")) throw new Error("Un fichier sélectionné n’est pas une image valide.");
@@ -115,7 +115,8 @@ export default function ReportForm() {
         snapshots.push(await snapshotSelectedFile(file));
       }
       setFiles((current) => [...current, ...snapshots].slice(0, MAX_PHOTOS));
-      if (snapshots.length) setError("");
+      if (exceededLimit) setError("Vous pouvez joindre au maximum 5 photos par signalement.");
+      else if (snapshots.length) setError("");
     } catch (photoError) {
       setError(photoError instanceof Error ? photoError.message : "Impossible de lire la photo. Sélectionnez-la à nouveau.");
     }
