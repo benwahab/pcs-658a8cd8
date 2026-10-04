@@ -134,7 +134,7 @@ function ConnectionStatus() {
 
 function App({ children }: { children: ReactNode }) {
   const [showSplash, setShowSplash] = useState(true);
-  const [isConnecting, setIsConnecting] = useState(true);
+  const [isConnecting, setIsConnecting] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
   const logoStyle = {
     "--pcs-logo-url": `url("${pcsLogoUrl}")`,
   } as CSSProperties;
@@ -157,7 +157,7 @@ function App({ children }: { children: ReactNode }) {
     const checkConnection = async () => {
       while (active) {
         controller = new AbortController();
-        const requestTimeout = window.setTimeout(() => controller?.abort(), 8000);
+        const requestTimeout = window.setTimeout(() => controller?.abort(), 3000);
 
         try {
           const response = await fetch(
@@ -174,8 +174,10 @@ function App({ children }: { children: ReactNode }) {
             }, 5000);
             return;
           }
+          if (active) setIsConnecting(true);
         } catch {
-          // Keep the splash visible and retry while the site is unreachable.
+          // Show the spinner only after the connectivity probe fails.
+          if (active) setIsConnecting(true);
         } finally {
           window.clearTimeout(requestTimeout);
         }
