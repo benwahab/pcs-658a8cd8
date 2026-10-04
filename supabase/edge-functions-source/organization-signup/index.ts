@@ -72,7 +72,7 @@ Deno.serve(async (req: Request) => {
   if (existingUnit) return json({ error: "Un compte central existe déjà pour cette structure dans cette localité." }, 409);
 
   const { data: userResult, error: userError } = await db.auth.admin.createUser({
-    email, password, email_confirm: true, user_metadata: { full_name: fullName, requested_organization: orgCode, organization_pending: true },
+    email, password, email_confirm: true, user_metadata: { full_name: fullName, organization_pending: true },
   });
   if (userError || !userResult.user) {
     const message = userError?.message ?? "Création du compte impossible.";
