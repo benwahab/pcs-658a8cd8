@@ -5,7 +5,7 @@ import {supabase} from "@/pcs/lib/supabase";
 async function callCst(body:Record<string,unknown>){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-auth",{body});if(error)throw new Error(error.message||"Service CST indisponible.");if(data?.error)throw new Error(data.error);return data as any;}
 async function health(){
  if(!supabase)throw new Error("Supabase non configuré.");
- const invoke=async(accessToken:string)=>supabase.functions.invoke("cst-health",{method:"GET",headers:{Authorization:`Bearer ${accessToken}`}});
+ const invoke=async(accessToken:string)=>supabase!.functions.invoke("cst-health",{method:"GET",headers:{Authorization:`Bearer ${accessToken}`}});
  const {data:sessionData,error:sessionError}=await supabase.auth.getSession();
  if(sessionError)throw new Error("Impossible de vérifier la session CST. Reconnectez-vous.");
  let accessToken=sessionData.session?.access_token;
