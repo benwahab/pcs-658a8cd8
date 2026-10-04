@@ -33,7 +33,7 @@ export async function getMyOrganizationMembership():Promise<OrganizationMembersh
   if(unitError) throw unitError;
 
   const organizationById=new Map((organizations??[]).map((o:any)=>[o.id,o]));
-  const unitById=new Map((linkedUnits??[]).map((u:any)=>[u.id,u]));
+  const unitById=new Map<string, any>((linkedUnits??[]).map((u:any)=>[u.id,u]));
   const hydrated=memberships.map((m:any)=>({
     membership:m,
     organization:organizationById.get(m.organization_id)??null,
