@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate } from "@/pcs/router";
+import { Link, useLocation, useNavigate } from "@/pcs/router";
 import { supabase } from "../lib/supabase";
 import { getMyOrganizationMembership } from "../services/organization";
 import PasswordField from "../components/PasswordField";
@@ -25,6 +25,9 @@ export type OrgCode = keyof typeof ORG_SPACES;
 export default function OrganizationLogin({ org }: { org: OrgCode }) {
   const space = ORG_SPACES[org];
   const navigate = useNavigate();
+  const location = useLocation();
+  const requestedAccountType = new URLSearchParams(location.search.replace(/^\?/, "")).get("type");
+  const expectedUnitType = requestedAccountType === "central" || requestedAccountType === "agency" ? requestedAccountType : null;
 
   const [signup, setSignup] = useState(false);
   const [email, setEmail] = useState("");
@@ -100,6 +103,15 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
         );
       }
 
+      if (expectedUnitType && membership.unit?.unit_type !== expectedUnitType) {
+        await supabase.auth.signOut();
+        throw new Error(
+          expectedUnitType === "central"
+            ? `Cet accès est réservé au compte central ${space.label}. Utilisez l’accès aux comptes agences si votre compte appartient à une agence.`
+            : `Cet accès est réservé aux comptes agences ${space.label}. Utilisez l’accès au compte central si vous gérez l’organisation centrale.`,
+        );
+      }
+
       navigate("/organisation");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Connexion impossible");
@@ -115,7 +127,11 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
         {space.icon}{" "}
         {signup
           ? `Création de compte ${space.label}`
-          : `Connexion ${space.label}`}
+          : expectedUnitType === "central"
+            ? `Connexion au compte central ${space.label}`
+            : expectedUnitType === "agency"
+              ? `Connexion à un compte agence ${space.label}`
+              : `Connexion ${space.label}`}
       </h1>
       <p>{space.full}</p>
 
