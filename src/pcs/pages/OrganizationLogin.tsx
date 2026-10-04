@@ -193,7 +193,7 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
         </button>
       </form>
 
-      <button
+      {expectedUnitType !== "agency" && <button
         className="button"
         onClick={() => {
           setSignup((value) => !value);
@@ -205,7 +205,7 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
         }}
       >
         {signup ? "J’ai déjà un compte" : `Créer un compte ${space.label}`}
-      </button>
+      </button>}
 
       <Link className="button" to="/">
         Retour
