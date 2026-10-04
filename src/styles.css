@@ -1283,3 +1283,53 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
     display: none;
   }
 }
+
+
+/* Sous-menus NIGELEC/NDE dans l'espace professionnel */
+.feedAccessSubmenu {
+  position: relative;
+  min-width: 0;
+}
+.feedAccessSubmenu > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  color: #f2f7f5;
+  cursor: pointer;
+  list-style: none;
+  font-size: .78rem;
+  font-weight: 750;
+}
+.feedAccessSubmenu > summary::-webkit-details-marker { display: none; }
+.feedAccessSubmenu > summary:hover,
+.feedAccessSubmenu[open] > summary {
+  background: linear-gradient(90deg, #ffffff12, #2f9e5b25);
+  border-color: #ffffff22;
+  color: #fff;
+}
+.feedAccessSubmenu > div {
+  position: static;
+  display: grid;
+  gap: 4px;
+  width: auto;
+  padding: 4px 0 6px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.feedAccessSubmenu > div::before { display: none; }
+.feedAccessSubmenu > div a {
+  min-height: 42px;
+  font-size: .74rem;
+  font-weight: 650;
+  background: #ffffff08;
+}
