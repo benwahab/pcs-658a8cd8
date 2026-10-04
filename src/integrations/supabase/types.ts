@@ -2144,6 +2144,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      consume_citizen_report_rate_limit: {
+        Args: {
+          p_key_hash: string
+          p_max_events: number
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
       consume_cst_auth_rate_limit: {
         Args: {
           p_block_seconds?: number
