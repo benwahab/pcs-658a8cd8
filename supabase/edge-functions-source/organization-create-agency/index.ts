@@ -33,10 +33,9 @@ Deno.serve(async (req: Request) => {
     const organizationId = String(body.organization_id ?? "").trim();
     const name = String(body.name ?? "").trim();
     const code = String(body.code ?? "").trim().toUpperCase();
-    const adminEmail = String(body.admin_email ?? "").trim().toLowerCase();
     const adminPassword = String(body.admin_password ?? "");
 
-    if (!organizationId || !name || !code || !adminEmail || !adminPassword)
+    if (!organizationId || !name || !code || !adminPassword)
       return json({ error: "Tous les champs sont obligatoires." }, 400);
     if (name.length < 2 || name.length > 150) return json({ error: "Le nom de l’agence doit contenir entre 2 et 150 caractères." }, 400);
     if (!/^[A-Z0-9_-]{2,40}$/.test(code)) return json({ error: "Le code doit contenir de 2 à 40 lettres, chiffres, tirets ou tirets bas." }, 400);
@@ -72,13 +71,15 @@ Deno.serve(async (req: Request) => {
       .select("id").eq("organization_id", organizationId).eq("code", code).maybeSingle();
     if (existingUnit) return json({ error: "Ce code d’agence est déjà utilisé dans cette organisation." }, 409);
 
-    const { data: existingUser } = await db.auth.admin.listUsers({ page: 1, perPage: 1 });
+    // Identifiant interne technique : l’agence se connecte avec son code, jamais avec un email.
+    const adminEmail = `${String(org.code).toLowerCase()}+${code.toLowerCase()}@agency.pcs.invalid`;
+    const { data: existingUser } = await db.auth.admin.listUsers({ page: 1, perPage: 1000 });
     if (existingUser?.users?.some((u) => u.email?.toLowerCase() === adminEmail))
-      return json({ error: "Cette adresse email est déjà associée à un compte." }, 409);
+      return json({ error: "Ce code d’agence est déjà associé à un compte de connexion." }, 409);
 
     const { data: unit, error: unitError } = await db.from("organization_units").insert({
       organization_id: organizationId, name, code, unit_type: "agency", parent_unit_id: central.id,
-      phone: String(body.phone ?? "").trim() || null, email: adminEmail,
+      email: null,
     }).select("id,name,code,organization_id,region_id,latitude,longitude,location_label").single();
     if (unitError || !unit) {
       console.error("organization-create-agency: unit creation failed", unitError?.message);
@@ -104,7 +105,7 @@ Deno.serve(async (req: Request) => {
       return json({ error: "L’agence a été préparée, mais son habilitation a échoué. Aucun compte incomplet n’a été conservé." }, 500);
     }
 
-    return json({ agency: unit, admin_user_id: created.user.id, message: "Le compte d’agence a été créé. L’agence peut maintenant se connecter avec l’email et le mot de passe définis." });
+    return json({ agency: unit, admin_user_id: created.user.id, message: "Le compte d’agence a été créé. L’agence peut maintenant se connecter avec son code unique et son mot de passe." });
   } catch (error) {
     console.error("organization-create-agency: unexpected error", error);
     return json({ error: "Une erreur inattendue est survenue lors de la création de l’agence." }, 500);
