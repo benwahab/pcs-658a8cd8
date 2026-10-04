@@ -105,3 +105,32 @@ export async function createAgencyAgent(input:{first_name:string;last_name:strin
  if(!data?.agent)throw new Error(typeof data?.error==="string"?data.error:"Le service n’a pas confirmé la création de l’agent.");
  return data.agent;
 }
+
+
+export async function createOrganizationAgency(input:{
+ organization_id:string;name:string;code:string;admin_email:string;admin_password:string;
+}){
+ if(!supabase)throw new Error("Supabase non configuré.");
+ const {data:{session},error:sessionError}=await supabase.auth.getSession();
+ if(sessionError)throw new Error("Impossible de vérifier la session : "+sessionError.message);
+ if(!session)throw new Error("Session requise. Reconnectez-vous puis réessayez.");
+ const {data,error}=await supabase.functions.invoke("organization-create-agency",{
+  body:input,
+  headers:{Authorization:"Bearer "+session.access_token}
+ });
+ if(error){
+  const context=(error as any).context;
+  let message=error.message||"La création du compte d’agence a échoué.";
+  if(context instanceof Response){
+   try{
+    const payload=await context.clone().json();
+    if(typeof payload?.error==="string"&&payload.error.trim())message=payload.error.trim();
+   }catch{
+    message="Le service de création d’agence a renvoyé une réponse inattendue.";
+   }
+  }
+  throw new Error(message);
+ }
+ if(!data?.agency||!data?.admin_user_id)throw new Error(typeof data?.error==="string"?data.error:"Le service n’a pas confirmé la création du compte d’agence.");
+ return data;
+}
