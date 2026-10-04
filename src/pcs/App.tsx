@@ -20,43 +20,67 @@ export function Shell({ children }: { children: ReactNode }) {
       return;
     }
 
-    const feed = document.querySelector<HTMLElement>(".citizenFeed");
-    if (!feed) return;
+    // The feed may scroll in its own container on mobile. Listen in capture
+    // phase so the navbar responds even when the scroll event does not bubble.
+    let lastScrollTop = 0;
+    let activeScrollTarget: HTMLElement | null = null;
 
-    // The citizen feed can scroll inside its own container or through the page
-    // on some mobile browsers. Listen to both so the global navbar follows either.
-    const main = document.querySelector<HTMLElement>("main");
-    const readScrollPosition = () =>
-      Math.max(
+    const getScrollTop = (target?: EventTarget | null) => {
+      const element = target instanceof HTMLElement ? target : null;
+      const feed = document.querySelector<HTMLElement>(".citizenFeed");
+      const main = document.querySelector<HTMLElement>("main");
+      return Math.max(
         0,
-        feed.scrollTop,
+        element?.scrollTop ?? 0,
+        feed?.scrollTop ?? 0,
         main?.scrollTop ?? 0,
         window.scrollY,
         document.documentElement.scrollTop,
       );
-    let lastScrollTop = readScrollPosition();
-
-    const onAnyScroll = () => {
-      const current = readScrollPosition();
-      if (current <= 8) {
-        setFeedHeaderHidden(false);
-      } else if (current > lastScrollTop + 3) {
-        setFeedHeaderHidden(true);
-      } else if (current < lastScrollTop - 3) {
-        setFeedHeaderHidden(false);
-      }
-      lastScrollTop = current;
     };
 
-    feed.addEventListener("scroll", onAnyScroll, { passive: true });
-    main?.addEventListener("scroll", onAnyScroll, { passive: true });
-    window.addEventListener("scroll", onAnyScroll, { passive: true });
+    const onAnyScroll = (event: Event) => {
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      const current = getScrollTop(target);
+      // Prefer the actual scrolling element when multiple containers exist.
+      if (target && target.scrollHeight > target.clientHeight + 2) {
+        activeScrollTarget = target;
+      }
+      const position = activeScrollTarget?.scrollTop ?? current;
+      if (position <= 8 && current <= 8) {
+        setFeedHeaderHidden(false);
+      } else if (position > lastScrollTop + 3 || current > lastScrollTop + 3) {
+        setFeedHeaderHidden(true);
+      } else if (position < lastScrollTop - 3 || current < lastScrollTop - 3) {
+        setFeedHeaderHidden(false);
+      }
+      lastScrollTop = Math.max(position, current);
+    };
+
+    // Initialize after the first layout, including cases where the feed mounts late.
+    const initialize = () => {
+      activeScrollTarget = document.querySelector<HTMLElement>(".citizenFeed");
+      lastScrollTop = getScrollTop(activeScrollTarget);
+      setFeedHeaderHidden(lastScrollTop > 8);
+    };
+    const frame = requestAnimationFrame(initialize);
     document.addEventListener("scroll", onAnyScroll, { passive: true, capture: true });
+    window.addEventListener("scroll", onAnyScroll, { passive: true });
+
+    // If the feed is rendered after this effect, capture it without requiring a reload.
+    const observer = new MutationObserver(() => {
+      if (!activeScrollTarget) {
+        activeScrollTarget = document.querySelector<HTMLElement>(".citizenFeed");
+        if (activeScrollTarget) lastScrollTop = activeScrollTarget.scrollTop;
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
     return () => {
-      feed.removeEventListener("scroll", onAnyScroll);
-      main?.removeEventListener("scroll", onAnyScroll);
-      window.removeEventListener("scroll", onAnyScroll);
+      cancelAnimationFrame(frame);
       document.removeEventListener("scroll", onAnyScroll, true);
+      window.removeEventListener("scroll", onAnyScroll);
+      observer.disconnect();
     };
   }, [location.pathname]);
 
