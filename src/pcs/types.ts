@@ -51,7 +51,6 @@ export interface Report {
   id: string;
   reference_code: string;
   title: string;
-  description?: string | null;
   status: ReportStatus;
   priority: ReportPriority;
   category_id: string;
