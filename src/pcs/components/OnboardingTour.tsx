@@ -79,6 +79,7 @@ export default function OnboardingTour(){
 
    const finish=()=>{
     localStorage.setItem(STORAGE_KEY,"true");
+    window.dispatchEvent(new Event("pcs-onboarding-completed"));
     driverRef.current?.destroy();
     driverRef.current=null;
    };
