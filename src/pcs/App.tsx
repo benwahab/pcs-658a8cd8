@@ -141,14 +141,55 @@ function App({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Brief startup screen only for the initial app mount; internal route
-    // changes do not remount App. Always remove it after a short timeout.
-    const timeout = window.setTimeout(
-      () => setShowSplash(false),
-      5000,
-    );
+    // Keep the locally bundled logo visible until the PCS origin is reachable.
+    // Only begin the 5-second minimum display period after a successful probe.
+    let active = true;
+    let retryTimer: number | undefined;
+    let hideTimer: number | undefined;
+    let controller: AbortController | undefined;
 
-    return () => window.clearTimeout(timeout);
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        retryTimer = window.setTimeout(resolve, ms);
+      });
+
+    const checkConnection = async () => {
+      while (active) {
+        controller = new AbortController();
+        const requestTimeout = window.setTimeout(() => controller?.abort(), 8000);
+
+        try {
+          const response = await fetch(
+            `/manifest.webmanifest?pcs-connectivity-check=${Date.now()}`,
+            { cache: "no-store", signal: controller.signal },
+          );
+
+          if (response.ok) {
+            window.clearTimeout(requestTimeout);
+            if (!active) return;
+            hideTimer = window.setTimeout(() => {
+              if (active) setShowSplash(false);
+            }, 5000);
+            return;
+          }
+        } catch {
+          // Keep the splash visible and retry while the site is unreachable.
+        } finally {
+          window.clearTimeout(requestTimeout);
+        }
+
+        if (active) await wait(3000);
+      }
+    };
+
+    void checkConnection();
+
+    return () => {
+      active = false;
+      controller?.abort();
+      if (retryTimer !== undefined) window.clearTimeout(retryTimer);
+      if (hideTimer !== undefined) window.clearTimeout(hideTimer);
+    };
   }, []);
 
   useEffect(() => {
