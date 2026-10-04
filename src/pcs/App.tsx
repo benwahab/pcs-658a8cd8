@@ -128,19 +128,8 @@ function ConnectionStatus() {
     };
   }, []);
 
-  if (online && !weak) return null;
-
-  return (
-    <div
-      className={`connectionStatus ${!online ? "offline" : "weak"}`}
-      role="status"
-      aria-live="polite"
-    >
-      {!online
-        ? "Hors connexion — les pages déjà chargées restent disponibles."
-        : "Connexion faible — PCS privilégie les données déjà en cache et réessaie automatiquement les lectures."}
-    </div>
-  );
+  // Keep monitoring connection state internally, but never display a connection banner.
+  return null;
 }
 
 function App({ children }: { children: ReactNode }) {
