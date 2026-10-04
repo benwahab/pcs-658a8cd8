@@ -146,27 +146,7 @@ export default function Home() {
           <span className="active">Tous les signalements</span>
         </div>
 
-        <details className="feedAccess" data-pcs-tour="professional-access">
-          <summary>
-            <span className="feedAccessIcon">◈</span>
-            <span>Espace professionnel</span>
-            <span className="feedAccessChevron">▾</span>
-          </summary>
-          <div>
-            {/* Keep professional navigation inside the PCS router so the selected
-                login screen opens without a full document reload. */}
-            <Link to="/cst">🖥️ CST — Supervision technique</Link>
-            <Link to="/connexion-operationnelle">🏛️ Mairie</Link>
-            <Link to="/connexion-operationnelle?mode=agent">
-              👷 Agent terrain
-            </Link>
-            <Link to="/connexion-operationnelle?mode=moderator">
-              🛡️ Modérateur
-            </Link>
-            <Link to="/connexion-nigelec">⚡ NIGELEC</Link>
-            <Link to="/connexion-nde">💧 NDE</Link>
-          </div>
-        </details>
+
       </div>
 
       <article className="citizenSlide citizenSlideIntro">
