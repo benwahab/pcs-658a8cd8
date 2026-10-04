@@ -278,17 +278,20 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
       try {
         const { data, error } = await supabase
           .from("public_report_media")
-          .select("id,storage_path,media_role,media_type")
+          .select("id,storage_path,media_role,media_type,moderation_status")
           .eq("report_id", reportId)
           .order("created_at", { ascending: true });
 
         if (error) throw error;
 
-        // The public feed contains approved citizen evidence and resolution videos approved by the responsible mairie.
+        // Fail closed: never create a URL or render a media item unless the
+        // database explicitly returns moderation_status='approved'. The view also
+        // filters this server-side; this is a second, client-side safety boundary.
         const publicEvidence = (data ?? []).filter(
           (item) =>
             item.id &&
             item.storage_path &&
+            item.moderation_status === "approved" &&
             (item.media_role === "citizen_evidence" || item.media_role === "resolution_video") &&
             !HIDDEN_TEST_MEDIA_IDS.has(item.id as string),
         );
