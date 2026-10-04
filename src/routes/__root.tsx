@@ -116,12 +116,8 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <div id="pcs-splash" aria-label="PCS" role="status">
-          <img src="/assets/pcs-splash.jpg" alt="PCS — Plateforme Citoyenne de Signalement" />
-        </div>
         {children}
         <Scripts />
-        <script dangerouslySetInnerHTML={{__html: `setTimeout(() => document.getElementById("pcs-splash")?.remove(), 1200);`}} />
       </body>
     </html>
   );
