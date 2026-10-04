@@ -23,22 +23,41 @@ export function Shell({ children }: { children: ReactNode }) {
     const feed = document.querySelector<HTMLElement>(".citizenFeed");
     if (!feed) return;
 
-    // Keep the shared header out of the way while citizens move down the full-screen feed.
-    let lastScrollTop = feed.scrollTop;
-    const onFeedScroll = () => {
-      const current = Math.max(0, feed.scrollTop);
+    // The citizen feed can scroll inside its own container or through the page
+    // on some mobile browsers. Listen to both so the global navbar follows either.
+    const main = document.querySelector<HTMLElement>("main");
+    const readScrollPosition = () =>
+      Math.max(
+        0,
+        feed.scrollTop,
+        main?.scrollTop ?? 0,
+        window.scrollY,
+        document.documentElement.scrollTop,
+      );
+    let lastScrollTop = readScrollPosition();
+
+    const onAnyScroll = () => {
+      const current = readScrollPosition();
       if (current <= 8) {
         setFeedHeaderHidden(false);
-      } else if (current > lastScrollTop + 2) {
+      } else if (current > lastScrollTop + 3) {
         setFeedHeaderHidden(true);
-      } else if (current < lastScrollTop - 2) {
+      } else if (current < lastScrollTop - 3) {
         setFeedHeaderHidden(false);
       }
       lastScrollTop = current;
     };
 
-    feed.addEventListener("scroll", onFeedScroll, { passive: true });
-    return () => feed.removeEventListener("scroll", onFeedScroll);
+    feed.addEventListener("scroll", onAnyScroll, { passive: true });
+    main?.addEventListener("scroll", onAnyScroll, { passive: true });
+    window.addEventListener("scroll", onAnyScroll, { passive: true });
+    document.addEventListener("scroll", onAnyScroll, { passive: true, capture: true });
+    return () => {
+      feed.removeEventListener("scroll", onAnyScroll);
+      main?.removeEventListener("scroll", onAnyScroll);
+      window.removeEventListener("scroll", onAnyScroll);
+      document.removeEventListener("scroll", onAnyScroll, true);
+    };
   }, [location.pathname]);
 
   useEffect(() => {
