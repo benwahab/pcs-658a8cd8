@@ -3,7 +3,24 @@ import {Link,useNavigate} from "@/pcs/router";
 import {supabase} from "@/pcs/lib/supabase";
 
 async function callCst(body:Record<string,unknown>){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-auth",{body});if(error)throw new Error(error.message||"Service CST indisponible.");if(data?.error)throw new Error(data.error);return data as any;}
-async function health(){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-health",{method:"GET"});if(error||data?.error)throw new Error(data?.error??"Supervision indisponible.");return data as any;}
+async function health(){
+ if(!supabase)throw new Error("Supabase non configuré.");
+ const invoke=async(accessToken:string)=>supabase.functions.invoke("cst-health",{method:"GET",headers:{Authorization:`Bearer ${accessToken}`}});
+ const {data:sessionData,error:sessionError}=await supabase.auth.getSession();
+ if(sessionError)throw new Error("Impossible de vérifier la session CST. Reconnectez-vous.");
+ let accessToken=sessionData.session?.access_token;
+ if(!accessToken)throw new Error("Votre session CST a expiré. Reconnectez-vous.");
+ let result=await invoke(accessToken);
+ const status=(result.error as any)?.context?.status;
+ if(status===401){
+   const {data:refreshed,error:refreshError}=await supabase.auth.refreshSession();
+   if(refreshError||!refreshed.session)throw new Error("Votre session CST a expiré. Reconnectez-vous.");
+   accessToken=refreshed.session.access_token;
+   result=await invoke(accessToken);
+ }
+ if(result.error||result.data?.error)throw new Error(result.data?.error??(result.error as any)?.message??"Supervision indisponible.");
+ return result.data as any;
+}
 async function mediaModeration(body:Record<string,unknown>={action:"list"}){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-media-moderation",{body});if(error||data?.error)throw new Error(data?.error??"Service de modération indisponible.");return data as any;}
 async function listVideoArchives(){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-video-archives",{body:{action:"list"}});if(error||data?.error)throw new Error(data?.error??"Impossible de charger les archives vidéo.");return data as any;}
 async function setArchiveHold(archiveId:string,action:"hold"|"release",reason?:string){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-video-archives",{body:{action,archive_id:archiveId,reason}});if(error||data?.error)throw new Error(data?.error??"Impossible de modifier la conservation.");return data;}
