@@ -28,6 +28,7 @@ export async function listReportComments(reportId:string){if(!supabase)throw new
 export type OrganizationSignupRequest={
  id:string;user_id:string;organization_id:string;organization_name:string;organization_code:string;
  email:string;full_name:string;status:"pending"|"approved"|"rejected";review_note:string|null;reviewed_by:string|null;reviewed_at:string|null;created_at:string;
+ structure_name:string|null;region_id:string|null;region_name:string|null;commune_id:string|null;commune_name:string|null;phone:string|null;
 };
 export async function listOrganizationSignupRequests(){
  if(!supabase)throw new Error("Supabase n’est pas configuré.");
