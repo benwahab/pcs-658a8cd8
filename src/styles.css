@@ -1217,3 +1217,34 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   object-fit: cover !important;
   object-position: center 44% !important;
 }
+
+
+/* Accueil citoyen : la navigation globale se superpose au flux et se masque
+   pendant le balayage vers les vidéos. Elle revient en verre translucide au retour. */
+.app:has(.citizenFeed) > header.feedImmersiveHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.18);
+  border-bottom-color: rgba(255, 255, 255, 0.24);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transform: translateY(0);
+  transition: transform 260ms ease, background 260ms ease, backdrop-filter 260ms ease;
+}
+.app:has(.citizenFeed) > header.feedImmersiveHeader.is-hidden {
+  transform: translateY(-110%);
+  pointer-events: none;
+}
+.app:has(.citizenFeed) > main {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app:has(.citizenFeed) > header.feedImmersiveHeader {
+    transition: none;
+  }
+}
