@@ -101,7 +101,7 @@ export default function PwaInstallPrompt() {
   if (!visible || installed) return null;
 
   return (
-    <div role="presentation" style={{ position: "fixed", inset: 0, zIndex: 100000, display: "grid", placeItems: "center", padding: 20, background: "rgba(15,23,42,.62)" }}>
+    <div role="presentation" style={{ position: "fixed", inset: 0, zIndex: 200000, display: "grid", placeItems: "center", padding: 20, background: "rgba(15,23,42,.62)" }}>
       <section role="dialog" aria-modal="true" aria-labelledby="pcs-pwa-title" style={{ width: "min(100%, 420px)", borderRadius: 22, padding: 24, background: "#fff", color: "#172033", boxShadow: "0 24px 80px rgba(0,0,0,.28)", fontFamily: "system-ui,sans-serif" }}>
         <div aria-hidden="true" style={{ width: 58, height: 58, marginBottom: 16, display: "grid", placeItems: "center", borderRadius: 16, background: "#e6f5f2", color: "#0f766e", fontSize: 30 }}>＋</div>
         <h2 id="pcs-pwa-title" style={{ margin: "0 0 10px", fontSize: 23, lineHeight: 1.2 }}>Installer PCS sur votre téléphone</h2>
