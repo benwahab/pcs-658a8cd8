@@ -85,8 +85,11 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
         return;
       }
 
+      const loginEmail = expectedUnitType === "agency"
+        ? `${org.toLowerCase()}+${email.trim().toLowerCase()}@agency.pcs.invalid`
+        : email.trim();
       const { error: loginError } = await supabase.auth.signInWithPassword({
-        email,
+        email: loginEmail,
         password,
       });
 
@@ -148,13 +151,14 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
         )}
 
         <label>
-          Email professionnel
+          {expectedUnitType === "agency" ? "Code unique de l’agence" : "Email professionnel"}
           <input
             required
-            type="email"
+            type={expectedUnitType === "agency" ? "text" : "email"}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            autoComplete="email"
+            autoComplete={expectedUnitType === "agency" ? "username" : "email"}
+            placeholder={expectedUnitType === "agency" ? "Ex. NIG-NIAMEY-01" : undefined}
           />
         </label>
 
