@@ -25,6 +25,14 @@ interface Commune {
 const MAX_PHOTOS = 5;
 const MAX_TITLE_LENGTH = 120;
 const MAX_LOCATION_LENGTH = 250;
+const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
+
+async function snapshotSelectedFile(file: File): Promise<File> {
+  // Copier immédiatement le contenu, avant que le sélecteur Android ne perde son accès temporaire.
+  const bytes = await file.arrayBuffer();
+  if (bytes.byteLength === 0) throw new Error("Le fichier sélectionné est vide ou inaccessible. Sélectionnez-le à nouveau.");
+  return new File([bytes], file.name, { type: file.type || "application/octet-stream", lastModified: file.lastModified });
+}
 
 
 export default function ReportForm() {
@@ -58,12 +66,8 @@ export default function ReportForm() {
         setRegions(regionList);
         setAllCommunes(communeList);
       })
-      .catch((loadError) => {
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Impossible de charger les catégories, régions et localités.",
-        );
+      .catch(() => {
+        setError("Impossible de charger les catégories, régions et localités. Vérifiez votre connexion puis réessayez.");
       });
   }, []);
 
@@ -98,14 +102,23 @@ export default function ReportForm() {
     );
   }
 
-  function addPhotos(list: FileList | null) {
-    const next = [...files, ...Array.from(list ?? [])];
-
-    if (next.length > MAX_PHOTOS) {
-      setError("Maximum 5 photos par signalement.");
+  async function addPhotos(list: FileList | null) {
+    const selected = Array.from(list ?? []);
+    if (!selected.length) return;
+    try {
+      const available = Math.max(0, MAX_PHOTOS - files.length);
+      if (selected.length > available) setError("Vous pouvez joindre au maximum 5 photos par signalement.");
+      const snapshots: File[] = [];
+      for (const file of selected.slice(0, available)) {
+        if (!file.type.startsWith("image/")) throw new Error("Un fichier sélectionné n’est pas une image valide.");
+        if (file.size <= 0 || file.size > MAX_IMAGE_SIZE_BYTES) throw new Error("Chaque photo doit être lisible et ne pas dépasser 8 Mo.");
+        snapshots.push(await snapshotSelectedFile(file));
+      }
+      setFiles((current) => [...current, ...snapshots].slice(0, MAX_PHOTOS));
+      if (snapshots.length) setError("");
+    } catch (photoError) {
+      setError(photoError instanceof Error ? photoError.message : "Impossible de lire la photo. Sélectionnez-la à nouveau.");
     }
-
-    setFiles(next.slice(0, MAX_PHOTOS));
   }
 
   async function submit(event: FormEvent) {
@@ -190,9 +203,9 @@ export default function ReportForm() {
       setSubmitted(true);
     } catch (submitError) {
       setError(
-        submitError instanceof Error
+        submitError instanceof Error && /^(La vidéo|Le fichier|Type vidéo|L’extension|Le contenu|La précision GPS|Coordonnées GPS|Supabase)/i.test(submitError.message)
           ? submitError.message
-          : "Erreur lors de l’envoi du signalement.",
+          : "Impossible d’envoyer le signalement. Vérifiez votre connexion et la lisibilité des médias, puis réessayez.",
       );
     } finally {
       setSaving(false);
@@ -332,9 +345,9 @@ export default function ReportForm() {
             accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
             multiple
             onChange={(event) => {
-              addPhotos(event.target.files);
-              event.target.value = "";
-              setError("");
+              const input = event.currentTarget;
+              void addPhotos(input.files);
+              input.value = "";
             }}
           />
 
@@ -359,15 +372,22 @@ export default function ReportForm() {
             type="file"
             accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v"
             onChange={(event) => {
-              const selected = event.target.files?.[0] ?? null;
-              event.target.value = "";
+              const input = event.currentTarget;
+              const selected = input.files?.[0] ?? null;
               if (!selected) return;
-              if (selected.size <= 0 || selected.size > MAX_VIDEO_SIZE_BYTES) {
-                setError("La vidéo ne doit pas dépasser 100 Mo.");
-                return;
-              }
-              setError("");
-              setVideo(selected);
+              void (async () => {
+                try {
+                  if (selected.size <= 0 || selected.size > MAX_VIDEO_SIZE_BYTES) throw new Error("La vidéo doit être lisible et ne pas dépasser 100 Mo.");
+                  if (!selected.type.startsWith("video/")) throw new Error("Le fichier sélectionné n’est pas une vidéo valide.");
+                  const snapshot = await snapshotSelectedFile(selected);
+                  setVideo(snapshot);
+                  setError("");
+                } catch (videoError) {
+                  setError(videoError instanceof Error ? videoError.message : "Impossible de lire la vidéo. Sélectionnez-la à nouveau.");
+                } finally {
+                  input.value = "";
+                }
+              })();
             }}
           />
 
