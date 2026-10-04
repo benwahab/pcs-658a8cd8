@@ -71,8 +71,9 @@ export function CSTDashboard(){
     if(!s.session){nav("/cst");return}
     const {data:a}=await (supabase as any).from("cst_accounts").select("id").eq("user_id",s.session.user.id).maybeSingle();
     if(!a){nav("/cst");return}
-    if(active){await refreshQueue();await refreshOrganizationRequests();}
+    if(active){await refreshQueue();}
     if(active){setArchivesBusy(true);try{const archiveResult=await listVideoArchives();if(active)setArchives(archiveResult.items??[])}finally{if(active)setArchivesBusy(false)}}
+    if(active){try{await refreshOrganizationRequests()}catch(e){if(active)setError(e instanceof Error?"Demandes NIGELEC/NDE indisponibles : "+e.message:"Impossible de charger les demandes NIGELEC/NDE.")}}
    }catch(e){if(active)setError(e instanceof Error?e.message:"Impossible de charger la file de modération.")}
   };
   void verify();
