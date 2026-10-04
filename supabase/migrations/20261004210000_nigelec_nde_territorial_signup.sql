@@ -35,6 +35,7 @@ as $function$
     left join public.regions reg on reg.id=r.region_id
     left join public.communes c on c.id=r.commune_id
    where private.has_role('admin')
+      or exists (select 1 from public.cst_accounts ca where ca.user_id = auth.uid())
    order by r.created_at desc;
 $function$;
 
@@ -52,7 +53,9 @@ declare
   v_unit_code text;
   v_commune public.communes;
 begin
-  if not private.has_role('admin') then raise exception 'Accès refusé'; end if;
+  if not exists (select 1 from public.cst_accounts ca where ca.user_id = auth.uid()) then
+    raise exception 'Seul le CST peut approuver une demande NIGELEC/NDE';
+  end if;
 
   select * into v_req from public.organization_signup_requests where id=p_request_id for update;
   if not found then raise exception 'Demande introuvable'; end if;
@@ -96,3 +99,42 @@ begin
   return v_req;
 end;
 $$;
+
+
+create or replace function public.reject_organization_signup_request(p_request_id uuid, p_note text)
+returns public.organization_signup_requests
+language plpgsql security definer
+set search_path to 'public','private'
+as $$
+declare
+  v_req public.organization_signup_requests;
+  v_note text := nullif(trim(coalesce(p_note,'')),'');
+begin
+  if not exists (select 1 from public.cst_accounts ca where ca.user_id = auth.uid()) then
+    raise exception 'Seul le CST peut refuser une demande NIGELEC/NDE';
+  end if;
+  if v_note is null or length(v_note) < 5 or length(v_note) > 1000 then
+    raise exception 'Le motif du refus doit contenir entre 5 et 1000 caractères';
+  end if;
+
+  select * into v_req
+    from public.organization_signup_requests
+   where id = p_request_id
+   for update;
+  if not found then raise exception 'Demande introuvable'; end if;
+  if v_req.status <> 'pending' then raise exception 'Cette demande a déjà été traitée'; end if;
+
+  update public.organization_signup_requests
+     set status = 'rejected',
+         review_note = v_note,
+         reviewed_by = auth.uid(),
+         reviewed_at = now(),
+         updated_at = now()
+   where id = p_request_id
+   returning * into v_req;
+
+  return v_req;
+end;
+$$;
+
+grant execute on function public.reject_organization_signup_request(uuid, text) to authenticated;
