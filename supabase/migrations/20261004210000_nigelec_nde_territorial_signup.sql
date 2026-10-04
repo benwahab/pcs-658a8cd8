@@ -36,7 +36,9 @@ as $$
     left join public.communes c on c.id=r.commune_id
    where private.has_role('admin')
    order by r.created_at desc;
-$$;
+$;
+
+grant execute on function public.list_organization_signup_requests() to authenticated;
 
 create or replace function public.approve_organization_signup_request(p_request_id uuid, p_note text default null)
 returns public.organization_signup_requests
