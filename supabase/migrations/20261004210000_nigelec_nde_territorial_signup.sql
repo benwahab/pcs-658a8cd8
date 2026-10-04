@@ -26,7 +26,7 @@ returns table(
 )
 language sql stable security definer
 set search_path to 'public','private'
-as $$
+as $function$
   select r.id,r.user_id,r.organization_id,o.name,o.code,r.email,r.full_name,r.status,
          r.review_note,r.reviewed_by,r.reviewed_at,r.created_at,r.structure_name,
          r.region_id,reg.name,r.commune_id,c.name,r.phone
@@ -36,7 +36,7 @@ as $$
     left join public.communes c on c.id=r.commune_id
    where private.has_role('admin')
    order by r.created_at desc;
-$;
+$function$;
 
 grant execute on function public.list_organization_signup_requests() to authenticated;
 
