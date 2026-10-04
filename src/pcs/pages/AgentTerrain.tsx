@@ -279,7 +279,6 @@ export default function AgentTerrain(){
         </span>
        </div>
        <h1>{m.reports?.title}</h1>
-       <p>{m.reports?.description}</p>
        <div className="missionLocation">
         <span>⌖</span>
         <div>
