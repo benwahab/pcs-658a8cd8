@@ -102,8 +102,16 @@ export async function submitCitizenReport(
     { body },
   );
 
-  if (error) throw error;
-  if (data?.error) throw new Error(String(data.error));
+  if (error) {
+    throw new Error("L’envoi du signalement a échoué. Vérifiez votre connexion et réessayez.");
+  }
+  if (data?.error) {
+    // Ne pas exposer au citoyen les messages techniques potentiellement en anglais.
+    throw new Error("Le signalement n’a pas pu être enregistré. Vérifiez les informations et les médias, puis réessayez.");
+  }
+  if (!data || data.success !== true || typeof data.reference_code !== "string") {
+    throw new Error("Le serveur a renvoyé une réponse inattendue. Votre signalement n’est pas confirmé.");
+  }
 
   return data as CitizenReportResult;
 }
