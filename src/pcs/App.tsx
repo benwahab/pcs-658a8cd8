@@ -134,6 +134,7 @@ function ConnectionStatus() {
 
 function App({ children }: { children: ReactNode }) {
   const [showSplash, setShowSplash] = useState(true);
+  const [isConnecting, setIsConnecting] = useState(true);
   const logoStyle = {
     "--pcs-logo-url": `url("${pcsLogoUrl}")`,
   } as CSSProperties;
@@ -167,6 +168,7 @@ function App({ children }: { children: ReactNode }) {
           if (response.ok) {
             window.clearTimeout(requestTimeout);
             if (!active) return;
+            setIsConnecting(false);
             hideTimer = window.setTimeout(() => {
               if (active) setShowSplash(false);
             }, 5000);
@@ -264,13 +266,12 @@ function App({ children }: { children: ReactNode }) {
       {showSplash && (
         <>
           <style>{`
-            @keyframes pcsSplashFadeOut {
-              from { opacity: 1; }
-              to { opacity: 0; visibility: hidden; }
-            }
             @keyframes pcsSplashLogoIn {
               from { opacity: 0; transform: scale(.96); }
               to { opacity: 1; transform: scale(1); }
+            }
+            @keyframes pcsSplashSpinner {
+              to { transform: rotate(360deg); }
             }
             .pcsSplash {
               position: fixed;
@@ -279,7 +280,12 @@ function App({ children }: { children: ReactNode }) {
               display: grid;
               place-items: center;
               background: #fff;
-              animation: pcsSplashFadeOut .28s ease-out 4.72s forwards;
+            }
+            .pcsSplashContent {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 28px;
             }
             .pcsSplash img {
               display: block;
@@ -288,12 +294,25 @@ function App({ children }: { children: ReactNode }) {
               object-fit: contain;
               animation: pcsSplashLogoIn .45s ease-out both;
             }
+            .pcsSplashSpinner {
+              width: 34px;
+              height: 34px;
+              box-sizing: border-box;
+              border: 3px solid #e9e5f2;
+              border-top-color: #4e3a7f;
+              border-right-color: #7964ad;
+              border-radius: 50%;
+              animation: pcsSplashSpinner .85s linear infinite;
+            }
             @media (prefers-reduced-motion: reduce) {
-              .pcsSplash, .pcsSplash img { animation: none; }
+              .pcsSplash img, .pcsSplashSpinner { animation: none; }
             }
           `}</style>
-          <div className="pcsSplash" role="status" aria-label="Chargement de PCS">
-            <img src={pcsLogoUrl} alt="PCS — Plateforme de Citoyenneté et de Signalement" />
+          <div className="pcsSplash" role="status" aria-label={isConnecting ? "Recherche de connexion" : "Chargement de PCS"}>
+            <div className="pcsSplashContent">
+              <img src={pcsLogoUrl} alt="PCS — Plateforme de Citoyenneté et de Signalement" />
+              {isConnecting && <div className="pcsSplashSpinner" aria-hidden="true" />}
+            </div>
           </div>
         </>
       )}
