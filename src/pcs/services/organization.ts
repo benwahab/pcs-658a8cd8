@@ -86,9 +86,10 @@ export async function declineOrganizationTransfer(id:string,note:string){
   const {data,error}=await supabase.rpc("organization_decline_transfer",{p_transfer_id:id,p_note:note});
   if(error) throw error; return data;
 }
-export async function listOrganizationUnits(organizationId:string){
+export async function listOrganizationUnits(organizationId:string,centralUnitId?:string|null){
   if(!supabase) throw new Error("Supabase non configuré.");
-  const {data,error}=await supabase.from("organization_units").select("id,name,code,unit_type,region_id,is_active").eq("organization_id",organizationId).eq("is_active",true).order("unit_type").order("name");
+  let query=supabase.from("organization_units").select("id,name,code,unit_type,region_id,commune_id,parent_unit_id,is_active").eq("organization_id",organizationId).eq("is_active",true).order("unit_type").order("name");
+  if(centralUnitId) query=query.eq("parent_unit_id",centralUnitId);
   if(error) throw error; return data??[];
 }
 export async function assignOrganizationAgency(transferId:string,unitId:string,note?:string){
