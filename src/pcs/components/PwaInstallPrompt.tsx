@@ -105,7 +105,7 @@ export default function PwaInstallPrompt() {
 
   function dismiss() {
     setVisible(false);
-    localStorage.setItem(DISMISSED_KEY, "true");
+    sessionStorage.setItem(DISMISSED_KEY, "true");
   }
 
   if (!visible || installed || !promptAvailable) return null;
