@@ -9,9 +9,36 @@ import BrandLogo from "./components/BrandLogo";
 
 export function Shell({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
+  const [feedHeaderHidden, setFeedHeaderHidden] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const isMairie = location.pathname === "/mairie";
+
+  useEffect(() => {
+    if (location.pathname !== "/") {
+      setFeedHeaderHidden(false);
+      return;
+    }
+
+    const feed = document.querySelector<HTMLElement>(".citizenFeed");
+    if (!feed) return;
+
+    let lastScrollTop = feed.scrollTop;
+    const onFeedScroll = () => {
+      const current = Math.max(0, feed.scrollTop);
+      if (current <= 8) {
+        setFeedHeaderHidden(false);
+      } else if (current > lastScrollTop + 2) {
+        setFeedHeaderHidden(true);
+      } else if (current < lastScrollTop - 2) {
+        setFeedHeaderHidden(false);
+      }
+      lastScrollTop = current;
+    };
+
+    feed.addEventListener("scroll", onFeedScroll, { passive: true });
+    return () => feed.removeEventListener("scroll", onFeedScroll);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -41,7 +68,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app">
-      <header>
+      <header className={"feedImmersiveHeader" + (feedHeaderHidden ? " is-hidden" : "")}>
         <Link className="brand" to="/">
           <BrandLogo className="brandLogo" />
         </Link>
