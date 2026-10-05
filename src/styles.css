@@ -238,7 +238,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .orgSpace .button.primary{background:var(--org-accent);border-color:var(--org-accent)}
 
 /* Médias en défilement (photos puis vidéo) */
-.mediaCarousel{display:flex;gap:10px;overflow-x:hidden;touch-action:pan-y pinch-zoom;overscroll-behavior-x:contain;border-radius:14px;margin:12px 0;scrollbar-width:none;position:relative}
+.mediaCarousel{display:flex;gap:10px;overflow-x:visible;touch-action:pan-y pinch-zoom;border-radius:14px;margin:12px 0;scrollbar-width:none;position:relative}
 .mediaCarousel::-webkit-scrollbar{display:none}
 .mediaCarouselItem{position:relative;flex:0 0 100%;scroll-snap-align:center;border-radius:14px;overflow:hidden;background:#0000001a}
 .mediaCarouselItem img,.mediaCarouselItem video{display:block;width:100%;height:auto;max-height:68vh;object-fit:contain;object-position:center;background:#050807}.mediaCarouselItem{display:flex;align-items:center;justify-content:center;min-height:0}.mediaCarouselItem video{aspect-ratio:auto;width:100%;min-width:100%;max-width:100%;flex:0 0 100%;align-self:stretch}
