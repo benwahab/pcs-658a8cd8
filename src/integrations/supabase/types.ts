@@ -2148,8 +2148,8 @@ export type Database = {
       consume_citizen_report_rate_limit: {
         Args: {
           p_key_hash: string
-          p_max_events: number
-          p_window_seconds: number
+          p_max_events?: number
+          p_window_seconds?: number
         }
         Returns: boolean
       }
