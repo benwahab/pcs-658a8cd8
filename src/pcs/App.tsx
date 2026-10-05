@@ -276,7 +276,7 @@ function App({ children }: { children: ReactNode }) {
             setIsConnecting(false);
             hideTimer = window.setTimeout(() => {
               if (active) setShowSplash(false);
-            }, 350);
+            }, 5000);
             return;
           }
           if (active) setIsConnecting(true);
