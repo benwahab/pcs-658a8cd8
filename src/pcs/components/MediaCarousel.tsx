@@ -126,13 +126,13 @@ export function MediaCarousel({ media }: { media: MediaItem[] }) {
   return (
     <div
       className="mediaCarousel"
-      onTouchStart={(event) => {
+      onTouchStartCapture={(event) => {
         const touch = event.changedTouches[0];
         if (!touch) return;
         touchStart.current = { x: touch.clientX, y: touch.clientY };
         swipeHandled.current = false;
       }}
-      onTouchEnd={(event) => {
+      onTouchEndCapture={(event) => {
         const startPoint = touchStart.current;
         touchStart.current = null;
         if (!startPoint || swipeHandled.current) return;
