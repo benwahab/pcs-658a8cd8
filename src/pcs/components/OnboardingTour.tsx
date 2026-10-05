@@ -65,6 +65,9 @@ export default function OnboardingTour(){
 
  useEffect(()=>{
   if(startedRef.current||localStorage.getItem(STORAGE_KEY)==="true")return;
+  // Never start the tour while the PCS splash is visible.
+  // The splash marks the DOM when its fixed 5000 ms display has completed.
+  if(document.documentElement.dataset.pcsSplashReady !== "true")return;
   const isCitizenRoute=["/","/signaler","/mes-signalements","/notifications"].includes(location.pathname)||location.pathname.startsWith("/signalement/");
   if(!isCitizenRoute)return;
 
@@ -72,8 +75,11 @@ export default function OnboardingTour(){
   const timer=window.setInterval(()=>{
    if(cancelled||startedRef.current)return;
    const configured=stepsFor(location.pathname);
+   // Start only when every configured tour target is actually rendered.
+   // Starting with a partial list makes Driver.js treat the first available
+   // element as the last step and can show "Terminer" immediately.
    const available=configured.filter(s=>typeof s.element==="string"&&visibleElement(s.element as string));
-   if(!available.length)return;
+   if(available.length !== configured.length)return;
    startedRef.current=true;
    window.clearInterval(timer);
 
@@ -125,9 +131,16 @@ export default function OnboardingTour(){
    instance.drive();
   },120);
 
+  const onSplashCompleted=()=>{
+   // The splash can finish after this component mounted; retry immediately.
+   startedRef.current=false;
+  };
+  window.addEventListener("pcs-splash-completed",onSplashCompleted);
+
   return()=>{
    cancelled=true;
    window.clearInterval(timer);
+   window.removeEventListener("pcs-splash-completed",onSplashCompleted);
    if(driverRef.current?.isActive())driverRef.current.destroy();
    driverRef.current=null;
   };
