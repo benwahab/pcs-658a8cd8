@@ -248,7 +248,7 @@ function App({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return;
 
     // Keep the locally bundled logo visible until the PCS origin is reachable.
-    // Only begin the 5-second minimum display period after a successful probe.
+    // Dismiss the web splash promptly once the app origin is reachable; the OS/PWA splash has already appeared.
     let active = true;
     let retryTimer: number | undefined;
     let hideTimer: number | undefined;
@@ -276,7 +276,7 @@ function App({ children }: { children: ReactNode }) {
             setIsConnecting(false);
             hideTimer = window.setTimeout(() => {
               if (active) setShowSplash(false);
-            }, 5000);
+            }, 350);
             return;
           }
           if (active) setIsConnecting(true);
