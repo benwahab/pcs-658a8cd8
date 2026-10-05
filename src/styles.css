@@ -1339,6 +1339,10 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 }
 
 
+/* Petit espacement entre la jauge vidéo et la rangée d'actions, sans déplacer le reste. */
+.citizenSlideTrack .citizenReportInteractions {
+  transform: translateY(-10px);
+}
 /* PCS: seul le groupe des deux boutons est repositionné. */
 .citizenSlideTrack .citizenReportInteractions {
   position: absolute !important;
