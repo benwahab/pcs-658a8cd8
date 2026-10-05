@@ -1201,6 +1201,10 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .citizenPublicComments textarea::placeholder{color:#64748b}
 .citizenReportInteractions>[role=status]{margin:0;padding:8px 11px;border-radius:10px;background:rgba(15,23,42,.92);color:#f8fafc;font-size:.82rem;line-height:1.4;overflow-wrap:anywhere}
 .citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){max-height:78%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+/* Garder libres les commandes natives du lecteur vidéo en bas de l’écran :
+   le panneau d’interactions s’arrête au-dessus de la zone son/menu. */
+.citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){padding-bottom:96px}
+@media(max-width:700px){.citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){padding-bottom:88px}}
 @media(max-width:700px){
  .citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){max-height:82%;padding:54px 12px 16px;gap:6px}
  .citizenReportInteractions{gap:7px;margin-top:5px}
