@@ -14,7 +14,7 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/__l5e/assets-v1/426a93c6-9d8d-49ef-b952-fd7bf00ae199/pcs-logo.png",
+      "src": "/assets/pcs-logo.jpg",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
