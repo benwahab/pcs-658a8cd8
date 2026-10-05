@@ -1339,48 +1339,34 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 }
 
 
-/* PCS: aligner uniquement les deux actions sur la ligne du quartier. */
-.citizenSlideTrack .slideOverlay:has(.citizenReportInteractions) {
-  padding-bottom: 20px !important;
-}
+/* PCS: seul le groupe des deux boutons est repositionné. */
 .citizenSlideTrack .citizenReportInteractions {
   position: absolute !important;
   left: 12px !important;
   right: 12px !important;
-  bottom: 82px !important;
+  bottom: 0 !important;
   width: auto !important;
   margin: 0 !important;
   z-index: 5 !important;
-  pointer-events: none;
 }
 .citizenSlideTrack .citizenReportInteractions .feedActions {
   display: flex !important;
   justify-content: flex-end !important;
   align-items: center !important;
   gap: 6px !important;
-  pointer-events: auto;
 }
 .citizenSlideTrack .citizenReportInteractions .feedActions button {
   flex: 0 1 auto !important;
-  min-height: 34px !important;
-  padding: 6px 10px !important;
-  font-size: .75rem !important;
+  min-height: 32px !important;
+  padding: 5px 8px !important;
+  font-size: .72rem !important;
   line-height: 1.1 !important;
   white-space: nowrap !important;
 }
-.citizenSlideTrack .citizenReportInteractions .citizenPublicComments,
-.citizenSlideTrack .citizenReportInteractions > [role="status"] {
-  pointer-events: auto;
-}
 @media (max-width: 700px) {
   .citizenSlideTrack .citizenReportInteractions {
-    bottom: 82px !important;
+    bottom: 0 !important;
     left: 12px !important;
     right: 12px !important;
-  }
-  .citizenSlideTrack .citizenReportInteractions .feedActions button {
-    min-height: 32px !important;
-    padding: 5px 8px !important;
-    font-size: .72rem !important;
   }
 }
