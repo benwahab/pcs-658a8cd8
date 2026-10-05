@@ -100,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", href: "/assets/pcs-logo.jpg", type: "image/jpeg" },
-      { rel: "apple-touch-icon", href: "/icons/icon-192.jpg" },
+      { rel: "apple-touch-icon", href: "/assets/pcs-logo.jpg" },
     ],
   }),
   shellComponent: RootShell,
