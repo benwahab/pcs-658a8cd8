@@ -98,6 +98,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
 export function MediaCarousel({ media }: { media: MediaItem[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const swipeHandled = useRef(false);
 
   useEffect(() => {
     setActiveIndex(0);
@@ -127,16 +128,21 @@ export function MediaCarousel({ media }: { media: MediaItem[] }) {
       className="mediaCarousel"
       onTouchStart={(event) => {
         const touch = event.changedTouches[0];
+        if (!touch) return;
         touchStart.current = { x: touch.clientX, y: touch.clientY };
+        swipeHandled.current = false;
       }}
       onTouchEnd={(event) => {
         const startPoint = touchStart.current;
         touchStart.current = null;
-        if (!startPoint) return;
+        if (!startPoint || swipeHandled.current) return;
         const touch = event.changedTouches[0];
+        if (!touch) return;
         const dx = touch.clientX - startPoint.x;
         const dy = touch.clientY - startPoint.y;
-        if (Math.abs(dx) < 45 || Math.abs(dx) <= Math.abs(dy)) return;
+        // Accept deliberate short horizontal swipes, but leave vertical page scrolling alone.
+        if (Math.abs(dx) < 28 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
+        swipeHandled.current = true;
         changeSlide(dx < 0 ? 1 : -1);
       }}
       aria-label="Médias du signalement : glisser horizontalement pour changer de média"
