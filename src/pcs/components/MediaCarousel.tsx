@@ -40,7 +40,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
 
     const observer = new IntersectionObserver(
       ([entry]) => setActive(Boolean(entry?.isIntersecting)),
-      { rootMargin: "180px 0px", threshold: 0.35 },
+      { rootMargin: "320px 0px", threshold: 0.2 },
     );
 
     observer.observe(video);
@@ -58,7 +58,11 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     document.addEventListener("visibilitychange", onVisibility);
 
     if (active) {
-      video.preload = "metadata";
+      // Prepare the visible video and allow it to buffer before playback.
+      video.preload = "auto";
+      if (video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
+        video.load();
+      }
 
       if (autoplayAllowed) {
         if (activeFeedVideo && activeFeedVideo !== video) {
@@ -89,7 +93,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       playsInline
       muted
       loop
-      preload="none"
+      preload="auto"
       aria-label="Vidéo du signalement"
     />
   );
