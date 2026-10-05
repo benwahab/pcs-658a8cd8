@@ -241,7 +241,7 @@ function App({ children }: { children: ReactNode }) {
   const [showSplash, setShowSplash] = useState(true);
   const [isConnecting, setIsConnecting] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
   const logoStyle = {
-    "--pcs-logo-url": 'url("/assets/pcs-logo.jpg")',
+    "--pcs-logo-url": 'url("/__l5e/assets-v1/426a93c6-9d8d-49ef-b952-fd7bf00ae199/pcs-logo.png")',
   } as CSSProperties;
 
   useEffect(() => {
