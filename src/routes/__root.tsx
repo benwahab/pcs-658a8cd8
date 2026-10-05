@@ -128,6 +128,23 @@ function RootComponent() {
 
   // PWA service worker (production only) + splash removal, as in PCS main.tsx.
   useEffect(() => {
+    // Recover from stale deployment chunks (e.g. "Failed to fetch dynamically imported module").
+    // Reload at most once per 30 seconds to avoid a reload loop when the network is unavailable.
+    const recoverFromChunkLoadError = (event: Event) => {
+      event.preventDefault();
+      try {
+        const key = "pcs-chunk-recovery-at";
+        const previous = Number(sessionStorage.getItem(key) ?? "0");
+        if (Date.now() - previous > 30_000) {
+          sessionStorage.setItem(key, String(Date.now()));
+          window.location.reload();
+        }
+      } catch {
+        // Storage may be disabled; keep the error contained without crashing the shell.
+      }
+    };
+    window.addEventListener("vite:preloadError", recoverFromChunkLoadError);
+
     if ("serviceWorker" in navigator && import.meta.env.PROD) {
       navigator.serviceWorker.register("/sw.js").catch((error) => {
         console.error("PCS service worker registration failed:", error);
@@ -136,7 +153,10 @@ function RootComponent() {
     const splash = document.getElementById("pcs-splash");
     splash?.classList.add("hidden");
     const t = window.setTimeout(() => splash?.remove(), 350);
-    return () => window.clearTimeout(t);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("vite:preloadError", recoverFromChunkLoadError);
+    };
   }, []);
 
   return (
