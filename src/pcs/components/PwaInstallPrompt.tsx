@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 const ONBOARDING_KEY = "pcs_onboarding_v1_completed";
-const DISMISSED_KEY = "pcs_pwa_install_dismissed_session_v1";
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -40,7 +39,6 @@ export default function PwaInstallPrompt() {
 
     const maybeShowPrompt = () => {
       if (checkInstalled()) return;
-      if (sessionStorage.getItem(DISMISSED_KEY) === "true") return;
       if (!window.__pcsInstallPrompt) return;
       if (localStorage.getItem(ONBOARDING_KEY) === "true") setVisible(true);
     };
@@ -96,7 +94,6 @@ export default function PwaInstallPrompt() {
       setPromptAvailable(false);
       if (choice.outcome === "accepted") {
         setVisible(false);
-        sessionStorage.setItem(DISMISSED_KEY, "true");
       }
     } catch {
       setVisible(false);
@@ -105,7 +102,6 @@ export default function PwaInstallPrompt() {
 
   function dismiss() {
     setVisible(false);
-    sessionStorage.setItem(DISMISSED_KEY, "true");
   }
 
   if (!visible || installed || !promptAvailable) return null;
