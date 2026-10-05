@@ -275,7 +275,11 @@ function App({ children }: { children: ReactNode }) {
             if (!active) return;
             setIsConnecting(false);
             hideTimer = window.setTimeout(() => {
-              if (active) setShowSplash(false);
+              if (active) {
+                setShowSplash(false);
+                document.documentElement.dataset.pcsSplashReady = "true";
+                window.dispatchEvent(new Event("pcs-splash-completed"));
+              }
             }, 5000);
             return;
           }
