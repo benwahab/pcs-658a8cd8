@@ -418,7 +418,7 @@ function App({ children }: { children: ReactNode }) {
           `}</style>
           <div className="pcsSplash" role="status" aria-label={isConnecting ? "Recherche de connexion" : "Chargement de PCS"}>
             <div className="pcsSplashContent">
-              <img src="/icons/icon-512.svg" alt="PCS — Plateforme de Citoyenneté et de Signalement" />
+              <img src="/assets/pcs-logo.jpg" alt="PCS — Plateforme de Citoyenneté et de Signalement" />
               {isConnecting && <div className="pcsSplashSpinner" aria-hidden="true" />}
             </div>
           </div>
