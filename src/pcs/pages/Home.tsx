@@ -13,6 +13,7 @@ import type { PublicReport } from "../types";
 import { statusLabels } from "../types";
 import { createReportMediaUrl } from "../services/media";
 import BrandLogo from "../components/BrandLogo";
+import introArtAsset from "@/assets/pcs-hero.webp.asset.json";
 import { MediaCarousel } from "../components/MediaCarousel";
 
 export default function Home() {
@@ -150,7 +151,12 @@ export default function Home() {
       </div>
 
       <article className="citizenSlide citizenSlideIntro">
-        <div className="slideShade" />
+        <div
+          className="introArt"
+          aria-hidden="true"
+          style={{ backgroundImage: `url(${introArtAsset.url})` }}
+        />
+        <div className="introScrim" aria-hidden="true" />
         <div className="slideContent">
           <p className="eyebrow feedEyebrow">PLATEFORME CITOYENNE</p>
           <h1>
