@@ -1227,6 +1227,23 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 }
 
 
+/* PCS — les photos du flux doivent, comme les vidéos, remplir tout l'écran.
+   Aucun mode contain ne doit laisser de bandes latérales. */
+.citizenSlideTrack .mediaCarouselItem > img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:100%!important;
+  min-height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  object-position:center 44%!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+
 /* Accueil citoyen : la navigation globale se superpose au flux et se masque
    pendant le balayage vers les vidéos. Elle revient en verre translucide au retour. */
 .app:has(.citizenFeed) > header.feedImmersiveHeader {
