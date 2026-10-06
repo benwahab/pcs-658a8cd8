@@ -130,8 +130,12 @@ export default function Home() {
         hintReturnTimer = window.setTimeout(() => {
           if (!hintCancelled) {
             feed.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+            window.setTimeout(() => {
+              hinting = false;
+            }, 420);
+          } else {
+            hinting = false;
           }
-          hinting = false;
         }, 520);
       }, 900);
     }
@@ -141,6 +145,16 @@ export default function Home() {
 
     const onScroll = () => {
       const current = Math.max(0, feed.scrollTop);
+
+      // The onboarding hint is only a visual preview. Keep the navigation in
+      // its normal top state while the preview moves the feed.
+      if (hinting) {
+        setHeaderScrolled(false);
+        setHeaderHidden(false);
+        lastScrollTop = current;
+        return;
+      }
+
       setHeaderScrolled(current > 8);
 
       if (current <= 8) {
