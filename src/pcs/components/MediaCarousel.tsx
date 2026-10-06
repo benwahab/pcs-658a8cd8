@@ -156,6 +156,7 @@ export function MediaCarousel({ media }: { media: MediaItem[] }) {
           <LazyFeedVideo src={item.url} poster={poster} />
         ) : (
           <img
+            className="citizenFeedMediaImage"
             src={item.url}
             alt="Pièce jointe du signalement"
             decoding="async"
