@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 const ONBOARDING_KEY = "pcs_onboarding_v1_completed";
-const PENDING_PATH_KEY = "pcs-pwa-pending-path-v1";
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -89,16 +88,12 @@ export default function PwaInstallPrompt() {
     }
 
     try {
-      const pendingPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-      localStorage.setItem(PENDING_PATH_KEY, pendingPath);
       await promptEvent.prompt();
       const choice = await promptEvent.userChoice;
       window.__pcsInstallPrompt = undefined;
       setPromptAvailable(false);
       if (choice.outcome === "accepted") {
         setVisible(false);
-      } else {
-        localStorage.removeItem(PENDING_PATH_KEY);
       }
     } catch {
       setVisible(false);
@@ -106,7 +101,6 @@ export default function PwaInstallPrompt() {
   }
 
   function dismiss() {
-    localStorage.removeItem(PENDING_PATH_KEY);
     setVisible(false);
   }
 
