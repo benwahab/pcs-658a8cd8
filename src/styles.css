@@ -1595,3 +1595,56 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
     transform:none;
   }
 }
+
+/* PCS — finition vidéo citoyenne inspirée du visuel vertical de référence */
+.citizenSlideTrack .mediaCarouselItem > video{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:100%!important;
+  min-height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  background:#030605!important;
+  box-sizing:border-box!important;
+}
+
+/* Une couverture vidéo immersive : aucun bandeau noir, sans déformer l'image. */
+.citizenSlideTrack .mediaCarouselItem{
+  background:#030605!important;
+}
+.citizenSlideTrack .slideContent::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 24%,rgba(0,0,0,.08) 52%,rgba(0,0,0,.78) 100%),
+    linear-gradient(90deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 38%,rgba(0,0,0,.08) 100%);
+}
+.citizenSlideTrack .slideOverlay{
+  z-index:2!important;
+}
+.citizenSlideTrack .mediaCount{
+  z-index:3!important;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(8,8,12,.58);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.citizenSlideTrack .mediaCarouselNav{
+  z-index:4!important;
+  background:rgba(8,8,12,.42)!important;
+  border-color:rgba(255,255,255,.28)!important;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+@media(max-width:700px){
+  .citizenSlideTrack .mediaCarouselItem > video{
+    object-position:center center!important;
+  }
+}
+
