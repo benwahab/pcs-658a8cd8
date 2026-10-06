@@ -1204,7 +1204,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){padding-bottom:96px}
 @media(max-width:700px){.citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){padding-bottom:88px}}
 @media(max-width:700px){
- .citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){max-height:82%;inset:auto 0 40px;padding:54px 12px 16px;gap:6px}
+ .citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){max-height:82%;inset:auto 0 46px;padding:54px 12px 16px;gap:6px}
  .citizenReportInteractions{gap:7px;margin-top:5px}
  .citizenReportInteractions .feedActions button{flex:1 1 auto;min-width:0;padding:10px 12px;font-size:.82rem}
  .citizenPublicComments{max-height:32dvh;padding:9px;border-radius:13px}
