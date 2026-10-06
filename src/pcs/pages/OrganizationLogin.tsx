@@ -255,7 +255,7 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
           setShowPassword(false);
         }}
       >
-        {signup ? "J’ai déjà un compte" : `Créer un compte ${space.label}`}
+        {signup ? "J’ai déjà un compte" : `Demander la création d’un compte ${space.label}`}
       </button>}
 
       <Link className="button" to="/">
