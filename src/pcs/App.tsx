@@ -240,15 +240,10 @@ function ConnectionStatus() {
 function App({ children }: { children: ReactNode }) {
   const [showSplash, setShowSplash] = useState(true);
   const [isConnecting, setIsConnecting] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
-  const logoStyle = {
-    "--pcs-logo-url": 'url("/__l5e/assets-v1/426a93c6-9d8d-49ef-b952-fd7bf00ae199/pcs-logo.png")',
-  } as CSSProperties;
-
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Keep the locally bundled logo visible until the PCS origin is reachable.
-    // Dismiss the web splash promptly once the app origin is reachable; the OS/PWA splash has already appeared.
+    // Dismiss the web splash after the PCS origin is reachable; the OS/PWA splash has already appeared.
     let active = true;
     let retryTimer: number | undefined;
     let hideTimer: number | undefined;
@@ -361,26 +356,21 @@ function App({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div style={logoStyle}>
-      <Shell>
-        {children}
-        <OnboardingTour />
-        <PwaInstallPrompt />
-        <ConnectionStatus />
-        {!isSupabaseConfigured && (
+    <Shell>
+      {children}
+      <OnboardingTour />
+      <PwaInstallPrompt />
+      <ConnectionStatus />
+      {!isSupabaseConfigured && (
           <div className="dev-banner">
             Configuration requise : renseignez les variables VITE_SUPABASE_*
             avant déploiement.
           </div>
-        )}
-      </Shell>
-      {showSplash && (
+      )}
+    </Shell>
+    {showSplash && (
         <>
           <style>{`
-            @keyframes pcsSplashLogoIn {
-              from { opacity: 0; transform: scale(.96); }
-              to { opacity: 1; transform: scale(1); }
-            }
             @keyframes pcsSplashSpinner {
               to { transform: rotate(360deg); }
             }
@@ -406,8 +396,6 @@ function App({ children }: { children: ReactNode }) {
               width: min(68vw, 300px);
               max-height: 42vh;
               object-fit: contain;
-              opacity: 1;
-              transform: none;
             }
             .pcsSplashSpinner {
               width: 34px;
@@ -425,7 +413,7 @@ function App({ children }: { children: ReactNode }) {
           `}</style>
           <div className="pcsSplash" role="status" aria-label={isConnecting ? "Recherche de connexion" : "Chargement de PCS"}>
             <div className="pcsSplashContent">
-              <img src="/__l5e/assets-v1/426a93c6-9d8d-49ef-b952-fd7bf00ae199/pcs-logo.png" alt="PCS — Plateforme de Citoyenneté et de Signalement" />
+              <img src="/icons/pcs-official.svg?v=5" alt="PCS — Plateforme de Citoyenneté et de Signalement" />
               {isConnecting && <div className="pcsSplashSpinner" aria-hidden="true" />}
             </div>
           </div>
