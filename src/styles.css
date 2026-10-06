@@ -1089,7 +1089,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   box-sizing:border-box;
   padding:76px 24px 28px;
   color:#fff;
-  background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 18%,rgba(0,0,0,.78) 58%,rgba(0,0,0,.91) 100%);
+  background:transparent;
   text-shadow:0 1px 4px rgba(0,0,0,.7);
 }
 .citizenSlideTrack .slideOverlay .feedEyebrow{
