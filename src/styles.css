@@ -1396,6 +1396,28 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   }
 }
 
+
+/* PCS — média photo citoyen : le fichier image doit réellement recouvrir le viewport,
+   indépendamment des dimensions intrinsèques de l'élément parent. */
+.citizenSlideTrack .mediaCarouselItem > img.citizenFeedMediaImage{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-width:100vw!important;
+  min-height:100dvh!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+}
+
 /* PCS — accueil citoyen : image officielle fournie pour le premier écran. */
 .citizenSlideIntro{position:relative;isolation:isolate;overflow:hidden;background:#08120f}
 .citizenSlideIntro .introArt{position:absolute;inset:0;z-index:0;background-color:#08120f;background-size:cover;background-position:center center;background-repeat:no-repeat}
