@@ -408,6 +408,9 @@ function App({ children }: { children: ReactNode }) {
               object-fit: contain;
               opacity: 1;
               transform: none;
+              /* Le PNG fourni contient une marge blanche rectangulaire autour de
+                 la carte blanche arrondie. On la masque sans toucher au logo. */
+              clip-path: inset(2.5% 4% 2.5% 4% round 9%);
             }
             .pcsSplashSpinner {
               width: 34px;
