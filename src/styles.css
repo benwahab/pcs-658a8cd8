@@ -1379,7 +1379,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .citizenSlideIntro .introScrim{position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,.04) 55%,rgba(0,0,0,.08) 100%),linear-gradient(180deg,rgba(0,0,0,.04) 0%,rgba(0,0,0,.08) 42%,rgba(2,8,5,.82) 76%,rgba(2,8,5,.96) 100%)}
 .citizenSlideIntro .slideContent{position:relative;z-index:2}
 @media(max-width:700px){
-.citizenSlideIntro .introArt{background-size:cover;background-position:center center}
+.citizenSlideIntro .introArt{background-size:contain;background-position:center center}
 .citizenSlideIntro .introScrim{background:linear-gradient(180deg,rgba(0,0,0,.02) 0%,rgba(0,0,0,.04) 34%,rgba(2,8,5,.66) 62%,rgba(2,8,5,.96) 100%)}
 }
 /* PCS accueil : utiliser l'image citoyenne fournie comme véritable arrière-plan. */
