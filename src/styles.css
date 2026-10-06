@@ -1075,6 +1075,12 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .citizenSlideTrack .mediaCarouselPrev{left:12px}
 .citizenSlideTrack .mediaCarouselNext{right:12px}
 .citizenSlideTrack .mediaCount{top:78px;right:12px;z-index:3}
+
+/* L'overlay d'informations ne doit pas bloquer les gestes sur la vidéo.
+   Seules les interactions réellement cliquables restent interactives. */
+.citizenSlideTrack .slideOverlay{pointer-events:none}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions,
+.citizenSlideTrack .slideOverlay .citizenReportInteractions *{pointer-events:auto}
 .citizenSlideTrack .slideOverlay{
   position:absolute;
   z-index:2;
