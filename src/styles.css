@@ -1382,3 +1382,5 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .citizenSlideIntro .introArt{background-size:cover;background-position:center center}
 .citizenSlideIntro .introScrim{background:linear-gradient(180deg,rgba(0,0,0,.02) 0%,rgba(0,0,0,.04) 34%,rgba(2,8,5,.66) 62%,rgba(2,8,5,.96) 100%)}
 }
+/* PCS accueil : utiliser l'image citoyenne fournie comme véritable arrière-plan. */
+.citizenSlideIntro .introArt{background-image:url("/assets/pcs-home-background.jpg")!important}
