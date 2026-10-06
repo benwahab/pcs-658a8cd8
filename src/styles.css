@@ -1372,7 +1372,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   }
 }
 
-// ============= Citizen home intro slide — official PCS artwork background =============
+/* ============= Citizen home intro slide - official PCS artwork background ============= */
 .citizenSlideIntro .introArt{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;background-repeat:no-repeat}
 .citizenSlideIntro .introScrim{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(4,16,11,.06) 0%,rgba(4,16,11,.14) 40%,rgba(3,11,8,.78) 72%,rgba(2,8,5,.93) 100%)}
 @media(max-width:700px){
