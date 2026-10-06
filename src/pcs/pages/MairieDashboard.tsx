@@ -8,7 +8,7 @@ import BrandLogo from "../components/BrandLogo";
 const statusMeta:any={
  submitted:{label:"Envoyé",tone:"blue"},received:{label:"Reçu",tone:"slate"},
  verification:{label:"Vérification",tone:"amber"},in_progress:{label:"En traitement",tone:"violet"},
- resolved:{label:"Résolu",tone:"green"},rejected:{label:"Rejeté",tone:"red"}
+ resolved:{label:"Résolu",tone:"violet"},rejected:{label:"Rejeté",tone:"red"}
 };
 function formatDate(v:string){return new Date(v).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"});}
 function mapsUrl(r:any){return typeof r.latitude==="number"&&typeof r.longitude==="number"?`https://www.google.com/maps/search/?api=1&query=${r.latitude},${r.longitude}`:"#";}
