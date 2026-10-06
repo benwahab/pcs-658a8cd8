@@ -390,7 +390,10 @@ function App({ children }: { children: ReactNode }) {
               z-index: 99999;
               display: grid;
               place-items: center;
-              background: #fff;
+              /* PCS — écran de lancement : violet profond avec une touche de violet cristal. */
+              background:
+                radial-gradient(circle at 50% 42%, rgba(124, 92, 219, .42) 0%, rgba(124, 92, 219, .16) 28%, rgba(75, 0, 130, 0) 58%),
+                linear-gradient(145deg, #5b18a6 0%, #4b0082 48%, #32085f 100%);
             }
             .pcsSplashContent {
               display: flex;
@@ -410,9 +413,9 @@ function App({ children }: { children: ReactNode }) {
               width: 34px;
               height: 34px;
               box-sizing: border-box;
-              border: 3px solid #e9e5f2;
-              border-top-color: #4e3a7f;
-              border-right-color: #7964ad;
+              border: 3px solid rgba(255,255,255,.22);
+              border-top-color: #ffffff;
+              border-right-color: #d8c8ff;
               border-radius: 50%;
               animation: pcsSplashSpinner .85s linear infinite;
             }
