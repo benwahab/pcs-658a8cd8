@@ -1511,3 +1511,24 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .agentFeed .agentEmpty>span{
   color:#D3C5F5!important;
 }
+
+
+/* ===== PCS — finition accueil : violet plus lisible et état Accueil harmonisé =====
+ * L'état tactile/actif du lien Accueil ne doit plus reprendre l'ancien vert.
+ * Les textes violets de la page d'accueil utilisent un violet profond pour
+ * améliorer le contraste sans modifier l'image de fond.
+ */
+.app > header.feedImmersiveHeader nav a:hover,
+.app > header.feedImmersiveHeader nav a:focus-visible,
+.app > header.feedImmersiveHeader nav a:active{
+  color:#4E3A7F!important;
+}
+.app > header.feedImmersiveHeader nav a{
+  color:#3E2E68;
+}
+.citizenSlideIntro .feedEyebrow,
+.citizenSlideIntro .slideContent h1 strong,
+.citizenSlideIntro .slideContent h2 strong{
+  color:#3E2E68!important;
+  text-shadow:0 1px 2px rgba(255,255,255,.34);
+}
