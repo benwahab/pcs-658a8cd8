@@ -22,6 +22,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [headerHidden, setHeaderHidden] = useState(false);
   const [headerScrolled, setHeaderScrolled] = useState(false);
+  const [introFirstVisit, setIntroFirstVisit] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -69,6 +70,18 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reducedMotion) {
+      try {
+        if (window.localStorage.getItem("pcs-home-intro-animation-v1") !== "1") {
+          setIntroFirstVisit(true);
+          window.localStorage.setItem("pcs-home-intro-animation-v1", "1");
+        }
+      } catch {
+        setIntroFirstVisit(true);
+      }
+    }
+
     const feed = document.querySelector<HTMLElement>(".citizenFeed");
     if (!feed) return;
 
@@ -107,7 +120,6 @@ export default function Home() {
       }
     };
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let hintAlreadyShown = false;
     try {
       hintAlreadyShown = window.localStorage.getItem(hintStorageKey) === "1";
@@ -115,7 +127,7 @@ export default function Home() {
       hintAlreadyShown = false;
     }
 
-    if (!reducedMotion && !hintAlreadyShown) {
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && !hintAlreadyShown) {
       hintStartTimer = window.setTimeout(() => {
         if (hintCancelled || feed.scrollTop > 2) return;
 
@@ -137,7 +149,7 @@ export default function Home() {
             hinting = false;
           }
         }, 520);
-      }, 900);
+      }, 1350);
     }
     window.addEventListener("pcs-home-reset", resetHomePosition);
 
@@ -216,7 +228,7 @@ export default function Home() {
 
       </div>
 
-      <article className="citizenSlide citizenSlideIntro">
+      <article className={`citizenSlide citizenSlideIntro${introFirstVisit ? " introFirstVisit" : ""}`}>
         <div
           className="introArt"
           aria-hidden="true"
