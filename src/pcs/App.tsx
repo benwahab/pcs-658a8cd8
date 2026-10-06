@@ -392,8 +392,8 @@ function App({ children }: { children: ReactNode }) {
               place-items: center;
               /* PCS — écran de lancement : violet profond avec une touche de violet cristal. */
               background:
-                radial-gradient(circle at 50% 42%, rgba(124, 92, 219, .42) 0%, rgba(124, 92, 219, .16) 28%, rgba(75, 0, 130, 0) 58%),
-                linear-gradient(145deg, #5b18a6 0%, #4b0082 48%, #32085f 100%);
+                radial-gradient(circle at 50% 42%, rgba(91, 42, 140, .16) 0%, rgba(91, 42, 140, .07) 28%, rgba(20, 0, 36, 0) 58%),
+                linear-gradient(145deg, #17002b 0%, #120021 48%, #0b0015 100%);
             }
             .pcsSplashContent {
               display: flex;
@@ -408,9 +408,6 @@ function App({ children }: { children: ReactNode }) {
               object-fit: contain;
               opacity: 1;
               transform: none;
-              /* Le PNG fourni contient une marge blanche rectangulaire autour de
-                 la carte blanche arrondie. On la masque sans toucher au logo. */
-              clip-path: inset(2.5% 4% 2.5% 4% round 9%);
             }
             .pcsSplashSpinner {
               width: 34px;
