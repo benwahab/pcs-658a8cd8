@@ -1078,7 +1078,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .citizenSlideTrack .slideOverlay{
   position:absolute;
   z-index:2;
-  inset:auto 0 24px;
+  inset:auto 0 34px;
   display:flex;
   flex-direction:column;
   align-items:flex-start;
@@ -1139,7 +1139,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   .citizenSlideTrack .slideOverlay{
     gap:4px;
     max-height:62%;
-    inset:auto 0 24px;
+    inset:auto 0 34px;
     padding:64px 14px 24px;
   }
   .citizenSlideTrack .slideOverlay .feedEyebrow{font-size:.6rem!important}
