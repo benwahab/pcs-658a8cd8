@@ -16,6 +16,17 @@ import BrandLogo from "../components/BrandLogo";
 import introArtAsset from "@/assets/pcs-hero.webp.asset.json";
 import { MediaCarousel } from "../components/MediaCarousel";
 
+async function sharePublicReport(report: PublicReport, onFallbackMessage: (message: string) => void) {
+  if (!report.id) return;
+  const url = new URL(`/signalement/${encodeURIComponent(report.id)}`, window.location.origin).toString();
+  const shareData = { title: report.title ? `${report.title} — PCS` : "Signalement citoyen — PCS", text: "Consultez ce signalement citoyen sur PCS.", url };
+  try {
+    if (typeof navigator.share === "function" && (!navigator.canShare || navigator.canShare(shareData))) { await navigator.share(shareData); return; }
+    if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(url); onFallbackMessage("Lien du signalement copié."); return; }
+  } catch (error) { if (error instanceof DOMException && error.name === "AbortError") return; }
+  onFallbackMessage(`Lien du signalement : ${url}`);
+}
+
 export default function Home() {
   const [reports, setReports] = useState<PublicReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -581,6 +592,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
               </button>
               <button type="button" className="feedSecondary" onClick={() => setCommentsOpen((open) => !open)} aria-expanded={commentsOpen}>
                 Commenter ({publicComments.length})
+              </button>
+              <button type="button" className="feedSecondary" onClick={() => void sharePublicReport(report, setInteractionMessage)} aria-label={`Partager le signalement ${report.reference_code ?? ""}`}>
+                ↗ Partager
               </button>
             </div>
             {commentsOpen && (
