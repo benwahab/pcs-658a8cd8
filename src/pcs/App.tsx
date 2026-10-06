@@ -356,7 +356,8 @@ function App({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <Shell>
+    <>
+      <Shell>
       {children}
       <OnboardingTour />
       <PwaInstallPrompt />
@@ -367,8 +368,8 @@ function App({ children }: { children: ReactNode }) {
             avant déploiement.
           </div>
       )}
-    </Shell>
-    {showSplash && (
+      </Shell>
+      {showSplash && (
         <>
           <style>{`
             @keyframes pcsSplashSpinner {
@@ -418,8 +419,8 @@ function App({ children }: { children: ReactNode }) {
             </div>
           </div>
         </>
-      )}
-    </div>
+        )}
+    </>
   );
 }
 
