@@ -1559,3 +1559,39 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   }
   .pcsSplashLogoFrame img{border-radius:18px}
 }
+
+
+/* PCS accueil — entrée chorégraphiée du contenu textuel.
+   L'arrière-plan reste strictement immobile : seuls les textes et le CTA entrent. */
+@keyframes pcsHomeTextEnter{
+  from{
+    opacity:0;
+    transform:translateY(14px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+.citizenSlideIntro.introFirstVisit .feedEyebrow,
+.citizenSlideIntro.introFirstVisit .slideContent h1,
+.citizenSlideIntro.introFirstVisit .slideContent > p:not(.eyebrow),
+.citizenSlideIntro.introFirstVisit .feedActions{
+  opacity:0;
+  animation:pcsHomeTextEnter 280ms cubic-bezier(0,0,0.2,1) both;
+}
+.citizenSlideIntro.introFirstVisit .feedEyebrow{animation-delay:120ms}
+.citizenSlideIntro.introFirstVisit .slideContent h1{animation-delay:270ms}
+.citizenSlideIntro.introFirstVisit .slideContent > p:not(.eyebrow){animation-delay:420ms}
+.citizenSlideIntro.introFirstVisit .feedActions{animation-delay:570ms}
+
+@media(prefers-reduced-motion:reduce){
+  .citizenSlideIntro.introFirstVisit .feedEyebrow,
+  .citizenSlideIntro.introFirstVisit .slideContent h1,
+  .citizenSlideIntro.introFirstVisit .slideContent > p:not(.eyebrow),
+  .citizenSlideIntro.introFirstVisit .feedActions{
+    opacity:1;
+    animation:none;
+    transform:none;
+  }
+}
