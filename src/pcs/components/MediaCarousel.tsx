@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 type MediaItem = {
   id: string;
@@ -13,6 +13,34 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
   const [autoplayAllowed, setAutoplayAllowed] = useState(true);
+
+  useLayoutEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+
+    // Enforce the immersive feed geometry at runtime. This intentionally uses
+    // CSSOM !important so older/conflicting stylesheet rules cannot restore
+    // object-fit: contain and reintroduce black bars on mobile browsers.
+    const importantStyles: Record<string, string> = {
+      display: "block",
+      width: "100%",
+      height: "100%",
+      minWidth: "100%",
+      minHeight: "100%",
+      maxWidth: "none",
+      maxHeight: "none",
+      objectFit: "cover",
+      objectPosition: "center center",
+      margin: "0",
+      padding: "0",
+      boxSizing: "border-box",
+      backgroundColor: "#030605",
+    };
+
+    Object.entries(importantStyles).forEach(([property, value]) => {
+      video.style.setProperty(property, value, "important");
+    });
+  }, [src]);
 
   useEffect(() => {
     const connection = (
@@ -87,6 +115,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
   return (
     <video
       ref={ref}
+      className="citizenFeedMediaVideo"
       src={src}
       poster={poster}
       controls
