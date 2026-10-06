@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "@/pcs/router";
 import { supabase, isSupabaseConfigured } from "./lib/supabase";
 import OnboardingTour from "./components/OnboardingTour";
@@ -183,7 +183,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <main>{children}</main>
 
       <footer className="appFooter">PCS — Plateforme de Citoyenneté et de Signalement</footer>
-    </div>
+    </>
   );
 }
 
@@ -241,7 +241,6 @@ function ConnectionStatus() {
 function App({ children }: { children: ReactNode }) {
   const [showSplash, setShowSplash] = useState(true);
   const [isConnecting, setIsConnecting] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
-  const logoStyle = { "--pcs-logo-url": `url("${pcsLogoUrl}")` } as CSSProperties;
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -358,7 +357,7 @@ function App({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div style={logoStyle}>
+    <>
       <Shell>
       {children}
       <OnboardingTour />
