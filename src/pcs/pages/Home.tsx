@@ -87,6 +87,54 @@ export default function Home() {
 
     // On entering the home route, always begin at the report-entry slide.
     resetHomePosition();
+
+    // First-visit discoverability hint: briefly move the real feed a few pixels
+    // upward and return it to the top. This previews the existing native scroll
+    // gesture without changing the feed position or navigation logic.
+    let hintCancelled = false;
+    let hinting = false;
+    let hintStartTimer: number | undefined;
+    let hintReturnTimer: number | undefined;
+    const hintStorageKey = "pcs-home-scroll-hint-v1";
+
+    const cancelScrollHint = () => {
+      hintCancelled = true;
+      if (hintStartTimer !== undefined) window.clearTimeout(hintStartTimer);
+      if (hintReturnTimer !== undefined) window.clearTimeout(hintReturnTimer);
+      if (hinting) {
+        hinting = false;
+        feed.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      }
+    };
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let hintAlreadyShown = false;
+    try {
+      hintAlreadyShown = window.localStorage.getItem(hintStorageKey) === "1";
+    } catch {
+      hintAlreadyShown = false;
+    }
+
+    if (!reducedMotion && !hintAlreadyShown) {
+      hintStartTimer = window.setTimeout(() => {
+        if (hintCancelled || feed.scrollTop > 2) return;
+
+        try {
+          window.localStorage.setItem(hintStorageKey, "1");
+        } catch {
+          // The hint still works if persistent storage is unavailable.
+        }
+
+        hinting = true;
+        feed.scrollTo({ top: 26, left: 0, behavior: "smooth" });
+        hintReturnTimer = window.setTimeout(() => {
+          if (!hintCancelled) {
+            feed.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+          }
+          hinting = false;
+        }, 520);
+      }, 900);
+    }
     window.addEventListener("pcs-home-reset", resetHomePosition);
 
     let lastScrollTop = feed.scrollTop;
@@ -107,9 +155,13 @@ export default function Home() {
     };
 
     feed.addEventListener("scroll", onScroll, { passive: true });
+    const cancelEvents = ["touchstart", "pointerdown", "wheel"] as const;
+    cancelEvents.forEach((eventName) => feed.addEventListener(eventName, cancelScrollHint, { passive: true }));
     return () => {
       window.removeEventListener("pcs-home-reset", resetHomePosition);
       feed.removeEventListener("scroll", onScroll);
+      cancelEvents.forEach((eventName) => feed.removeEventListener(eventName, cancelScrollHint));
+      cancelScrollHint();
     };
   }, []);
 
