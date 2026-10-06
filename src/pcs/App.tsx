@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "@/pcs/router";
 import { supabase, isSupabaseConfigured } from "./lib/supabase";
 import OnboardingTour from "./components/OnboardingTour";
