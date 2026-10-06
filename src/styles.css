@@ -1429,3 +1429,85 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 }
 /* PCS accueil : utiliser l'image citoyenne fournie comme véritable arrière-plan. */
 .citizenSlideIntro .introArt{background-image:url("/assets/pcs-home-background.jpg")!important}
+
+
+/* ===== PCS — harmonisation violette des espaces professionnels =====
+ * Les dashboards doivent reprendre la palette officielle violet PCS.
+ * Les couleurs restent sémantiques pour les erreurs/alertes, mais les
+ * anciens accents verts de navigation, succès visuels et indicateurs
+ * d'activité sont remplacés par le violet de la plateforme.
+ */
+.mairieDashboard .mairieLogo,
+.mairieDashboard .mairieButton.primary,
+.mairieDashboard .mairieStatCard.featured{
+  background:#4E3A7F!important;
+  border-color:#4E3A7F!important;
+}
+.mairieDashboard .mairieNav a:hover,
+.mairieDashboard .mairieNav button:hover,
+.mairieDashboard .mairieNav a.active{
+  background:#EEE6FC!important;
+  color:#4E3A7F!important;
+}
+.mairieDashboard .mairieNav a.active span,
+.mairieDashboard .mairieNav a:hover span,
+.mairieDashboard .mairieNav button:hover span{
+  color:#4E3A7F!important;
+}
+.mairieDashboard .profileAvatar,
+.mairieDashboard .statIcon.green,
+.mairieDashboard .quickIcon.green,
+.mairieDashboard .agentAvatar{
+  background:#F0EBFB!important;
+  color:#7252A9!important;
+}
+.mairieDashboard .panelHead>a,
+.mairieDashboard .priorityItem>a,
+.mairieDashboard .reportCell strong,
+.mairieDashboard .tableActions a{
+  color:#4E3A7F!important;
+}
+.mairieDashboard .statusBar i.green,
+.mairieDashboard .dot.green,
+.mairieDashboard .onlineDot{
+  background:#8B6BC4!important;
+}
+.mairieDashboard .statusPill.green{
+  background:#F0EBFB!important;
+  color:#6F4BA9!important;
+}
+.mairieDashboard .filterPills button.selected{
+  background:#EEE6FC!important;
+  color:#4E3A7F!important;
+  border-color:#D3C5F5!important;
+}
+.mairieDashboard .progressRing{
+  background:conic-gradient(#4E3A7F var(--progress),#E8E1F5 0)!important;
+}
+.mairieDashboard .agentFormGrid input:focus{
+  border-color:#4E3A7F!important;
+  box-shadow:0 0 0 3px #4E3A7F18!important;
+}
+.mairieDashboard .mairieButton.primary:hover{
+  background:#5B4691!important;
+  border-color:#5B4691!important;
+}
+.cstDashboard .cstHttpOk{
+  color:#4E3A7F!important;
+}
+.agentFeed .missionGlow{
+  background:#4E3A7F18!important;
+}
+.agentFeed .missionBackdrop{
+  background:
+    radial-gradient(circle at 68% 30%,#735CA855,transparent 35%),
+    linear-gradient(145deg,#3E2E68,#241A43 72%)!important;
+}
+.agentFeed .feedActionButton.primary{
+  background:#4E3A7F!important;
+  border-color:#4E3A7F!important;
+}
+.agentFeed .missionRail .railActive,
+.agentFeed .agentEmpty>span{
+  color:#D3C5F5!important;
+}
