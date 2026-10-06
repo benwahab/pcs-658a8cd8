@@ -12,6 +12,9 @@
   "background_color": "#17002B",
   "theme_color": "#17002B",
   "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
   "icons": [
     {
       "src": "/assets/pcs-splash-logo.jpg",
