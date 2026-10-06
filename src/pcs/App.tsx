@@ -5,7 +5,6 @@ import { supabase, isSupabaseConfigured } from "./lib/supabase";
 import OnboardingTour from "./components/OnboardingTour";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import BrandLogo from "./components/BrandLogo";
-import { url as pcsLogoUrl } from "@/assets/pcs-logo.png.asset.json";
 
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -415,7 +414,7 @@ function App({ children }: { children: ReactNode }) {
           `}</style>
           <div className="pcsSplash" role="status" aria-label={isConnecting ? "Recherche de connexion" : "Chargement de PCS"}>
             <div className="pcsSplashContent">
-              <img src={pcsLogoUrl} alt="PCS — Plateforme de Citoyenneté et de Signalement" />
+              <img src="/assets/pcs-logo.jpg" alt="PCS — Plateforme de Citoyenneté et de Signalement" />
               {isConnecting && <div className="pcsSplashSpinner" aria-hidden="true" />}
             </div>
           </div>
