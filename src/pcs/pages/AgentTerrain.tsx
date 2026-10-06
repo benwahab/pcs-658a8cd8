@@ -274,7 +274,7 @@ export default function AgentTerrain(){
       <div className="missionContent">
        <div className="missionMeta">
         <span>{m.reports?.reference_code}</span>
-        <span className={`statusPill ${s==="verification"?"amber":s==="in_progress"?"violet":s==="resolved"?"green":"slate"}`}>
+        <span className={`statusPill ${s==="verification"?"amber":s==="in_progress"?"violet":s==="resolved"?"violet":"slate"}`}>
          {statusLabels[s as keyof typeof statusLabels]??s}
         </span>
        </div>
