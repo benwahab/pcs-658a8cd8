@@ -577,14 +577,17 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
           <div className="citizenReportInteractions" aria-label="Interactions citoyennes">
             <div className="feedActions">
-              <button type="button" className={confirmed ? "feedPrimary" : "feedSecondary"} onClick={toggleConfirmation} disabled={interactionBusy}>
-                {confirmed ? "✓ Confirmé" : "Je confirme"}
+              <button type="button" className={confirmed ? "feedPrimary" : "feedSecondary"} onClick={toggleConfirmation} disabled={interactionBusy} aria-label={confirmed ? "Retirer ma confirmation" : "Confirmer ce signalement"}>
+                <span aria-hidden="true">👍</span>
+                <small>{confirmationCount}</small>
               </button>
-              <button type="button" className="feedSecondary" onClick={() => setCommentsOpen((open) => !open)} aria-expanded={commentsOpen}>
-                Commenter ({publicComments.length})
+              <button type="button" className="feedSecondary" onClick={() => setCommentsOpen((open) => !open)} aria-expanded={commentsOpen} aria-label="Afficher les commentaires">
+                <span aria-hidden="true">💬</span>
+                <small>{publicComments.length}</small>
               </button>
               <button type="button" className="feedSecondary" onClick={() => void sharePublicReport(report, setInteractionMessage)} aria-label={`Partager le signalement ${report.reference_code ?? ""}`}>
-                ↗ Partager
+                <span aria-hidden="true">↗</span>
+                <small>Partager</small>
               </button>
             </div>
             {commentsOpen && (
