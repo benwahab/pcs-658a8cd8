@@ -126,8 +126,7 @@ using (
     from public.reports r
     where r.id = report_media.report_id
       and (
-        r.citizen_id = auth.uid()
-        or private.is_staff()
+        private.is_staff()
         or exists (
           select 1
           from public.mairies m
