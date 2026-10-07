@@ -18,13 +18,42 @@ Deno.serve(async(req)=>{
   const body=await req.json().catch(()=>({})); const action=String(body.action??"list");
   const moderatorRegionId=isModerator?moderator.region_id:null;
   if(action==="list"){
-    let queue=admin.from("report_media").select("id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status,reports!inner(id,reference_code,title,description,status,priority,location_label,created_at,is_public,region_id)").eq("media_role","citizen_evidence").like("media_type","video/%").eq("moderation_status","pending").order("created_at",{ascending:false});
-    if(isModerator)queue=queue.eq("reports.region_id",moderatorRegionId);
+    let queue=admin
+      .from("report_media")
+      .select("id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status,reports!inner(id,reference_code,title,description,status,priority,location_label,created_at,is_public,region_id)")
+      .eq("media_role","citizen_evidence")
+      .like("media_type","video/%")
+      .eq("moderation_status","pending")
+      .order("created_at",{ascending:false});
+
+    if(isModerator){
+      queue=queue.eq("reports.region_id",moderatorRegionId);
+    }else if(isCst){
+      const {data:covered,error:coveredError}=await admin
+        .from("moderator_profiles")
+        .select("region_id")
+        .eq("is_active",true);
+      if(coveredError)return json({error:"Impossible de déterminer le routage régional de la modération."},500);
+      const coveredRegionIds=[...new Set((covered??[]).map((row:any)=>row.region_id).filter(Boolean))];
+      if(coveredRegionIds.length){
+        queue=queue.not("reports.region_id","in","("+coveredRegionIds.join(",")+")");
+      }
+    }
+
     const {data,error}=await queue.limit(100);
     if(error)return json({error:"Impossible de charger la file de modération."},500);
     const filtered=data??[];
-    const items=[]; for(const media of filtered){const report=media.reports??null;const {data:signed}=await admin.storage.from("report-media").createSignedUrl(media.storage_path,900);items.push({...media,reports:undefined,report,preview_url:signed?.signedUrl??null});}
-    return json({items,region:isModerator?moderator.regions??null:null,scope:isCst?"global":"regional"});
+    const items=[];
+    for(const media of filtered){
+      const report=media.reports??null;
+      const {data:signed}=await admin.storage.from("report-media").createSignedUrl(media.storage_path,900);
+      items.push({...media,reports:undefined,report,preview_url:signed?.signedUrl??null});
+    }
+    return json({
+      items,
+      region:isModerator?moderator.regions??null:null,
+      scope:isCst?"cst-fallback":"regional"
+    });
   }
   const mediaId=String(body.media_id??"").trim(); if(!mediaId)return json({error:"Média requis."},400);
   const {data:media,error:mediaError}=await admin.from("report_media").select("id,report_id,storage_path,media_role,media_type,moderation_status").eq("id",mediaId).maybeSingle();
