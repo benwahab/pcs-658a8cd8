@@ -140,8 +140,10 @@ begin
       insert into public.organization_units(
         organization_id,name,code,unit_type,parent_unit_id,region_id,commune_id,is_active
       )
-      select v_org,r.unit_name,r.unit_code,'agency',v_org,null,c.region_id,null,true
+      select v_org,r.unit_name,r.unit_code,'agency',cu.id,c.region_id,null,true
         from public.communes c
+        join public.organization_units cu
+          on cu.organization_id=v_org and cu.unit_type='central' and cu.is_active=true
        where c.id=v_first_commune
       returning id into v_unit;
     end if;
