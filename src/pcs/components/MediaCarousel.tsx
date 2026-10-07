@@ -23,8 +23,6 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     // object-fit: contain and reintroduce black bars on mobile browsers.
     const importantStyles: Record<string, string> = {
       display: "block",
-      width: "100%",
-      height: "100%",
       position: "absolute",
       inset: "0",
       width: "100vw",
