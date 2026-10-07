@@ -21,16 +21,27 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
         connection?: { saveData?: boolean; effectiveType?: string };
       }
     ).connection;
+    const effectiveType = connection?.effectiveType;
+    const saveData = connection?.saveData === true;
+
+    // Mobile-first network policy:
+    // 2G/slow-2G and Save-Data use the strictest data-saving mode.
+    // 3G uses a conservative mode to avoid pulling large videos too early.
+    // 4G/5G/Wi-Fi are treated as normal, while still loading only the active item.
     const slowNetwork =
-      connection?.saveData === true ||
-      connection?.effectiveType === "slow-2g" ||
-      connection?.effectiveType === "2g";
+      saveData ||
+      effectiveType === "slow-2g" ||
+      effectiveType === "2g" ||
+      effectiveType === "3g";
+
+    const autoplayAllowed =
+      !saveData &&
+      effectiveType !== "slow-2g" &&
+      effectiveType !== "2g" &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     setSlowNetwork(slowNetwork);
-    setAutoplayAllowed(
-      !slowNetwork &&
-        !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    );
+    setAutoplayAllowed(autoplayAllowed);
 
     if (!("IntersectionObserver" in window)) {
       setActive(true);
@@ -107,8 +118,9 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     document.addEventListener("visibilitychange", onVisibility);
 
     if (active) {
-      // Keep the first visible video responsive on mobile data.
-      // On 2G/Save-Data, metadata is enough until the user explicitly plays.
+      // Never eagerly download an entire potentially 100 MB video.
+      // Slow/3G connections load metadata only; faster connections may buffer
+      // the active video, while IntersectionObserver prevents off-screen loading.
       video.preload = slowNetwork ? "metadata" : "auto";
       video.muted = true;
       video.defaultMuted = true;
