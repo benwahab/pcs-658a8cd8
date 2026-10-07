@@ -41,9 +41,10 @@ Deno.serve(async (req: Request) => {
 
     const { data: mairie, error: mairieError } = await db
       .from("mairies")
-      .select("id")
+      .select("id,approval_status")
       .eq("account_user_id", user.id)
       .eq("is_active", true)
+      .eq("approval_status", "approved")
       .maybeSingle();
 
     if (mairieError) {
@@ -76,6 +77,10 @@ Deno.serve(async (req: Request) => {
     const matricule = String(b.matricule).trim();
     const qualification = String(b.qualification).trim();
     const phone = normalizePhone(String(b.phone));
+
+    if (!/^\\+227\\d{8}$/.test(phone)) {
+      return json({ error: "Le numéro doit être un numéro nigérien valide à 8 chiffres." }, 400);
+    }
 
     if (!firstName || !lastName || !matricule || !qualification || !phone) {
       return json({ error: "Vérifiez les champs obligatoires." }, 400);
@@ -165,6 +170,24 @@ Deno.serve(async (req: Request) => {
       await rollbackUser();
       console.error("mairie-create-agent: role assignment failed", userRoleError.message);
       return json({ error: "Attribution du rôle agent impossible." }, 400);
+    }
+
+    const { data: citizenRole } = await db
+      .from("roles")
+      .select("id")
+      .eq("code", "citizen")
+      .maybeSingle();
+    if (citizenRole?.id) {
+      const { error: citizenRoleError } = await db
+        .from("user_roles")
+        .delete()
+        .eq("user_id", uid)
+        .eq("role_id", citizenRole.id);
+      if (citizenRoleError) {
+        await rollbackUser();
+        console.error("mairie-create-agent: inherited citizen role cleanup failed", citizenRoleError.message);
+        return json({ error: "Finalisation des permissions agent impossible." }, 400);
+      }
     }
 
     const { data: agent, error: agentError } = await db
