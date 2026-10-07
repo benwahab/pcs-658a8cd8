@@ -15,7 +15,7 @@ import { createReportMediaUrl } from "../services/media";
 import BrandLogo from "../components/BrandLogo";
 import introArtAsset from "@/assets/pcs-hero.webp.asset.json";
 import { MediaCarousel } from "../components/MediaCarousel";
-import { Home as HomeIcon, MessageCircle, Plus, Share2 } from "lucide-react";
+import { Home as HomeIcon, MessageCircle, Plus, Share } from "lucide-react";
 
 async function sharePublicReport(report: PublicReport, onFallbackMessage: (message: string) => void) {
   if (!report.id) return;
@@ -351,6 +351,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   const [commentText, setCommentText] = useState("");
   const [interactionBusy, setInteractionBusy] = useState(false);
   const [interactionMessage, setInteractionMessage] = useState("");
+  const [shareCount, setShareCount] = useState(0);
   const slideRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -470,6 +471,12 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
   useEffect(() => {
     if (!report.id) return;
+    try {
+      const storedShareCount = Number(window.localStorage.getItem(`pcs-share-count:${report.id}`) ?? "0");
+      if (Number.isFinite(storedShareCount) && storedShareCount >= 0) setShareCount(storedShareCount);
+    } catch {
+      // Local storage can be unavailable in restricted browsers; keep the counter at zero.
+    }
     const storageKey = "pcs-citizen-token";
     const createToken = () => {
       // randomUUID n'est pas disponible dans certains navigateurs embarqués.
@@ -648,11 +655,29 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
               <button
                 type="button"
                 className="feedSecondary"
-                onClick={() => void sharePublicReport(report, setInteractionMessage)}
+                onClick={async () => {
+                  let shared = false;
+                  const onShareMessage = (message: string) => {
+                    if (message === "Lien du signalement copié.") shared = true;
+                    setInteractionMessage(message);
+                  };
+                  await sharePublicReport(report, onShareMessage);
+                  if (shared || typeof navigator.share === "function") {
+                    // Count only completed native shares or successful copy fallback.
+                    // A cancelled native share is ignored by sharePublicReport.
+                    if (shared) {
+                      setShareCount((count) => {
+                        const next = count + 1;
+                        try { window.localStorage.setItem(`pcs-share-count:${report.id}`, String(next)); } catch {}
+                        return next;
+                      });
+                    }
+                  }
+                }}
                 aria-label={`Partager le signalement ${report.reference_code ?? ""}`}
               >
-                <Share2 aria-hidden="true" strokeWidth={2.2} />
-                <small>Partager</small>
+                <Share aria-hidden="true" strokeWidth={2.2} />
+                <small>{shareCount}</small>
               </button>
               <Link className="feedSecondary feedRailLink feedRailHome" to="/" aria-label="Accueil">
                 <HomeIcon aria-hidden="true" strokeWidth={2.2} />
