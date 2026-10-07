@@ -1797,8 +1797,8 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
-    width:20px!important;
-    height:20px!important;
+    width:16px!important;
+    height:16px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
