@@ -98,6 +98,23 @@ export async function assignOrganizationAgency(transferId:string,unitId:string,n
   const {data,error}=await supabase.rpc("organization_assign_agency",{p_transfer_id:transferId,p_agency_unit_id:unitId,p_note:note?.trim()||undefined});
   if(error) throw error; return data;
 }
+export async function listOrganizationUnitAssignments(organizationId:string){
+  if(!supabase) throw new Error("Supabase non configuré.");
+  const {data,error}=await supabase.from("report_unit_assignments")
+    .select("id,report_id,organization_id,unit_id,status,assigned_at,started_at,completed_at,mission_note")
+    .eq("organization_id",organizationId).order("assigned_at",{ascending:false});
+  if(error) throw error;
+  const rows=data??[], ids=rows.map((x:any)=>x.report_id), unitIds=[...new Set(rows.map((x:any)=>x.unit_id).filter(Boolean))];
+  if(!ids.length) return [];
+  const [{data:reports,error:re},{data:units,error:ue}]=await Promise.all([
+    supabase.from("public_reports").select("id,reference_code,title,status,priority,location_label,created_at").in("id",ids),
+    unitIds.length ? supabase.from("organization_units").select("id,name,code").in("id",unitIds) : Promise.resolve({data:[],error:null} as any)
+  ]);
+  if(re) throw re; if(ue) throw ue;
+  const byReport=new Map((reports??[]).map((r:any)=>[r.id,r]));
+  const byUnit=new Map((units??[]).map((u:any)=>[u.id,u]));
+  return rows.map((r:any)=>({...r,reports:byReport.get(r.report_id)??null,unit:byUnit.get(r.unit_id)??null}));
+}
 export async function listAgencyMissions(unitId:string){
   if(!supabase) throw new Error("Supabase non configuré.");
   const {data,error}=await supabase.from("report_unit_assignments")
