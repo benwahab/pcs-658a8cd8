@@ -42,10 +42,24 @@ export default function PwaInstallPrompt() {
       if (checkInstalled()) return;
       if (!window.__pcsInstallPrompt) return;
       const onboardingCompleted = localStorage.getItem(ONBOARDING_KEY) === "true";
-      const pendingDeepLink = /^\/signalement\/[^/]+$/.test(
-        localStorage.getItem(PENDING_REPORT_LINK_KEY) ?? "",
-      );
-      if (onboardingCompleted || pendingDeepLink) setVisible(true);
+      let pendingReportLink = false;
+      const rawPending = localStorage.getItem(PENDING_REPORT_LINK_KEY);
+
+      if (rawPending) {
+        try {
+          const pending = JSON.parse(rawPending) as { path?: string; createdAt?: number };
+          pendingReportLink =
+            typeof pending.path === "string" &&
+            /^\/signalement\/[^/]+$/.test(pending.path) &&
+            typeof pending.createdAt === "number" &&
+            Date.now() - pending.createdAt <= 86400000;
+          if (!pendingReportLink) localStorage.removeItem(PENDING_REPORT_LINK_KEY);
+        } catch {
+          localStorage.removeItem(PENDING_REPORT_LINK_KEY);
+        }
+      }
+
+      if (onboardingCompleted || pendingReportLink) setVisible(true);
     };
 
     const onBeforeInstallPrompt = (event: Event) => {
@@ -161,7 +175,20 @@ export default function PwaInstallPrompt() {
           Installer PCS
         </h2>
         <p style={{ margin: "0 0 20px", color: "#52605e", lineHeight: 1.55 }}>
-          {/^\/signalement\/[^/]+$/.test(localStorage.getItem(PENDING_REPORT_LINK_KEY) ?? "") ? (
+          {(() => {
+            try {
+              const pending = JSON.parse(localStorage.getItem(PENDING_REPORT_LINK_KEY) ?? "null") as { path?: string; createdAt?: number } | null;
+              return Boolean(
+                pending &&
+                  typeof pending.path === "string" &&
+                  /^\/signalement\/[^/]+$/.test(pending.path) &&
+                  typeof pending.createdAt === "number" &&
+                  Date.now() - pending.createdAt <= 86400000,
+              );
+            } catch {
+              return false;
+            }
+          })() ? (
             <>Installez PCS sur votre téléphone. Après l’installation, le lien du signalement sera repris automatiquement.</>
           ) : (
             <>Installez PCS sur votre téléphone en un seul geste.</>
