@@ -83,14 +83,7 @@ export default function Home() {
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!reducedMotion) {
-      try {
-        if (window.localStorage.getItem("pcs-home-intro-animation-v1") !== "1") {
-          setIntroFirstVisit(true);
-          window.localStorage.setItem("pcs-home-intro-animation-v1", "1");
-        }
-      } catch {
-        setIntroFirstVisit(true);
-      }
+      setIntroFirstVisit(true);
     }
 
     const feed = document.querySelector<HTMLElement>(".citizenFeed");
@@ -119,8 +112,6 @@ export default function Home() {
     let hinting = false;
     let hintStartTimer: number | undefined;
     let hintReturnTimer: number | undefined;
-    const hintStorageKey = "pcs-home-scroll-hint-v1";
-
     const cancelScrollHint = () => {
       hintCancelled = true;
       if (hintStartTimer !== undefined) window.clearTimeout(hintStartTimer);
@@ -131,22 +122,9 @@ export default function Home() {
       }
     };
 
-    let hintAlreadyShown = false;
-    try {
-      hintAlreadyShown = window.localStorage.getItem(hintStorageKey) === "1";
-    } catch {
-      hintAlreadyShown = false;
-    }
-
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && !hintAlreadyShown) {
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       hintStartTimer = window.setTimeout(() => {
         if (hintCancelled || feed.scrollTop > 2) return;
-
-        try {
-          window.localStorage.setItem(hintStorageKey, "1");
-        } catch {
-          // The hint still works if persistent storage is unavailable.
-        }
 
         hinting = true;
         feed.scrollTo({ top: 26, left: 0, behavior: "smooth" });
