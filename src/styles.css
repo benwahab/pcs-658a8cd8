@@ -1623,3 +1623,82 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 }
 
 
+
+/* PCS — rail d'actions du feed vidéo : position stable sans sortir de l'overlay. */
+.citizenSlideTrack .slideOverlay .citizenReportInteractions{
+  position:absolute;
+  right:12px;
+  bottom:12px;
+  width:64px;
+  margin:0;
+  z-index:5;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+  width:64px;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button{
+  width:56px;
+  min-width:56px;
+  height:56px;
+  min-height:56px;
+  padding:0 4px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  font-size:.68rem;
+  line-height:1.05;
+  font-weight:700;
+  color:#fff;
+  background:rgba(0,0,0,.42);
+  border:1.5px solid rgba(255,255,255,.85);
+  box-shadow:0 6px 18px rgba(0,0,0,.3);
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button:first-child{
+  font-size:0;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button:first-child::before{
+  content:"👍";
+  font-size:1.35rem;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button:nth-child(2){
+  font-size:0;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button:nth-child(2)::before{
+  content:"💬";
+  font-size:1.35rem;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button:nth-child(3){
+  font-size:0;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button:nth-child(3)::before{
+  content:"↗";
+  font-size:1.5rem;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button:first-child.feedPrimary{
+  background:linear-gradient(145deg,#5b2cff,#7b39ff);
+  border-color:#fff;
+}
+@media(max-width:700px){
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions{
+    right:8px;
+    bottom:8px;
+    width:58px;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions{
+    width:58px;
+    gap:14px;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button{
+    width:50px;
+    min-width:50px;
+    height:50px;
+    min-height:50px;
+  }
+}
