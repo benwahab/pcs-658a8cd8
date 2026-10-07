@@ -1800,27 +1800,27 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 /* PCS mobile feed: final fine positioning for video controls access. */
 @media(max-width:700px){
   .citizenSlideTrack .slideOverlay{
-    inset:auto 0 44px!important;
+    inset:auto 0 34px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions{
     bottom:92px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport{
-    width:36px!important;
-    min-width:36px!important;
-    height:36px!important;
-    min-height:36px!important;
+    width:38px!important;
+    min-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
-    width:19px!important;
-    height:19px!important;
+    width:20px!important;
+    height:20px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
-    top:39px!important;
-    width:68px!important;
+    top:41px!important;
+    width:70px!important;
     font-size:.58rem!important;
   }
 }
