@@ -15,6 +15,7 @@ import { createReportMediaUrl } from "../services/media";
 import BrandLogo from "../components/BrandLogo";
 import introArtAsset from "@/assets/pcs-hero.webp.asset.json";
 import { MediaCarousel } from "../components/MediaCarousel";
+import { Home as HomeIcon, MessageCircle, Plus, Share2 } from "lucide-react";
 
 async function sharePublicReport(report: PublicReport, onFallbackMessage: (message: string) => void) {
   if (!report.id) return;
@@ -602,7 +603,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 aria-expanded={commentsOpen}
                 aria-label="Afficher les commentaires"
               >
-                <span aria-hidden="true">💬</span>
+                <MessageCircle aria-hidden="true" strokeWidth={2.2} />
                 <small>{publicComments.length}</small>
               </button>
               <button
@@ -611,15 +612,15 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 onClick={() => void sharePublicReport(report, setInteractionMessage)}
                 aria-label={`Partager le signalement ${report.reference_code ?? ""}`}
               >
-                <span aria-hidden="true">↗</span>
+                <Share2 aria-hidden="true" strokeWidth={2.2} />
                 <small>Partager</small>
               </button>
               <Link className="feedSecondary feedRailLink feedRailHome" to="/" aria-label="Accueil">
-                <span aria-hidden="true">⌂</span>
+                <HomeIcon aria-hidden="true" strokeWidth={2.2} />
                 <small>Accueil</small>
               </Link>
               <Link className="feedPrimary feedRailLink feedRailReport" to="/signaler" aria-label="Signaler un problème">
-                <span aria-hidden="true">＋</span>
+                <Plus aria-hidden="true" strokeWidth={2.2} />
                 <small>Signaler</small>
               </Link>
             </div>
