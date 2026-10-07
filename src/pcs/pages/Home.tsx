@@ -17,15 +17,16 @@ import introArtAsset from "@/assets/pcs-hero.webp.asset.json";
 import { MediaCarousel } from "../components/MediaCarousel";
 import { Home as HomeIcon, MessageCircle, Plus, Share } from "lucide-react";
 
-async function sharePublicReport(report: PublicReport, onFallbackMessage: (message: string) => void) {
+async function sharePublicReport(report: PublicReport, onFallbackMessage: (message: string) => void): Promise<boolean> {
   if (!report.id) return;
   const url = new URL(`/signalement/${encodeURIComponent(report.id)}`, window.location.origin).toString();
   const shareData = { title: report.title ? `${report.title} — PCS` : "Signalement citoyen — PCS", text: "Consultez ce signalement citoyen sur PCS.", url };
   try {
-    if (typeof navigator.share === "function" && (!navigator.canShare || navigator.canShare(shareData))) { await navigator.share(shareData); return; }
-    if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(url); onFallbackMessage("Lien du signalement copié."); return; }
-  } catch (error) { if (error instanceof DOMException && error.name === "AbortError") return; }
+    if (typeof navigator.share === "function" && (!navigator.canShare || navigator.canShare(shareData))) { await navigator.share(shareData); return true; }
+    if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(url); onFallbackMessage("Lien du signalement copié."); return true; }
+  } catch (error) { if (error instanceof DOMException && error.name === "AbortError") return false; }
   onFallbackMessage(`Lien du signalement : ${url}`);
+  return false;
 }
 
 export default function Home() {
@@ -656,23 +657,13 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 type="button"
                 className="feedSecondary"
                 onClick={async () => {
-                  let shared = false;
-                  const onShareMessage = (message: string) => {
-                    if (message === "Lien du signalement copié.") shared = true;
-                    setInteractionMessage(message);
-                  };
-                  await sharePublicReport(report, onShareMessage);
-                  if (shared || typeof navigator.share === "function") {
-                    // Count only completed native shares or successful copy fallback.
-                    // A cancelled native share is ignored by sharePublicReport.
-                    if (shared) {
-                      setShareCount((count) => {
-                        const next = count + 1;
-                        try { window.localStorage.setItem(`pcs-share-count:${report.id}`, String(next)); } catch {}
-                        return next;
-                      });
-                    }
-                  }
+                  const shared = await sharePublicReport(report, setInteractionMessage);
+                  if (!shared) return;
+                  setShareCount((count) => {
+                    const next = count + 1;
+                    try { window.localStorage.setItem(`pcs-share-count:${report.id}`, String(next)); } catch {}
+                    return next;
+                  });
                 }}
                 aria-label={`Partager le signalement ${report.reference_code ?? ""}`}
               >
