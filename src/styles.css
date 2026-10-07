@@ -1173,7 +1173,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   max-height:52%!important;
   overflow:hidden!important;
   padding:120px 104px 32px 24px!important;
-  background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.16) 20%,rgba(0,0,0,.78) 82%,rgba(0,0,0,.9) 100%)!important;
+  background:transparent!important;
   box-sizing:border-box;
 }
 .citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){
