@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "@/pcs/router";
 import { supabase, isSupabaseConfigured } from "./lib/supabase";
@@ -10,6 +10,7 @@ import BrandLogo from "./components/BrandLogo";
 export function Shell({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [feedHeaderHidden, setFeedHeaderHidden] = useState(false);
+  const professionalMenuTimer = useRef<number | undefined>(undefined);
   const navigate = useNavigate();
   const location = useLocation();
   const isMairie = location.pathname === "/mairie";
@@ -105,6 +106,10 @@ export function Shell({ children }: { children: ReactNode }) {
   }, []);
 
   function closeProfessionalMenu() {
+    if (professionalMenuTimer.current !== undefined) {
+      window.clearTimeout(professionalMenuTimer.current);
+      professionalMenuTimer.current = undefined;
+    }
     document.querySelectorAll<HTMLDetailsElement>("details.feedAccessHeader, details.feedAccessSubmenu").forEach((menu) => {
       menu.open = false;
     });
@@ -141,7 +146,23 @@ export function Shell({ children }: { children: ReactNode }) {
           </Link>
         </nav>
 
-        <details className="feedAccess feedAccessHeader" data-pcs-tour="professional-access">
+        <details
+          className="feedAccess feedAccessHeader"
+          data-pcs-tour="professional-access"
+          onToggle={(event) => {
+            const menu = event.currentTarget;
+            if (professionalMenuTimer.current !== undefined) {
+              window.clearTimeout(professionalMenuTimer.current);
+              professionalMenuTimer.current = undefined;
+            }
+            if (menu.open) {
+              professionalMenuTimer.current = window.setTimeout(() => {
+                menu.open = false;
+                professionalMenuTimer.current = undefined;
+              }, 5000);
+            }
+          }}
+        >
           <summary>
             <span className="feedAccessIcon">◈</span>
             <span>Espace professionnel</span>
