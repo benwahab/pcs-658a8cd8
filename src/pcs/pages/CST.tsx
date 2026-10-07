@@ -107,6 +107,7 @@ export function CSTDashboard(){
  const api=data?.api_monitoring??[];
  const reportCounts=operations?.reports??{};
  const missionCounts=operations?.missions??{};
+ const reportTotal=Object.values(reportCounts as Record<string, unknown>).reduce((sum,value)=>sum+Number(value??0),0);
  return <section className="cstDashboard">
   <header className="cstTopbar"><div><p className="eyebrow">PCS / CST</p><h1>Centre de Supervision Technique</h1><p className="cstSubtitle">Supervision technique — données réellement collectées.</p></div><div className="cstTopActions"><span className="cstEnv">PRODUCTION</span><a className="button primary" href="#moderation">Vidéos en attente</a><Link className="button" to="/cst/moderateurs">Comptes modérateurs</Link><a className="button" href="#governance">Gouvernance</a><a className="button" href="#mairie-signups">Demandes mairie</a><button className="button" onClick={logout}>Déconnexion</button></div></header>
   {error&&<div className="cstBanner critical"><Dot s="critical"/>{error}</div>}
