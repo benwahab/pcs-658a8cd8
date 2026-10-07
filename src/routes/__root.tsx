@@ -146,9 +146,26 @@ function RootComponent() {
     window.addEventListener("vite:preloadError", recoverFromChunkLoadError);
 
     if ("serviceWorker" in navigator && import.meta.env.PROD) {
-      navigator.serviceWorker.register("/sw.js").catch((error) => {
-        console.error("PCS service worker registration failed:", error);
-      });
+      let reloadingAfterWorkerUpdate = false;
+
+      const onControllerChange = () => {
+        if (reloadingAfterWorkerUpdate) return;
+        reloadingAfterWorkerUpdate = true;
+        window.location.reload();
+      };
+
+      navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+
+      void navigator.serviceWorker
+        .register("/sw.js?v=26", { updateViaCache: "none" })
+        .then((registration) => registration.update())
+        .catch((error) => {
+          console.error("PCS service worker registration failed:", error);
+        });
+
+      return () => {
+        navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
+      };
     }
     const splash = document.getElementById("pcs-splash");
     splash?.classList.add("hidden");
