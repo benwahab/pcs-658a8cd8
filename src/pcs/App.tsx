@@ -240,6 +240,22 @@ function ConnectionStatus() {
 function App({ children }: { children: ReactNode }) {
   const [showSplash, setShowSplash] = useState(true);
   const [isConnecting, setIsConnecting] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.location.pathname !== "/") return;
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches ||
+      ("standalone" in navigator &&
+        (navigator as Navigator & { standalone?: boolean }).standalone === true);
+    if (!standalone) return;
+
+    const pending = window.localStorage.getItem("pcs-pending-deeplink-v1");
+    if (!pending || !/^\\/signalement\\/[^/]+$/.test(pending)) return;
+
+    window.localStorage.removeItem("pcs-pending-deeplink-v1");
+    window.location.replace(pending);
+  }, []);
   useEffect(() => {
     if (typeof window === "undefined") return;
 
