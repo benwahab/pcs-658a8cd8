@@ -737,8 +737,9 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   box-shadow:0 8px 22px #3E2E6855;
 }
 .feedPrimary:hover{
-  background:linear-gradient(135deg,#5B478D,#463575);
-  border-color:#5B478D;
+  background:linear-gradient(135deg,#5B478D,#463575)!important;
+  border-color:#5B478D!important;
+  color:#FFFFFF!important;
   box-shadow:0 12px 28px #3E2E6866;
 }
 .feedSecondary{
