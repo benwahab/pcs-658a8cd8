@@ -123,6 +123,11 @@ export default function Home() {
         if (hintCancelled || hinting || feed.scrollTop > 2) return;
 
         hinting = true;
+        // The feed uses mandatory scroll-snap, which can swallow a small
+        // 30px programmatic movement on mobile. Temporarily suspend snapping
+        // for the hint so the gesture preview is actually visible.
+        const previousSnapType = feed.style.scrollSnapType;
+        feed.style.scrollSnapType = "none";
         feed.scrollTo({ top: 30, left: 0, behavior: "smooth" });
 
         hintReturnTimer = window.setTimeout(() => {
@@ -133,6 +138,7 @@ export default function Home() {
 
           feed.scrollTo({ top: 0, left: 0, behavior: "smooth" });
           hintResetTimer = window.setTimeout(() => {
+            feed.style.scrollSnapType = previousSnapType;
             hinting = false;
             scheduleScrollHint(8000);
           }, 500);
@@ -148,6 +154,7 @@ export default function Home() {
       if (hintRepeatTimer !== undefined) window.clearTimeout(hintRepeatTimer);
       if (hinting) {
         hinting = false;
+        feed.style.scrollSnapType = "";
         feed.scrollTo({ top: 0, left: 0, behavior: "auto" });
       }
     };
