@@ -180,7 +180,7 @@ export default function AgentTerrain(){
     await load();
    }catch(e){
     if(!navigator.onLine){
-     await queueFieldVerification(payload);
+     await queueFieldVerification({agentId:agentUserId!,...payload});
      setOfflinePending(v=>v+1);
      setVerifyId(null);
      setError("Connexion perdue : position enregistrée et mise en attente de synchronisation.");
