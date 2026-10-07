@@ -1,7 +1,5 @@
 -- Keep scoped report access for authenticated staff/mairie/agents only.
--- The policy was previously granted to PUBLIC, which includes anon. Its
--- report_assignments subquery can re-enter reports RLS and trigger infinite
--- recursion for anonymous public-feed queries.
+-- Anonymous public-feed queries must never enter the scoped assignment branch.
 drop policy if exists reports_select_scoped on public.reports;
 
 create policy reports_select_scoped
