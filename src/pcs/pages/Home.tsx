@@ -100,7 +100,7 @@ export default function Home() {
       if (!mobileHint.matches) return;
       setShowSwipeHint(true);
       if (swipeHintHideTimer !== undefined) window.clearTimeout(swipeHintHideTimer);
-      swipeHintHideTimer = window.setTimeout(() => setShowSwipeHint(false), 5200);
+      swipeHintHideTimer = window.setTimeout(() => setShowSwipeHint(false), 9000);
     };
 
     const resetHomePosition = () => {
