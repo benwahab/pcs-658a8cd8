@@ -1803,7 +1803,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 /* PCS mobile feed: final fine positioning for video controls access. */
 @media(max-width:700px){
   .citizenSlideTrack .slideOverlay{
-    inset:auto 0 34px!important;
+    inset:auto 0 12px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions{
     bottom:92px!important;
