@@ -89,7 +89,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       ref={ref}
       src={src}
       poster={poster}
-      controls
+      autoPlay
       playsInline
       muted
       loop
