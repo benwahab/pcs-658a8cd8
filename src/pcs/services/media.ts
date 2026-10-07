@@ -124,21 +124,15 @@ export async function createReportMediaUrl(
     body: { path, expiresIn },
   });
 
-  if (!error && data?.signedUrl) {
-    return data.signedUrl as string;
+  if (error) {
+    throw error;
   }
 
-  // Keep the existing Storage path as a compatibility fallback for clients
-  // where the direct Storage signing policy is already working.
-  const { data: signed, error: signError } = await supabase.storage
-    .from("report-media")
-    .createSignedUrl(path, expiresIn);
-
-  if (signError) {
-    throw error ?? signError;
+  if (!data?.signedUrl || typeof data.signedUrl !== "string") {
+    throw new Error("Le serveur n’a pas fourni d’URL vidéo valide.");
   }
 
-  return signed.signedUrl;
+  return data.signedUrl;
 }
 
 export async function uploadResolutionVideo(
