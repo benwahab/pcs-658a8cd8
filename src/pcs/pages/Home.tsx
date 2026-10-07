@@ -709,11 +709,18 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                     Fermer ✕
                   </button>
                 </div>
-                {publicComments.filter((comment) => comment.body.trim().toLowerCase() !== "valider").length === 0 ? <p>Aucun commentaire public pour le moment.</p> : publicComments.filter((comment) => comment.body.trim().toLowerCase() !== "valider").map((comment) => (
+                {publicComments.length === 0 ? <p>Aucun commentaire public pour le moment.</p> : publicComments.map((comment) => (
                   <article key={comment.id} className="citizenPublicComment">
-                    {comment.display_name && <strong>{comment.display_name}</strong>}
-                    <p>{comment.body}</p>
-                    <small>{new Date(comment.created_at).toLocaleString("fr-FR")}</small>
+                    <div className="citizenCommentAvatar" aria-hidden="true">
+                      {(comment.display_name?.trim()?.[0] ?? "C").toUpperCase()}
+                    </div>
+                    <div className="citizenCommentBody">
+                      <div className="citizenCommentMeta">
+                        <strong>{comment.display_name?.trim() || "Citoyen"}</strong>
+                        <small>{new Date(comment.created_at).toLocaleString("fr-FR")}</small>
+                      </div>
+                      <p>{comment.body}</p>
+                    </div>
                   </article>
                 ))}
                 <form onSubmit={submitPublicComment}>
