@@ -241,7 +241,7 @@ export default function Home() {
         />
         <div className="introScrim" aria-hidden="true" />
         <div className="slideContent">
-          <p className="eyebrow feedEyebrow">PLATEFORME CITOYENNE</p>
+          <p className="eyebrow feedEyebrow" style={{ color: "#FFFFFF", WebkitTextFillColor: "#FFFFFF", textShadow: "0 2px 5px rgba(0,0,0,.72)" }}>PLATEFORME CITOYENNE</p>
           <h1>
             Les problèmes publics,
             <br />
