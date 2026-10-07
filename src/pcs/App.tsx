@@ -250,11 +250,22 @@ function App({ children }: { children: ReactNode }) {
         (navigator as Navigator & { standalone?: boolean }).standalone === true);
     if (!standalone) return;
 
-    const pending = window.localStorage.getItem("pcs-pending-deeplink-v1");
-    if (!pending || !/^\\/signalement\\/[^/]+$/.test(pending)) return;
+    const rawPending = window.localStorage.getItem("pcs-pending-deeplink-v1");
+    if (!rawPending) return;
 
-    window.localStorage.removeItem("pcs-pending-deeplink-v1");
-    window.location.replace(pending);
+    try {
+      const pending = JSON.parse(rawPending) as { path?: string; createdAt?: number };
+      const isFresh =
+        typeof pending.path === "string" &&
+        /^\\/signalement\\/[^/]+$/.test(pending.path) &&
+        typeof pending.createdAt === "number" &&
+        Date.now() - pending.createdAt <= 86400000;
+
+      window.localStorage.removeItem("pcs-pending-deeplink-v1");
+      if (isFresh) window.location.replace(pending.path!);
+    } catch {
+      window.localStorage.removeItem("pcs-pending-deeplink-v1");
+    }
   }, []);
   useEffect(() => {
     if (typeof window === "undefined") return;
