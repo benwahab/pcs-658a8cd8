@@ -38,9 +38,15 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     const video = ref.current;
     if (!video) return;
 
+    // The citizen feed is itself the scroll container. Using the browser
+    // viewport as the observer root is unreliable on mobile/PWA, where the
+    // feed can scroll inside a fixed-height app shell. Observe against the
+    // actual feed so videos are activated as they approach the visible slide.
+    const feedRoot = video.closest<HTMLElement>(".citizenFeed");
+
     const observer = new IntersectionObserver(
       ([entry]) => setActive(Boolean(entry?.isIntersecting)),
-      { rootMargin: "320px 0px", threshold: 0.2 },
+      { root: feedRoot ?? null, rootMargin: "320px 0px", threshold: 0.2 },
     );
 
     observer.observe(video);
