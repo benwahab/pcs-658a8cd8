@@ -4,6 +4,7 @@ import {supabase} from "../lib/supabase";
 import {listMyMissions,confirmFieldVerification,resolveMissionWithVideo} from "../services/mairie";
 import BrandLogo from "../components/BrandLogo";
 import {statusLabels} from "../types";
+import {getSession,getMyRoles} from "../services/permissions";
 
 import {
  cacheAgentMissions,
@@ -19,7 +20,8 @@ import {
 
 export default function AgentTerrain(){
  const navigate=useNavigate();
- const [missions,setMissions]=useState<any[]>(()=>getCachedAgentMissions());
+ const [missions,setMissions]=useState<any[]>([]);
+ const [agentUserId,setAgentUserId]=useState<string|null>(null);
  const [error,setError]=useState("");
  const [offlinePending,setOfflinePending]=useState(0);
  const [verifyId,setVerifyId]=useState<string|null>(null);
@@ -41,7 +43,7 @@ export default function AgentTerrain(){
    if(!supabase)throw new Error("Service de connexion indisponible.");
    const {error:signOutError}=await supabase.auth.signOut();
    if(signOutError)throw signOutError;
-   clearCachedAgentMissions();
+   if(agentUserId)clearCachedAgentMissions(agentUserId);
    navigate("/connexion-operationnelle?mode=agent");
   }catch(e){
    setError(e instanceof Error?e.message:"La déconnexion a échoué. Réessayez.");
@@ -54,10 +56,10 @@ export default function AgentTerrain(){
   try{
    const data=await listMyMissions();
    setMissions(data);
-   cacheAgentMissions(data);
+   if(agentUserId)cacheAgentMissions(agentUserId,data);
    setError("");
   }catch(e){
-   const cached=getCachedAgentMissions();
+   const cached=agentUserId?getCachedAgentMissions(agentUserId):[];
    if(cached.length){
     setMissions(cached);
     setError("Mode hors connexion : missions précédemment chargées.");
@@ -75,13 +77,13 @@ export default function AgentTerrain(){
   if(!navigator.onLine)return;
   let failed=0;
   try{
-   const verifications=await flushFieldVerifications(async item=>{
+   const verifications=await flushFieldVerifications(agentUserId!,async item=>{
     await confirmFieldVerification(
      item.reportId,item.latitude,item.longitude,item.accuracy
     );
    });
    failed+=verifications.failed;
-   const videos=await flushResolutionVideos(async item=>{
+   const videos=await flushResolutionVideos(agentUserId!,async item=>{
     const file=new File([item.video],item.fileName,{type:item.fileType});
     await resolveMissionWithVideo(
      item.reportId,file,item.latitude,item.longitude,item.accuracy
@@ -103,11 +105,44 @@ export default function AgentTerrain(){
  useEffect(()=>()=>{if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);},[]);
  useEffect(()=>{if(previewRef.current&&videoPreviewUrl)previewRef.current.src=videoPreviewUrl;},[videoPreviewUrl]);
  useEffect(()=>{
+  let active=true;
+  (async()=>{
+   const session=await getSession();
+   if(!session){
+    if(active)navigate("/connexion-operationnelle?mode=agent");
+    return;
+   }
+   const metadataRole=session.user.user_metadata?.role;
+   if(navigator.onLine){
+    try{
+     const roles=await getMyRoles();
+     if(!roles.includes("agent_terrain")){
+      if(active)navigate("/connexion-operationnelle?mode=agent");
+      return;
+     }
+    }catch{
+     if(metadataRole!=="agent_terrain"){
+      if(active)navigate("/connexion-operationnelle?mode=agent");
+      return;
+     }
+    }
+   }else if(metadataRole!=="agent_terrain"){
+    if(active)navigate("/connexion-operationnelle?mode=agent");
+    return;
+   }
+   if(!active)return;
+   setAgentUserId(session.user.id);
+  })();
+  return()=>{active=false;};
+ },[navigate]);
+
+ useEffect(()=>{
+  if(!agentUserId)return;
   void load();
   void syncPending();
   window.addEventListener("online",syncPending);
   return()=>window.removeEventListener("online",syncPending);
- },[]);
+ },[agentUserId]);
 
  function route(lat:number|null,lng:number|null){
   if(lat===null||lng===null)return;
@@ -132,7 +167,7 @@ export default function AgentTerrain(){
      throw new Error("La précision GPS doit être de 20 mètres ou moins.");
     }
     if(!navigator.onLine){
-     await queueFieldVerification(payload);
+     await queueFieldVerification({agentId:agentUserId!,...payload});
      setOfflinePending(v=>v+1);
      setVerifyId(null);
      setError("Position enregistrée hors connexion. Elle sera transmise automatiquement dès que la connexion revient.");
@@ -191,6 +226,7 @@ export default function AgentTerrain(){
     }
     if(!navigator.onLine){
      await queueResolutionVideo({
+      agentId:agentUserId!,
       reportId:payload.reportId,
       video:payload.video,
       fileName:payload.video.name,
@@ -218,6 +254,7 @@ export default function AgentTerrain(){
    }catch(e){
     if(!navigator.onLine){
      await queueResolutionVideo({
+      agentId:agentUserId!,
       reportId:payload.reportId,
       video:payload.video,
       fileName:payload.video.name,
