@@ -1,4 +1,4 @@
-const CACHE_NAME="pcs-shell-v25";
+const CACHE_NAME="pcs-shell-v26";
 const APP_SHELL=["/","/manifest.webmanifest?v=15","/assets/pcs-favicon.svg"];
 
 async function cacheShell(){
