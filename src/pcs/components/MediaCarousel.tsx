@@ -167,7 +167,16 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
           aria-label="Lire la vidéo"
           onClick={(event) => {
             event.stopPropagation();
-            tryPlay(true);
+            const video = ref.current;
+            if (!video) return;
+            video.muted = true;
+            video.defaultMuted = true;
+            video.playsInline = true;
+            if (activeFeedVideo && activeFeedVideo !== video) activeFeedVideo.pause();
+            activeFeedVideo = video;
+            void video.play()
+              .then(() => setNeedsPlay(false))
+              .catch(() => setNeedsPlay(true));
           }}
         >
           <span aria-hidden="true">▶</span>
