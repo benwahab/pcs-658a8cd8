@@ -736,7 +736,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
             )}
             {interactionMessage && (
               <div
-                className={`citizenInteractionPopup${/^(Impossible|Les interactions|Activez)/i.test(interactionMessage)) ? " isError" : ""}`}
+                className={`citizenInteractionPopup${/^(Impossible|Les interactions|Activez)/i.test(interactionMessage) ? " isError" : ""}`}
                 role="status"
                 aria-live="polite"
               >
