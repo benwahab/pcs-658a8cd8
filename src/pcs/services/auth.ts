@@ -7,11 +7,9 @@ export async function getCurrentUser(){
   return data.user??null;
 }
 export async function signOut(){
-  if(!supabase){
-    clearCachedAgentMissions();
-    return;
-  }
+  if(!supabase)return;
+  const {data}=await supabase.auth.getUser();
   const {error}=await supabase.auth.signOut();
   if(error)throw error;
-  clearCachedAgentMissions();
+  if(data.user?.id)clearCachedAgentMissions(data.user.id);
 }
