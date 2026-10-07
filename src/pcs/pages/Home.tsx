@@ -15,7 +15,7 @@ import { createReportMediaUrl } from "../services/media";
 import BrandLogo from "../components/BrandLogo";
 import introArtAsset from "@/assets/pcs-hero.webp.asset.json";
 import { MediaCarousel } from "../components/MediaCarousel";
-import { Flag, Home as HomeIcon, MessageCircle, Share } from "lucide-react";
+import { AlertCircle, CheckCircle2, Flag, Home as HomeIcon, MessageCircle, Share } from "lucide-react";
 
 async function sharePublicReport(report: PublicReport, onFallbackMessage: (message: string) => void): Promise<boolean> {
   if (!report.id) return false;
@@ -352,6 +352,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   const [commentText, setCommentText] = useState("");
   const [interactionBusy, setInteractionBusy] = useState(false);
   const [interactionMessage, setInteractionMessage] = useState("");
+  const [confirmationPulse, setConfirmationPulse] = useState(false);
   const [shareCount, setShareCount] = useState(0);
   const slideRef = useRef<HTMLElement | null>(null);
 
@@ -507,6 +508,12 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   }, [report.id]);
 
   useEffect(() => {
+    if (!interactionMessage) return;
+    const timer = window.setTimeout(() => setInteractionMessage(""), 4200);
+    return () => window.clearTimeout(timer);
+  }, [interactionMessage]);
+
+  useEffect(() => {
     if (!supabase || !report.id || !visitorToken) return;
     let cancelled = false;
     void (async () => {
@@ -550,6 +557,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
       }
       setConfirmed(result.confirmed);
       setConfirmationCount(result.count);
+      setInteractionMessage(result.confirmed ? "Confirmation enregistrée." : "Confirmation retirée.");
     } catch (cause) {
       console.error("[PCS] Confirmation du signalement impossible", cause);
       setInteractionMessage("Impossible d’enregistrer votre confirmation. Vérifiez votre connexion puis réessayez.");
@@ -635,12 +643,18 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
             <div className="feedActions">
               <button
                 type="button"
-                className={confirmed ? "feedPrimary" : "feedSecondary"}
+                className={[
+                  confirmed ? "feedPrimary" : "feedSecondary",
+                  "feedConfirmButton",
+                  confirmationPulse ? "isPulsing" : "",
+                ].filter(Boolean).join(" ")}
+                onPointerDown={() => setConfirmationPulse(true)}
                 onClick={toggleConfirmation}
                 disabled={interactionBusy}
+                aria-pressed={confirmed}
                 aria-label={confirmed ? "Retirer ma confirmation" : "Confirmer ce signalement"}
               >
-                <span aria-hidden="true">👍</span>
+                <span className="feedConfirmIcon" aria-hidden="true">👍</span>
                 <small>{confirmationCount}</small>
               </button>
               <button
@@ -720,7 +734,28 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 </form>
               </section>
             )}
-            {interactionMessage && <p role="status" aria-live="polite">{interactionMessage}</p>}
+            {interactionMessage && (
+              <div
+                className={`citizenInteractionPopup${/^((Impossible|Les interactions|Activez)/i.test(interactionMessage)) ? " isError" : ""}`}
+                role="status"
+                aria-live="polite"
+              >
+                <span className="citizenInteractionPopupIcon" aria-hidden="true">
+                  {/^(Impossible|Les interactions|Activez)/i.test(interactionMessage)
+                    ? <AlertCircle strokeWidth={2.4} />
+                    : <CheckCircle2 strokeWidth={2.4} />}
+                </span>
+                <span className="citizenInteractionPopupText">{interactionMessage}</span>
+                <button
+                  type="button"
+                  className="citizenInteractionPopupClose"
+                  onClick={() => setInteractionMessage("")}
+                  aria-label="Fermer le message"
+                >
+                  ×
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
