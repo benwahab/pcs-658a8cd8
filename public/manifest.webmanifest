@@ -17,13 +17,7 @@
   },
   "icons": [
     {
-      "src": "/assets/pcs-splash-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/pcs-splash-logo.svg",
+      "src": "/assets/pcs-favicon.svg?v=16",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

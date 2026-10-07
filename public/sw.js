@@ -1,5 +1,5 @@
-const CACHE_NAME="pcs-shell-v24";
-const APP_SHELL=["/","/manifest.webmanifest?v=15","/assets/pcs-splash-logo.svg"];
+const CACHE_NAME="pcs-shell-v25";
+const APP_SHELL=["/","/manifest.webmanifest?v=15","/assets/pcs-favicon.svg"];
 
 async function cacheShell(){
   const cache=await caches.open(CACHE_NAME);
