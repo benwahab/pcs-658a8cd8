@@ -1,0 +1,13 @@
+project_id = "rqraxjypjwsxcmjdwroy"
+
+[functions.cst-auth]
+verify_jwt = false
+
+[functions.cst-media-moderation]
+verify_jwt = true
+
+[functions.report-media-upload]
+verify_jwt = true
+
+[functions.organization-signup]
+verify_jwt = false
