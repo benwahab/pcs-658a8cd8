@@ -38,10 +38,6 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     const video = ref.current;
     if (!video) return;
 
-    // The citizen feed is itself the scroll container. Using the browser
-    // viewport as the observer root is unreliable on mobile/PWA, where the
-    // feed can scroll inside a fixed-height app shell. Observe against the
-    // actual feed so videos are activated as they approach the visible slide.
     const feedRoot = video.closest<HTMLElement>(".citizenFeed");
 
     const observer = new IntersectionObserver(
@@ -57,25 +53,75 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     const video = ref.current;
     if (!video) return;
 
+    let disposed = false;
+
+    const stopOtherFeedVideos = () => {
+      if (activeFeedVideo && activeFeedVideo !== video) {
+        activeFeedVideo.pause();
+      }
+    };
+
+    const tryPlay = () => {
+      if (disposed || !active || !autoplayAllowed) return;
+
+      // Explicit properties are important on mobile WebKit/Chromium:
+      // the JSX attributes alone are not always enough after a source reload.
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+
+      stopOtherFeedVideos();
+      activeFeedVideo = video;
+
+      void video.play().catch(() => {
+        // If the media was still loading, canplay/loadeddata will retry.
+        // If the browser blocks autoplay, the native user gesture path below
+        // still allows the citizen to start the video manually.
+      });
+    };
+
+    const onReady = () => {
+      if (!active) return;
+      tryPlay();
+    };
+
+    const onUserPlay = () => {
+      activeFeedVideo = video;
+    };
+
+    const onPointerStart = () => {
+      // A tap directly on the video is a user gesture. Retry playback with
+      // the same muted/inline settings when autoplay was refused.
+      if (!video.paused) return;
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      void video.play().catch(() => undefined);
+    };
+
+    video.addEventListener("canplay", onReady);
+    video.addEventListener("loadeddata", onReady);
+    video.addEventListener("play", onUserPlay);
+    video.addEventListener("pointerup", onPointerStart);
+
     const onVisibility = () => {
       if (document.visibilityState !== "visible") video.pause();
+      else if (active) tryPlay();
     };
 
     document.addEventListener("visibilitychange", onVisibility);
 
     if (active) {
-      // Prepare the visible video and allow it to buffer before playback.
       video.preload = "auto";
-      if (video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
-        video.load();
-      }
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
 
-      if (autoplayAllowed) {
-        if (activeFeedVideo && activeFeedVideo !== video) {
-          activeFeedVideo.pause();
-        }
-        activeFeedVideo = video;
-        void video.play().catch(() => undefined);
+      if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+        tryPlay();
+      } else {
+        // Start loading first; playback is retried from canplay/loadeddata.
+        video.load();
       }
     } else {
       video.pause();
@@ -83,8 +129,12 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     }
 
     return () => {
+      disposed = true;
+      video.removeEventListener("canplay", onReady);
+      video.removeEventListener("loadeddata", onReady);
+      video.removeEventListener("play", onUserPlay);
+      video.removeEventListener("pointerup", onPointerStart);
       document.removeEventListener("visibilitychange", onVisibility);
-      // Stop playback when this slide is removed or replaced by another media item.
       video.pause();
       if (activeFeedVideo === video) activeFeedVideo = null;
     };
