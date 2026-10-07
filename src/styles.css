@@ -1824,3 +1824,29 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
     font-size:.58rem!important;
   }
 }
+
+
+/* PCS mobile feed: final visible sizing and left metadata position. */
+@media(max-width:700px){
+  .citizenSlideTrack .slideOverlay{
+    padding-top:128px!important;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome,
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport{
+    width:30px!important;
+    min-width:30px!important;
+    height:30px!important;
+    min-height:30px!important;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
+    width:16px!important;
+    height:16px!important;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
+    top:33px!important;
+    width:64px!important;
+    font-size:.55rem!important;
+  }
+}
