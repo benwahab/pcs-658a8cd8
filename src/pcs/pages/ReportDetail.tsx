@@ -17,7 +17,10 @@ export default function ReportDetail(){
   if(typeof window==="undefined")return;
   const standalone=window.matchMedia("(display-mode: standalone)").matches||window.matchMedia("(display-mode: fullscreen)").matches||("standalone"in navigator&&(navigator as Navigator & {standalone?:boolean}).standalone===true);
   if(standalone||localStorage.getItem("pcs_pwa_installed_v1")==="true")return;
-  localStorage.setItem("pcs-pending-deeplink-v1",window.location.pathname);
+  localStorage.setItem("pcs-pending-deeplink-v1",JSON.stringify({
+    path:window.location.pathname,
+    createdAt:Date.now(),
+  }));
  },[]);
  useEffect(()=>{(async()=>{if(!supabase||!id){setError("Signalement introuvable.");return}const [reportRes,historyRes,mediaRes,roles]=await Promise.all([supabase.from("public_reports").select("*").eq("id",id).single(),supabase.from("public_report_status_history").select("id,old_status,new_status,reason,created_at").eq("report_id",id).order("created_at",{ascending:true}),supabase.from("public_report_media").select("id,storage_path,media_role,media_type").eq("report_id",id).order("created_at",{ascending:true}),getMyRoles()]);if(reportRes.error){setError("Signalement introuvable ou inaccessible.");return}setR(reportRes.data as Report);const staff=canOperate(roles);setShowOps(staff);if(!historyRes.error)setHistory((historyRes.data??[]) as History[]);if(!mediaRes.error){const urls=await Promise.all((mediaRes.data as Media[]).map(async m=>({id:m.id,url:await createReportMediaUrl(m.storage_path),media_role:m.media_role,media_type:m.media_type})));setMedia(urls)}if(staff)setComments(await listReportComments(id) as Comment[])})().catch(e=>setError(e instanceof Error?e.message:"Impossible de charger le signalement."))},[id]);
  if(error)return <section className="narrow"><div className="card error">{error}</div><Link to="/">Retour à l’accueil</Link></section>;if(!r)return <section className="narrow"><div className="card">Chargement…</div></section>;
