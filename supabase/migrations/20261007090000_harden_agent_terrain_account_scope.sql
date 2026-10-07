@@ -64,6 +64,7 @@ using (
 );
 
 drop policy if exists assignments_select_scoped on public.report_assignments;
+drop policy if exists assignments_mairie_or_agent on public.report_assignments;
 create policy assignments_select_scoped
 on public.report_assignments
 for select
@@ -153,13 +154,21 @@ using (
 );
 
 drop policy if exists media_insert_agent_resolution on public.report_media;
-create policy media_insert_agent_resolution
+drop policy if exists media_insert on public.report_media;
+create policy media_insert
 on public.report_media
 for insert to authenticated
 with check (
   media_role = 'resolution_video'
+  and moderation_status = 'pending'
+  and media_type in ('video/mp4','video/webm','video/quicktime')
+  and file_size is not null
+  and file_size between 1 and 104857600
+  and captured_latitude is not null
+  and captured_longitude is not null
+  and accuracy_m is not null
+  and accuracy_m between 0 and 20
   and uploaded_by = auth.uid()
-  and media_type like 'video/%'
   and private.is_active_field_agent()
   and exists (
     select 1
@@ -168,7 +177,14 @@ with check (
     where ra.report_id = report_media.report_id
       and ra.agent_id = auth.uid()
       and ra.unassigned_at is null
+      and ra.assignment_status in ('assigned','accepted','in_progress')
       and r.status = 'in_progress'
+      and r.latitude is not null
+      and r.longitude is not null
+      and earth_distance(
+        ll_to_earth(r.latitude,r.longitude),
+        ll_to_earth(report_media.captured_latitude,report_media.captured_longitude)
+      ) <= 20
   )
 );
 
