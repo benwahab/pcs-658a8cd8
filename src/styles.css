@@ -1864,3 +1864,119 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
     transform:translateY(7px)!important;
   }
 }
+
+/* PCS comments: polished social-style presentation on mobile. */
+.citizenPublicComments{
+  gap:14px!important;
+  padding:16px!important;
+  border-radius:22px!important;
+  background:rgba(7,10,14,.96)!important;
+  box-shadow:0 20px 60px rgba(0,0,0,.58)!important;
+}
+.citizenCommentsHeader{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  padding-bottom:4px!important;
+}
+.citizenCommentsHeader h3{
+  margin:0!important;
+  font-size:1.12rem!important;
+  font-weight:750!important;
+  letter-spacing:-.02em!important;
+}
+.citizenCommentsHeader .feedSecondary{
+  min-height:36px!important;
+  padding:7px 12px!important;
+  border-radius:999px!important;
+  font-size:.72rem!important;
+}
+.citizenPublicComment{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:10px!important;
+  padding:4px 0!important;
+  border:0!important;
+  background:transparent!important;
+}
+.citizenCommentAvatar{
+  flex:0 0 38px!important;
+  width:38px!important;
+  height:38px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:linear-gradient(145deg,#7c4dff,#5425c7)!important;
+  color:#fff!important;
+  font-weight:800!important;
+  font-size:.9rem!important;
+  box-shadow:0 5px 16px rgba(91,49,210,.35)!important;
+}
+.citizenCommentBody{min-width:0!important;flex:1!important;}
+.citizenCommentMeta{display:flex!important;align-items:baseline!important;gap:8px!important;flex-wrap:wrap!important;margin-bottom:5px!important;}
+.citizenCommentMeta strong{font-size:.78rem!important;color:#fff!important;}
+.citizenCommentMeta small{margin:0!important;color:#8e98a5!important;font-size:.63rem!important;}
+.citizenCommentBody p{
+  margin:0!important;
+  padding:9px 12px!important;
+  border-radius:5px 16px 16px 16px!important;
+  background:rgba(255,255,255,.09)!important;
+  color:#f7f8fa!important;
+  font-size:.84rem!important;
+  line-height:1.42!important;
+}
+.citizenPublicComments form{
+  display:grid!important;
+  grid-template-columns:38px minmax(0,1fr)!important;
+  gap:9px!important;
+  padding:12px 0 0!important;
+  border-top:1px solid rgba(255,255,255,.12)!important;
+}
+.citizenPublicComments form:before{
+  content:"C";
+  width:38px;height:38px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:linear-gradient(145deg,#7c4dff,#5425c7);
+  color:#fff;font-weight:800;font-size:.9rem;
+  grid-row:1 / span 3;
+}
+.citizenPublicComments form label{
+  grid-column:2!important;
+  font-size:.72rem!important;
+  color:#9da6b3!important;
+  margin:0!important;
+}
+.citizenPublicComments textarea{
+  grid-column:2!important;
+  min-height:70px!important;
+  resize:none!important;
+  padding:11px 13px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:16px!important;
+  background:rgba(255,255,255,.07)!important;
+  color:#fff!important;
+  font-size:.84rem!important;
+  line-height:1.4!important;
+  box-shadow:none!important;
+}
+.citizenPublicComments textarea::placeholder{color:#8f98a5!important;}
+.citizenPublicComments form button{
+  grid-column:2!important;
+  justify-self:end!important;
+  min-height:36px!important;
+  padding:7px 16px!important;
+  border-radius:999px!important;
+  font-size:.72rem!important;
+}
+@media(max-width:700px){
+  .citizenPublicComments{
+    right:62px!important;
+    bottom:14px!important;
+    width:calc(100vw - 82px)!important;
+    max-height:66dvh!important;
+    padding:14px!important;
+    border-radius:20px!important;
+  }
+}
