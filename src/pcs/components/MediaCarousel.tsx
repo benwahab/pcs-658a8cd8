@@ -13,6 +13,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
   const [autoplayAllowed, setAutoplayAllowed] = useState(true);
+  const [slowNetwork, setSlowNetwork] = useState(false);
 
   useEffect(() => {
     const connection = (
@@ -25,6 +26,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       connection?.effectiveType === "slow-2g" ||
       connection?.effectiveType === "2g";
 
+    setSlowNetwork(slowNetwork);
     setAutoplayAllowed(
       !slowNetwork &&
         !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -101,7 +103,9 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     document.addEventListener("visibilitychange", onVisibility);
 
     if (active) {
-      video.preload = "auto";
+      // Keep the first visible video responsive on mobile data.
+      // On 2G/Save-Data, metadata is enough until the user explicitly plays.
+      video.preload = slowNetwork ? "metadata" : "auto";
       video.muted = true;
       video.defaultMuted = true;
       video.playsInline = true;
@@ -126,7 +130,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       video.pause();
       if (activeFeedVideo === video) activeFeedVideo = null;
     };
-  }, [active, autoplayAllowed]);
+  }, [active, autoplayAllowed, slowNetwork]);
 
   return (
     <div className="feedVideoFrame">
@@ -137,8 +141,8 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
         autoPlay
         playsInline
         muted
-        loop
-        preload="auto"
+        loop={!slowNetwork}
+        preload="metadata"
         controls
         aria-label="Vidéo du signalement"
         controlsList="noremoteplayback"
