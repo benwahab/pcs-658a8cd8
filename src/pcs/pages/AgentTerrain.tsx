@@ -120,6 +120,19 @@ export default function AgentTerrain(){
       if(active)navigate("/connexion-operationnelle?mode=agent");
       return;
      }
+     if(!supabase){
+      if(active)navigate("/connexion-operationnelle?mode=agent");
+      return;
+     }
+     const {data:agent,error:agentError}=await supabase
+      .from("field_agents")
+      .select("is_active")
+      .eq("user_id",session.user.id)
+      .maybeSingle();
+     if(agentError||!agent?.is_active){
+      if(active)navigate("/connexion-operationnelle?mode=agent");
+      return;
+     }
     }catch{
      if(metadataRole!=="agent_terrain"){
       if(active)navigate("/connexion-operationnelle?mode=agent");
