@@ -343,6 +343,10 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
       return;
     }
 
+    // Observe against the actual citizen feed scroll container. This is
+    // important on mobile/PWA where the feed can scroll inside the app shell
+    // instead of the browser viewport.
+    const feedRoot = slide.closest<HTMLElement>(".citizenFeed");
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
@@ -350,7 +354,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
           observer.disconnect();
         }
       },
-      { rootMargin: "700px 0px", threshold: 0 },
+      { root: feedRoot ?? null, rootMargin: "700px 0px", threshold: 0 },
     );
 
     observer.observe(slide);
