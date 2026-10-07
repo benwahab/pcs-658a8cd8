@@ -831,45 +831,64 @@ export type Database = {
       }
       organization_signup_requests: {
         Row: {
+          commune_id: string | null
           created_at: string
           email: string
           full_name: string
           id: string
           organization_id: string
+          phone: string | null
+          region_id: string | null
           review_note: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          structure_name: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          commune_id?: string | null
           created_at?: string
           email: string
           full_name: string
           id?: string
           organization_id: string
+          phone?: string | null
+          region_id?: string | null
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          structure_name?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          commune_id?: string | null
           created_at?: string
           email?: string
           full_name?: string
           id?: string
           organization_id?: string
+          phone?: string | null
+          region_id?: string | null
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          structure_name?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_signup_requests_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "organization_signup_requests_organization_id_fkey"
             columns: ["organization_id"]
@@ -877,11 +896,19 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "organization_signup_requests_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
         ]
       }
       organization_units: {
         Row: {
           code: string
+          commune_id: string | null
           created_at: string
           description: string | null
           email: string | null
@@ -900,6 +927,7 @@ export type Database = {
         }
         Insert: {
           code: string
+          commune_id?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -918,6 +946,7 @@ export type Database = {
         }
         Update: {
           code?: string
+          commune_id?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -935,6 +964,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_units_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "organization_units_organization_id_fkey"
             columns: ["organization_id"]
@@ -1481,6 +1517,7 @@ export type Database = {
           from_mairie_id: string
           id: string
           organization_id: string
+          organization_unit_id: string | null
           report_id: string
           responded_at: string | null
           responded_by: string | null
@@ -1495,6 +1532,7 @@ export type Database = {
           from_mairie_id: string
           id?: string
           organization_id: string
+          organization_unit_id?: string | null
           report_id: string
           responded_at?: string | null
           responded_by?: string | null
@@ -1509,6 +1547,7 @@ export type Database = {
           from_mairie_id?: string
           id?: string
           organization_id?: string
+          organization_unit_id?: string | null
           report_id?: string
           responded_at?: string | null
           responded_by?: string | null
@@ -1531,6 +1570,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_organization_transfers_organization_unit_id_fkey"
+            columns: ["organization_unit_id"]
+            isOneToOne: false
+            referencedRelation: "organization_units"
             referencedColumns: ["id"]
           },
           {
@@ -2117,15 +2163,19 @@ export type Database = {
       approve_organization_signup_request: {
         Args: { p_note?: string; p_request_id: string }
         Returns: {
+          commune_id: string | null
           created_at: string
           email: string
           full_name: string
           id: string
           organization_id: string
+          phone: string | null
+          region_id: string | null
           review_note: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          structure_name: string | null
           updated_at: string
           user_id: string
         }
@@ -2188,9 +2238,26 @@ export type Database = {
       }
       has_role: { Args: { required_role: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      list_mairie_transmission_targets: {
+        Args: never
+        Returns: {
+          commune_id: string
+          commune_name: string
+          organization_code: string
+          organization_id: string
+          organization_name: string
+          organization_type: string
+          organization_unit_code: string
+          organization_unit_id: string
+          organization_unit_name: string
+          organization_unit_type: string
+        }[]
+      }
       list_organization_signup_requests: {
         Args: never
         Returns: {
+          commune_id: string
+          commune_name: string
           created_at: string
           email: string
           full_name: string
@@ -2198,10 +2265,14 @@ export type Database = {
           organization_code: string
           organization_id: string
           organization_name: string
+          phone: string
+          region_id: string
+          region_name: string
           review_note: string
           reviewed_at: string
           reviewed_by: string
           status: string
+          structure_name: string
           user_id: string
         }[]
       }
@@ -2242,6 +2313,7 @@ export type Database = {
         Args: {
           p_note?: string
           p_organization_id: string
+          p_organization_unit_id: string
           p_report_id: string
         }
         Returns: string
@@ -2306,15 +2378,19 @@ export type Database = {
       reject_organization_signup_request: {
         Args: { p_note: string; p_request_id: string }
         Returns: {
+          commune_id: string | null
           created_at: string
           email: string
           full_name: string
           id: string
           organization_id: string
+          phone: string | null
+          region_id: string | null
           review_note: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          structure_name: string | null
           updated_at: string
           user_id: string
         }
