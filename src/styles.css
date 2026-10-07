@@ -1856,3 +1856,11 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
     line-height:1.1!important;
   }
 }
+
+
+/* PCS mobile feed: slightly lower the Signaler action only. */
+@media(max-width:700px){
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport{
+    transform:translateY(7px)!important;
+  }
+}
