@@ -118,12 +118,27 @@ export async function createReportMediaUrl(
     throw new Error("Supabase n’est pas configuré.");
   }
 
-  const { data, error } = await supabase.storage
+  // Public report media stays in a private bucket. Generate the signed URL
+  // server-side after checking that the media is approved and its report is public.
+  const { data, error } = await supabase.functions.invoke("public-report-media-url", {
+    body: { path, expiresIn },
+  });
+
+  if (!error && data?.signedUrl) {
+    return data.signedUrl as string;
+  }
+
+  // Keep the existing Storage path as a compatibility fallback for clients
+  // where the direct Storage signing policy is already working.
+  const { data: signed, error: signError } = await supabase.storage
     .from("report-media")
     .createSignedUrl(path, expiresIn);
 
-  if (error) throw error;
-  return data.signedUrl;
+  if (signError) {
+    throw error ?? signError;
+  }
+
+  return signed.signedUrl;
 }
 
 export async function uploadResolutionVideo(
