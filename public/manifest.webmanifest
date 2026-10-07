@@ -23,7 +23,7 @@
       "purpose": "any"
     },
     {
-      "src": "/assets/pcs-splash-logo.png",
+      "src": "/assets/pcs-splash-logo.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
