@@ -418,10 +418,8 @@ function App({ children }: { children: ReactNode }) {
               z-index: 99999;
               display: grid;
               place-items: center;
-              /* PCS — écran de lancement : violet profond avec une touche de violet cristal. */
-              background:
-                radial-gradient(circle at 50% 42%, rgba(91, 42, 140, .16) 0%, rgba(91, 42, 140, .07) 28%, rgba(20, 0, 36, 0) 58%),
-                linear-gradient(145deg, #17002b 0%, #120021 48%, #0b0015 100%);
+              /* PCS — écran de lancement : violet officiel uniforme. */
+              background:#160029;
             }
             .pcsSplashContent {
               display: flex;
@@ -451,7 +449,7 @@ function App({ children }: { children: ReactNode }) {
           `}</style>
           <div className="pcsSplash" role="status" aria-label={isConnecting ? "Recherche de connexion" : "Chargement de PCS"}>
             <div className="pcsSplashContent">
-              <img src="/assets/pcs-splash-logo.png" alt="PCS — Plateforme de Citoyenneté et de Signalement" />
+              <img src="/assets/pcs-splash-logo.svg" alt="PCS — Plateforme de Citoyenneté et de Signalement" />
               {isConnecting && <div className="pcsSplashSpinner" aria-hidden="true" />}
             </div>
           </div>
