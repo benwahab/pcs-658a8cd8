@@ -19,6 +19,26 @@ $function$;
 revoke all on function private.is_active_field_agent() from public, anon;
 grant execute on function private.is_active_field_agent() to authenticated;
 
+create or replace function private.user_has_active_report_assignment(p_report_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $function$
+  select exists (
+    select 1
+    from public.report_assignments ra
+    join public.field_agents fa on fa.user_id = ra.agent_id and fa.is_active
+    where ra.report_id = p_report_id
+      and ra.agent_id = (select auth.uid())
+      and ra.unassigned_at is null
+  );
+$function$;
+
+revoke all on function private.user_has_active_report_assignment(uuid) from public, anon;
+grant execute on function private.user_has_active_report_assignment(uuid) to authenticated;
+
 drop policy if exists reports_select_scoped on public.reports;
 create policy reports_select_scoped
 on public.reports
@@ -294,3 +314,11 @@ grant execute on function public.agent_confirm_field_verification(uuid,double pr
 
 revoke execute on function public.agent_resolve_report(uuid,uuid,text) from public, anon;
 grant execute on function public.agent_resolve_report(uuid,uuid,text) to authenticated;
+
+-- Existing field-agent accounts created before this hardening inherited the citizen role
+-- from the generic auth-user trigger. Keep terrain accounts operational-only.
+delete from public.user_roles ur
+using public.roles r, public.field_agents fa
+where ur.role_id = r.id
+  and ur.user_id = fa.user_id
+  and r.code = 'citizen';
