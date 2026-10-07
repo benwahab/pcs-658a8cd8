@@ -10,6 +10,7 @@ import BrandLogo from "./components/BrandLogo";
 export function Shell({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [feedHeaderHidden, setFeedHeaderHidden] = useState(false);
+  // Professional access: collapsed by default and auto-collapses 5 seconds after opening.
   const professionalMenuTimer = useRef<number | undefined>(undefined);
   const navigate = useNavigate();
   const location = useLocation();
