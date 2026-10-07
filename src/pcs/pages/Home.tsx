@@ -18,7 +18,7 @@ import { MediaCarousel } from "../components/MediaCarousel";
 import { Flag, Home as HomeIcon, MessageCircle, Share } from "lucide-react";
 
 async function sharePublicReport(report: PublicReport, onFallbackMessage: (message: string) => void): Promise<boolean> {
-  if (!report.id) return;
+  if (!report.id) return false;
   const url = new URL(`/signalement/${encodeURIComponent(report.id)}`, window.location.origin).toString();
   const shareData = { title: report.title ? `${report.title} — PCS` : "Signalement citoyen — PCS", text: "Consultez ce signalement citoyen sur PCS.", url };
   try {
