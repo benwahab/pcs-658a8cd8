@@ -13,6 +13,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
   const [autoplayAllowed, setAutoplayAllowed] = useState(true);
+  const [needsPlay, setNeedsPlay] = useState(false);
 
   useEffect(() => {
     const connection = (
@@ -61,8 +62,11 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       }
     };
 
-    const tryPlay = () => {
-      if (disposed || !active || !autoplayAllowed) return;
+    const tryPlay = (force = false) => {
+      if (disposed || !active || (!autoplayAllowed && !force)) {
+        if (!autoplayAllowed && active) setNeedsPlay(true);
+        return;
+      }
 
       // Explicit properties are important on mobile WebKit/Chromium:
       // the JSX attributes alone are not always enough after a source reload.
@@ -73,11 +77,12 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       stopOtherFeedVideos();
       activeFeedVideo = video;
 
-      void video.play().catch(() => {
-        // If the media was still loading, canplay/loadeddata will retry.
-        // If the browser blocks autoplay, the native user gesture path below
-        // still allows the citizen to start the video manually.
-      });
+      void video.play()
+        .then(() => setNeedsPlay(false))
+        .catch(() => {
+          // Keep a visible, user-gesture fallback instead of leaving a frozen frame.
+          setNeedsPlay(true);
+        });
     };
 
     const onReady = () => {
@@ -87,21 +92,22 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
 
     const onUserPlay = () => {
       activeFeedVideo = video;
+      setNeedsPlay(false);
     };
 
+    const onPlaybackError = () => setNeedsPlay(true);
+
     const onPointerStart = () => {
-      // A tap directly on the video is a user gesture. Retry playback with
-      // the same muted/inline settings when autoplay was refused.
+      // A tap directly on the video is a user gesture. Force a retry even
+      // when autoplay was disabled by the browser/network preferences.
       if (!video.paused) return;
-      video.muted = true;
-      video.defaultMuted = true;
-      video.playsInline = true;
-      void video.play().catch(() => undefined);
+      tryPlay(true);
     };
 
     video.addEventListener("canplay", onReady);
     video.addEventListener("loadeddata", onReady);
     video.addEventListener("play", onUserPlay);
+    video.addEventListener("error", onPlaybackError);
     video.addEventListener("pointerup", onPointerStart);
 
     const onVisibility = () => {
@@ -133,6 +139,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       video.removeEventListener("canplay", onReady);
       video.removeEventListener("loadeddata", onReady);
       video.removeEventListener("play", onUserPlay);
+      video.removeEventListener("error", onPlaybackError);
       video.removeEventListener("pointerup", onPointerStart);
       document.removeEventListener("visibilitychange", onVisibility);
       video.pause();
@@ -141,17 +148,32 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
   }, [active, autoplayAllowed]);
 
   return (
-    <video
-      ref={ref}
-      src={src}
-      poster={poster}
-      autoPlay
-      playsInline
-      muted
-      loop
-      preload="auto"
-      aria-label="Vidéo du signalement"
-    />
+    <div className="feedVideoFrame">
+      <video
+        ref={ref}
+        src={src}
+        poster={poster}
+        autoPlay
+        playsInline
+        muted
+        loop
+        preload="auto"
+        aria-label="Vidéo du signalement"
+      />
+      {needsPlay && (
+        <button
+          type="button"
+          className="videoPlayFallback"
+          aria-label="Lire la vidéo"
+          onClick={(event) => {
+            event.stopPropagation();
+            tryPlay(true);
+          }}
+        >
+          <span aria-hidden="true">▶</span>
+        </button>
+      )}
+    </div>
   );
 }
 
