@@ -1832,3 +1832,14 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 }
 
 
+
+
+/* PCS mobile feed: move only the left report metadata block downward. */
+@media(max-width:700px){
+  .citizenSlideTrack .slideOverlay > .feedEyebrow,
+  .citizenSlideTrack .slideOverlay > .row,
+  .citizenSlideTrack .slideOverlay > h2,
+  .citizenSlideTrack .slideOverlay > p:not(.eyebrow){
+    transform:translateY(20px)!important;
+  }
+}
