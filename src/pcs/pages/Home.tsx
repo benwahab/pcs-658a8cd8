@@ -575,19 +575,16 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
             </p>
           )}
 
-          <div className="citizenReportInteractions citizenVideoInteractions" aria-label="Interactions citoyennes">
-            <div className="feedActions citizenVideoActions">
-              <button type="button" className={`feedSecondary citizenVideoAction${confirmed ? " is-active" : ""}`} onClick={toggleConfirmation} disabled={interactionBusy} aria-label={confirmed ? "Retirer ma confirmation" : "Confirmer ce signalement"}>
-                <span aria-hidden="true">👍</span>
-                <small>{confirmationCount}</small>
+          <div className="citizenReportInteractions" aria-label="Interactions citoyennes">
+            <div className="feedActions">
+              <button type="button" className={confirmed ? "feedPrimary" : "feedSecondary"} onClick={toggleConfirmation} disabled={interactionBusy}>
+                {confirmed ? "✓ Confirmé" : "Je confirme"}
               </button>
-              <button type="button" className="feedSecondary citizenVideoAction" onClick={() => setCommentsOpen((open) => !open)} aria-expanded={commentsOpen} aria-label="Afficher les commentaires">
-                <span aria-hidden="true">💬</span>
-                <small>{publicComments.length}</small>
+              <button type="button" className="feedSecondary" onClick={() => setCommentsOpen((open) => !open)} aria-expanded={commentsOpen}>
+                Commenter ({publicComments.length})
               </button>
-              <button type="button" className="feedSecondary citizenVideoAction" onClick={() => void sharePublicReport(report, setInteractionMessage)} aria-label={`Partager le signalement ${report.reference_code ?? ""}`}>
-                <span aria-hidden="true">↗</span>
-                <small>Partager</small>
+              <button type="button" className="feedSecondary" onClick={() => void sharePublicReport(report, setInteractionMessage)} aria-label={`Partager le signalement ${report.reference_code ?? ""}`}>
+                ↗ Partager
               </button>
             </div>
             {commentsOpen && (
