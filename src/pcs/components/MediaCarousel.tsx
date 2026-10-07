@@ -61,11 +61,8 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       }
     };
 
-    const tryPlay = (force = false) => {
-      if (disposed || !active || (!autoplayAllowed && !force)) {
-        if (!autoplayAllowed && active) setNeedsPlay(true);
-        return;
-      }
+    const tryPlay = () => {
+      if (disposed || !active || !autoplayAllowed) return;
 
       // Explicit properties are important on mobile WebKit/Chromium:
       // the JSX attributes alone are not always enough after a source reload.
@@ -92,17 +89,9 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       // Native controls remain available for manual playback and audio.
     };
 
-    const onPointerStart = () => {
-      // A tap directly on the video is a user gesture. Force a retry even
-      // when autoplay was disabled by the browser/network preferences.
-      if (!video.paused) return;
-      tryPlay(true);
-    };
-
     video.addEventListener("canplay", onReady);
     video.addEventListener("loadeddata", onReady);
     video.addEventListener("play", onUserPlay);
-    video.addEventListener("pointerup", onPointerStart);
 
     const onVisibility = () => {
       if (document.visibilityState !== "visible") video.pause();
@@ -133,7 +122,6 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       video.removeEventListener("canplay", onReady);
       video.removeEventListener("loadeddata", onReady);
       video.removeEventListener("play", onUserPlay);
-      video.removeEventListener("pointerup", onPointerStart);
       document.removeEventListener("visibilitychange", onVisibility);
       video.pause();
       if (activeFeedVideo === video) activeFeedVideo = null;
