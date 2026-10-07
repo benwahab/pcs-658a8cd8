@@ -1281,26 +1281,6 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   filter:brightness(1.08)!important;
   box-shadow:0 10px 26px rgba(0,0,0,.4),0 0 18px rgba(125,72,255,.25)!important;
 }
-@media(max-width:700px){
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome,
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport{
-    width:44px!important;
-    min-width:44px!important;
-    height:44px!important;
-    min-height:44px!important;
-  }
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
-    width:23px!important;
-    height:23px!important;
-  }
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
-    top:47px!important;
-    font-size:.64rem!important;
-  }
-}
-
 .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions > button:first-child{
   color:#ffd21a!important;
   background:transparent!important;
@@ -1343,8 +1323,8 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
-    width:20px!important;
-    height:20px!important;
+    width:16px!important;
+    height:16px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
@@ -1805,29 +1785,6 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   .citizenSlideTrack .slideOverlay .citizenReportInteractions{
     bottom:92px!important;
   }
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome,
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport{
-    width:38px!important;
-    min-width:38px!important;
-    height:38px!important;
-    min-height:38px!important;
-  }
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
-    width:20px!important;
-    height:20px!important;
-  }
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
-  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
-    top:41px!important;
-    width:70px!important;
-    font-size:.58rem!important;
-  }
-}
-
-
-/* PCS mobile feed: final visible sizing and left metadata position. */
-@media(max-width:700px){
   .citizenSlideTrack .slideOverlay{
     padding-top:128px!important;
   }
@@ -1840,8 +1797,8 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
-    width:16px!important;
-    height:16px!important;
+    width:20px!important;
+    height:20px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
@@ -1850,3 +1807,5 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
     font-size:.55rem!important;
   }
 }
+
+
