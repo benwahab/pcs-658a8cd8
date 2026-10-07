@@ -44,12 +44,16 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
 
     const observer = new IntersectionObserver(
       ([entry]) => setActive(Boolean(entry?.isIntersecting)),
-      { root: feedRoot ?? null, rootMargin: "320px 0px", threshold: 0.2 },
+      {
+        root: feedRoot ?? null,
+        rootMargin: slowNetwork ? "40px 0px" : "180px 0px",
+        threshold: slowNetwork ? 0.45 : 0.2,
+      },
     );
 
     observer.observe(video);
     return () => observer.disconnect();
-  }, []);
+  }, [slowNetwork]);
 
   useEffect(() => {
     const video = ref.current;
@@ -142,7 +146,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
         playsInline
         muted
         loop={!slowNetwork}
-        preload="metadata"
+        preload={active ? "metadata" : "none"}
         controls
         aria-label="Vidéo du signalement"
         controlsList="noremoteplayback"
