@@ -267,7 +267,7 @@ function App({ children }: { children: ReactNode }) {
       const pending = JSON.parse(rawPending) as { path?: string; createdAt?: number };
       const isFresh =
         typeof pending.path === "string" &&
-        /^\/signalement\/[^/]+$/.test(pending.path) &&
+        /^\\/signalement\\/[^/]+$/.test(pending.path) &&
         typeof pending.createdAt === "number" &&
         Date.now() - pending.createdAt <= 86400000;
 
