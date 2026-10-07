@@ -105,35 +105,38 @@ export default function Home() {
     // On entering the home route, always begin at the report-entry slide.
     resetHomePosition();
 
-    // Scroll discoverability hint: after a few seconds of inactivity on the
-    // home page, briefly move the real feed and return it to the top. This is
-    // deliberately session-based, not localStorage-based, so it can replay on
-    // every new arrival on the home route.
+    // Scroll discoverability hint: show a short native-feed movement after
+    // a few seconds of inactivity. After each completed hint, wait again so a
+    // citizen who remains on the home page can rediscover the scroll naturally.
     let hintCancelled = false;
     let hinting = false;
     let hintStartTimer: number | undefined;
     let hintReturnTimer: number | undefined;
     let hintResetTimer: number | undefined;
+    let hintRepeatTimer: number | undefined;
 
-    const scheduleScrollHint = () => {
+    const scheduleScrollHint = (delay = 3000) => {
       if (hintCancelled || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       if (hintStartTimer !== undefined) window.clearTimeout(hintStartTimer);
       hintStartTimer = window.setTimeout(() => {
         if (hintCancelled || hinting || feed.scrollTop > 2) return;
 
         hinting = true;
-        feed.scrollTo({ top: 26, left: 0, behavior: "smooth" });
+        feed.scrollTo({ top: 30, left: 0, behavior: "smooth" });
+
         hintReturnTimer = window.setTimeout(() => {
-          if (!hintCancelled) {
-            feed.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-            hintResetTimer = window.setTimeout(() => {
-              hinting = false;
-            }, 420);
-          } else {
+          if (hintCancelled) {
             hinting = false;
+            return;
           }
-        }, 520);
-      }, 3000);
+
+          feed.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+          hintResetTimer = window.setTimeout(() => {
+            hinting = false;
+            scheduleScrollHint(8000);
+          }, 500);
+        }, 650);
+      }, delay);
     };
 
     const cancelScrollHint = () => {
@@ -141,6 +144,7 @@ export default function Home() {
       if (hintStartTimer !== undefined) window.clearTimeout(hintStartTimer);
       if (hintReturnTimer !== undefined) window.clearTimeout(hintReturnTimer);
       if (hintResetTimer !== undefined) window.clearTimeout(hintResetTimer);
+      if (hintRepeatTimer !== undefined) window.clearTimeout(hintRepeatTimer);
       if (hinting) {
         hinting = false;
         feed.scrollTo({ top: 0, left: 0, behavior: "auto" });
