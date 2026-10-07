@@ -182,7 +182,11 @@ export default function Home() {
     };
 
     feed.addEventListener("scroll", onScroll, { passive: true });
-    const cancelEvents = ["touchstart", "pointerdown", "wheel"] as const;
+    // Do not cancel on touchstart/pointerdown: mobile browsers fire those
+    // events simply because the user touches the feed, which prevented the
+    // discoverability hint from ever appearing on phones. A real swipe still
+    // produces touchmove/scroll and cancels the hint.
+    const cancelEvents = ["touchmove", "wheel"] as const;
     cancelEvents.forEach((eventName) => feed.addEventListener(eventName, cancelScrollHint, { passive: true }));
     return () => {
       window.removeEventListener("pcs-home-reset", resetHomePosition);
