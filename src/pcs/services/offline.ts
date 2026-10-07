@@ -6,6 +6,7 @@ const MAX_RESOLUTION_VIDEO_SIZE_BYTES=100*1024*1024;
 
 type PendingVerification={
  id:string;
+ agentId:string;
  reportId:string;
  latitude:number;
  longitude:number;
@@ -15,6 +16,7 @@ type PendingVerification={
 
 type PendingResolution={
  id:string;
+ agentId:string;
  reportId:string;
  video:Blob;
  fileName:string;
@@ -30,12 +32,8 @@ function openDb():Promise<IDBDatabase>{
   const req=indexedDB.open(DB_NAME,DB_VERSION);
   req.onupgradeneeded=()=>{
    const db=req.result;
-   if(!db.objectStoreNames.contains(STORE_VERIFICATIONS)){
-    db.createObjectStore(STORE_VERIFICATIONS,{keyPath:"id"});
-   }
-   if(!db.objectStoreNames.contains(STORE_RESOLUTIONS)){
-    db.createObjectStore(STORE_RESOLUTIONS,{keyPath:"id"});
-   }
+   if(!db.objectStoreNames.contains(STORE_VERIFICATIONS))db.createObjectStore(STORE_VERIFICATIONS,{keyPath:"id"});
+   if(!db.objectStoreNames.contains(STORE_RESOLUTIONS))db.createObjectStore(STORE_RESOLUTIONS,{keyPath:"id"});
   };
   req.onsuccess=()=>resolve(req.result);
   req.onerror=()=>reject(req.error);
@@ -50,34 +48,28 @@ export async function queueFieldVerification(
  item:Omit<PendingVerification,"id"|"createdAt">
 ){
  const db=await openDb();
- try {
+ try{
   await new Promise<void>((resolve,reject)=>{
    const tx=db.transaction(STORE_VERIFICATIONS,"readwrite");
-   tx.objectStore(STORE_VERIFICATIONS).put({
-    ...item,
-    id:String(Date.now())+"-"+crypto.randomUUID(),
-    createdAt:new Date().toISOString()
-   });
+   tx.objectStore(STORE_VERIFICATIONS).put({...item,id:String(Date.now())+"-"+crypto.randomUUID(),createdAt:new Date().toISOString()});
    tx.oncomplete=()=>resolve();
    tx.onerror=()=>reject(tx.error);
    tx.onabort=()=>reject(tx.error);
   });
- } finally {
-  closeDb(db);
- }
+ }finally{closeDb(db);}
 }
 
 export async function flushFieldVerifications(
+ agentId:string,
  send:(item:PendingVerification)=>Promise<void>
 ):Promise<FlushResult>{
- if(!navigator.onLine)return {sent:0,failed:0};
+ if(!navigator.onLine)return{sent:0,failed:0};
  const db=await openDb();
  let sent=0,failed=0;
  try{
   const items=await new Promise<PendingVerification[]>((resolve,reject)=>{
-   const req=db.transaction(STORE_VERIFICATIONS,"readonly")
-    .objectStore(STORE_VERIFICATIONS).getAll();
-   req.onsuccess=()=>resolve(req.result);
+   const req=db.transaction(STORE_VERIFICATIONS,"readonly").objectStore(STORE_VERIFICATIONS).getAll();
+   req.onsuccess=()=>resolve(req.result.filter((item:PendingVerification)=>item.agentId===agentId));
    req.onerror=()=>reject(req.error);
   });
   for(const item of items){
@@ -91,83 +83,65 @@ export async function flushFieldVerifications(
      tx.onabort=()=>reject(tx.error);
     });
     sent++;
-   }catch{
-    failed++;
-   }
+   }catch{failed++;}
   }
-  return {sent,failed};
- }finally{
-  closeDb(db);
- }
+  return{sent,failed};
+ }finally{closeDb(db);}
 }
 
-export async function pendingFieldVerificationCount(){
+export async function pendingFieldVerificationCount(agentId:string){
  const db=await openDb();
- try {
+ try{
   return await new Promise<number>((resolve,reject)=>{
-   const req=db.transaction(STORE_VERIFICATIONS,"readonly")
-    .objectStore(STORE_VERIFICATIONS).count();
-   req.onsuccess=()=>resolve(req.result);
+   const req=db.transaction(STORE_VERIFICATIONS,"readonly").objectStore(STORE_VERIFICATIONS).getAll();
+   req.onsuccess=()=>resolve(req.result.filter((item:PendingVerification)=>item.agentId===agentId).length);
    req.onerror=()=>reject(req.error);
   });
- } finally {
-  closeDb(db);
- }
+ }finally{closeDb(db);}
 }
 
-const MISSIONS_KEY="pcs_offline_agent_missions_v1";
+const MISSIONS_PREFIX="pcs_offline_agent_missions_v2_";
 
-export function cacheAgentMissions(missions:unknown[]){
- try{localStorage.setItem(MISSIONS_KEY,JSON.stringify(missions));}catch{}
+export function cacheAgentMissions(agentId:string,missions:unknown[]){
+ try{localStorage.setItem(MISSIONS_PREFIX+agentId,JSON.stringify(missions));}catch{}
 }
 
-export function clearCachedAgentMissions(){
- try{localStorage.removeItem(MISSIONS_KEY);}catch{}
+export function clearCachedAgentMissions(agentId:string){
+ try{localStorage.removeItem(MISSIONS_PREFIX+agentId);}catch{}
 }
 
-export function getCachedAgentMissions<T=any>():T[]{
- try{return JSON.parse(localStorage.getItem(MISSIONS_KEY)||"[]") as T[];}
- catch{return[];}
+export function getCachedAgentMissions<T=any>(agentId:string):T[]{
+ try{return JSON.parse(localStorage.getItem(MISSIONS_PREFIX+agentId)||"[]") as T[];}catch{return[];}
 }
 
 export async function queueResolutionVideo(
  item:Omit<PendingResolution,"id"|"createdAt">
 ){
- if(item.video.size<=0){
-  throw new Error("La vidéo est vide.");
- }
- if(item.video.size>MAX_RESOLUTION_VIDEO_SIZE_BYTES){
-  throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
- }
+ if(item.video.size<=0)throw new Error("La vidéo est vide.");
+ if(item.video.size>MAX_RESOLUTION_VIDEO_SIZE_BYTES)throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
  const db=await openDb();
- try {
+ try{
   await new Promise<void>((resolve,reject)=>{
    const tx=db.transaction(STORE_RESOLUTIONS,"readwrite");
-   tx.objectStore(STORE_RESOLUTIONS).put({
-    ...item,
-    id:String(Date.now())+"-"+crypto.randomUUID(),
-    createdAt:new Date().toISOString()
-   });
+   tx.objectStore(STORE_RESOLUTIONS).put({...item,id:String(Date.now())+"-"+crypto.randomUUID(),createdAt:new Date().toISOString()});
    tx.oncomplete=()=>resolve();
    tx.onerror=()=>reject(tx.error);
    tx.onabort=()=>reject(tx.error);
   });
- } finally {
-  closeDb(db);
- }
+ }finally{closeDb(db);}
 }
 
 export async function flushResolutionVideos(
+ agentId:string,
  send:(item:PendingResolution)=>Promise<void>
 ):Promise<FlushResult>{
- if(!navigator.onLine)return {sent:0,failed:0};
+ if(!navigator.onLine)return{sent:0,failed:0};
  const db=await openDb();
  let sent=0,failed=0;
  try{
   const items=await new Promise<PendingResolution[]>((resolve,reject)=>{
-   const req=db.transaction(STORE_RESOLUTIONS,"readonly")
-    .objectStore(STORE_RESOLUTIONS).getAll();
-   req.onsuccess=()=>resolve(req.result);
+   const req=db.transaction(STORE_RESOLUTIONS,"readonly").objectStore(STORE_RESOLUTIONS).getAll();
+   req.onsuccess=()=>resolve(req.result.filter((item:PendingResolution)=>item.agentId===agentId));
    req.onerror=()=>reject(req.error);
   });
   for(const item of items){
@@ -181,26 +155,19 @@ export async function flushResolutionVideos(
      tx.onabort=()=>reject(tx.error);
     });
     sent++;
-   }catch{
-    failed++;
-   }
+   }catch{failed++;}
   }
-  return {sent,failed};
- }finally{
-  closeDb(db);
- }
+  return{sent,failed};
+ }finally{closeDb(db);}
 }
 
-export async function pendingResolutionVideoCount(){
+export async function pendingResolutionVideoCount(agentId:string){
  const db=await openDb();
- try {
+ try{
   return await new Promise<number>((resolve,reject)=>{
-   const req=db.transaction(STORE_RESOLUTIONS,"readonly")
-    .objectStore(STORE_RESOLUTIONS).count();
-   req.onsuccess=()=>resolve(req.result);
+   const req=db.transaction(STORE_RESOLUTIONS,"readonly").objectStore(STORE_RESOLUTIONS).getAll();
+   req.onsuccess=()=>resolve(req.result.filter((item:PendingResolution)=>item.agentId===agentId).length);
    req.onerror=()=>reject(req.error);
   });
- } finally {
-  closeDb(db);
- }
+ }finally{closeDb(db);}
 }
