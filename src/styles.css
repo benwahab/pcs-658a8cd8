@@ -1400,16 +1400,36 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 }
 
 
-/* Keep professional access attached to the same translucent global navbar. */
+/* Keep professional access discreetly collapsed in the top-right corner.
+   The existing details menu remains unchanged functionally and auto-closes after 5s. */
 .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader {
-  flex: 0 0 auto;
-  margin-left: auto;
+  position: absolute;
+  top: 8px;
+  right: 12px;
   z-index: 102;
+  margin-left: 0;
 }
 .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader summary {
   white-space: nowrap;
-  padding: 8px 12px 8px 9px;
+  width: 38px;
+  height: 38px;
+  box-sizing: border-box;
+  justify-content: center;
+  padding: 6px;
+  gap: 7px;
   font-size: .8rem;
+  overflow: hidden;
+}
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader summary > span:not(.feedAccessIcon) {
+  display: none;
+}
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader[open] summary {
+  width: auto;
+  justify-content: flex-start;
+  padding: 8px 12px 8px 9px;
+}
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader[open] summary > span:not(.feedAccessIcon) {
+  display: inline;
 }
 .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader > div {
   z-index: 103;
@@ -1420,8 +1440,18 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
     padding-left: 10px;
     padding-right: 10px;
   }
+  .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader {
+    top: 7px;
+    right: 10px;
+  }
   .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader summary {
+    width: 34px;
+    height: 34px;
+    padding: 5px;
     gap: 5px;
+  }
+  .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeader[open] summary {
+    width: min(250px, calc(100vw - 20px));
     padding: 7px 8px;
     font-size: .72rem;
   }
