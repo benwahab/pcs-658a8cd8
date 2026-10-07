@@ -32,12 +32,12 @@ Deno.serve(async(req)=>{
    return json({identified:true,challenge:raw,agent:{first_name:agent.first_name,last_name:agent.last_name,matricule:agent.matricule,qualification:agent.qualification}});
   }
   const challenge=String(body.challenge??"");const password=String(body.password??"");if(!challenge||!password)return json({error:"Connexion invalide."},400);
-  const rateKey=await sha256("agent-password|"+challenge+"|"+clientKey);
-  const {data:allowed,error:rateError}=await admin.rpc("consume_agent_login_rate_limit",{p_key_hash:rateKey,p_max_attempts:3,p_window_seconds:600,p_block_seconds:900});
-  if(rateError||allowed===false)return json({error:"Trop de tentatives. Réessayez plus tard."},429);
   const hash=await sha256(challenge);
   const {data:row,error:qe}=await admin.from("agent_login_challenges").select("id,agent_user_id,expires_at,consumed_at").eq("challenge_hash",hash).maybeSingle();
   if(qe||!row||row.consumed_at||new Date(row.expires_at).getTime()<=Date.now())return json({error:"Session de connexion expirée. Recommencez avec votre numéro."},401);
+  const rateKey=await sha256("agent-password|"+row.agent_user_id+"|"+clientKey);
+  const {data:allowed,error:rateError}=await admin.rpc("consume_agent_login_rate_limit",{p_key_hash:rateKey,p_max_attempts:3,p_window_seconds:600,p_block_seconds:900});
+  if(rateError||allowed===false)return json({error:"Trop de tentatives. Réessayez plus tard."},429);
   const {data:agent,error:ae}=await admin.from("field_agents").select("user_id,is_active").eq("user_id",row.agent_user_id).maybeSingle();
   if(ae||!agent?.is_active)return json({error:"Connexion invalide."},401);
   const {data:consumed,error:consumeError}=await admin.from("agent_login_challenges").update({consumed_at:new Date().toISOString()}).eq("id",row.id).is("consumed_at",null).select("id").maybeSingle();
