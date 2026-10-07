@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 const ONBOARDING_KEY = "pcs_onboarding_v1_completed";
+const PENDING_DEEPLINK_KEY = "pcs-pending-deeplink-v1";
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -40,7 +41,11 @@ export default function PwaInstallPrompt() {
     const maybeShowPrompt = () => {
       if (checkInstalled()) return;
       if (!window.__pcsInstallPrompt) return;
-      if (localStorage.getItem(ONBOARDING_KEY) === "true") setVisible(true);
+      const onboardingCompleted = localStorage.getItem(ONBOARDING_KEY) === "true";
+      const pendingDeepLink = /^\/signalement\/[^/]+$/.test(
+        localStorage.getItem(PENDING_DEEPLINK_KEY) ?? "",
+      );
+      if (onboardingCompleted || pendingDeepLink) setVisible(true);
     };
 
     const onBeforeInstallPrompt = (event: Event) => {
@@ -156,7 +161,11 @@ export default function PwaInstallPrompt() {
           Installer PCS
         </h2>
         <p style={{ margin: "0 0 20px", color: "#52605e", lineHeight: 1.55 }}>
-          Installez PCS sur votre téléphone en un seul geste.
+          {localStorage.getItem(PENDING_DEEPLINK_KEY) ? (
+            <>Installez PCS sur votre téléphone. Après l’installation, votre signalement sera repris automatiquement.</>
+          ) : (
+            <>Installez PCS sur votre téléphone en un seul geste.</>
+          )}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <button
