@@ -107,7 +107,7 @@ export function CSTDashboard(){
  const api=data?.api_monitoring??[];
  const reportCounts=operations?.reports??{};
  const missionCounts=operations?.missions??{};
- const reportTotal=Object.values(reportCounts as Record<string, unknown>).reduce((sum,value)=>sum+Number(value??0),0);
+ const reportTotal=Object.values(reportCounts as Record<string, unknown>).reduce<number>((sum,value)=>sum+Number(value??0),0);
  return <section className="cstDashboard">
   <header className="cstTopbar"><div><p className="eyebrow">PCS / CST</p><h1>Centre de Supervision Technique</h1><p className="cstSubtitle">Supervision technique — données réellement collectées.</p></div><div className="cstTopActions"><span className="cstEnv">PRODUCTION</span><a className="button primary" href="#moderation">Vidéos en attente</a><Link className="button" to="/cst/moderateurs">Comptes modérateurs</Link><a className="button" href="#governance">Gouvernance</a><a className="button" href="#mairie-signups">Demandes mairie</a><button className="button" onClick={logout}>Déconnexion</button></div></header>
   {error&&<div className="cstBanner critical"><Dot s="critical"/>{error}</div>}
@@ -125,7 +125,7 @@ export function CSTDashboard(){
     <div className="cstModerationHead"><div><p className="eyebrow">SUPERVISION GLOBALE</p><h2>Gouvernance territoriale et activité</h2><p className="cstMuted">Lecture globale réservée au CST. NIGELEC et NDE restent cloisonnés pour leurs opérations : le CST supervise l’état et les flux sans se substituer aux unités métier.</p></div><span className="cstQueueBadge">{operations?.totals?.units_active??0} unité(s) active(s)</span></div>
     {!operations?<p className="cstMuted">Chargement de la supervision opérationnelle…</p>:<div className="cstSectionGrid">
       <article className="cstCard"><p className="eyebrow">ORGANISATIONS</p><h3>{operations.totals?.organizations_active??0} organisation(s) active(s)</h3>{(operations.organizations??[]).map((org:any)=><div className="cstRows" key={org.code}><div><span>{org.name}</span><strong>{org.is_active?"Active":"Inactive"}</strong></div><div><span>Unités centrales</span><strong>{org.central_units}</strong></div><div><span>Unités locales</span><strong>{org.local_units}</strong></div></div>)}</article>
-      <article className="cstCard"><p className="eyebrow">SIGNALEMENTS</p><h3>{reportTotal} signalement(s)</h3><div className="cstRows">{Object.entries(reportCounts).map(([status,count]:any)=><div key={status}><span>{status}</span><strong>{count}</strong></div>)}</div></article>
+      <article className="cstCard"><p className="eyebrow">SIGNALEMENTS</p><h3>{reportTotal} signalement(s)</h3><div className="cstRows">{Object.entries(reportCounts as Record<string, unknown>).map(([status,count])=><div key={status}><span>{status}</span><strong>{Number(count??0)}</strong></div>)}</div></article>
       <article className="cstCard"><p className="eyebrow">MISSIONS LOCALES</p><h3>{missionCounts.active??0} mission(s) active(s)</h3><div className="cstRows"><div><span>Assignées</span><strong>{missionCounts.assigned??0}</strong></div><div><span>Acceptées</span><strong>{missionCounts.accepted??0}</strong></div><div><span>En cours</span><strong>{missionCounts.in_progress??0}</strong></div><div><span>Terminées</span><strong>{missionCounts.completed??0}</strong></div><div><span>Refusées</span><strong>{missionCounts.declined??0}</strong></div></div></article>
     </div>}
    </article>
