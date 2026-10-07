@@ -1124,14 +1124,14 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   outline-offset:3px;
 }
 .citizenPublicComments{
-  position:fixed!important;
-  left:50%!important;
-  right:auto!important;
-  bottom:88px!important;
-  transform:translateX(-50%)!important;
-  width:min(620px,calc(100vw - 28px))!important;
-  min-width:0!important;
-  max-height:min(62dvh,520px)!important;
+  position:absolute!important;
+  right:76px!important;
+  left:auto!important;
+  bottom:18px!important;
+  transform:none!important;
+  width:min(430px,calc(100vw - 104px))!important;
+  min-width:280px!important;
+  max-height:min(68dvh,560px)!important;
   overflow-y:auto!important;
   overscroll-behavior:contain;
   display:flex;
@@ -1143,7 +1143,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   background:rgba(8,14,12,.97);
   box-shadow:0 18px 50px rgba(0,0,0,.55);
   box-sizing:border-box;
-  z-index:120!important;
+  z-index:20!important;
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
 }
@@ -1587,9 +1587,11 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 
 @media(max-width:700px){
   .citizenPublicComments{
-    bottom:82px!important;
-    width:calc(100vw - 24px)!important;
-    max-height:65dvh!important;
+    right:62px!important;
+    bottom:14px!important;
+    width:calc(100vw - 82px)!important;
+    min-width:0!important;
+    max-height:66dvh!important;
     padding:13px!important;
     border-radius:16px;
   }
