@@ -1318,15 +1318,15 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 @media(max-width:700px){
   .citizenSlideTrack .slideOverlay{
     max-height:54%!important;
-    padding:112px 86px 82px 20px!important;
+    padding:112px 86px 88px 20px!important;
   }
   .citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){
     max-height:54%!important;
-    padding-bottom:82px!important;
+    padding-bottom:88px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions{
     right:9px!important;
-    bottom:82px!important;
+    bottom:88px!important;
     width:50px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions{
@@ -1335,17 +1335,28 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailLink{
-    width:42px!important;
-    min-width:42px!important;
-    height:42px!important;
-    min-height:42px!important;
-    font-size:1.18rem!important;
+    width:38px!important;
+    min-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    font-size:1.05rem!important;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
+    width:20px!important;
+    height:20px!important;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
+    top:41px!important;
+    width:68px!important;
+    font-size:.6rem!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button small,
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailLink small{
-    top:45px;
-    width:72px;
-    font-size:.62rem;
+    top:41px;
+    width:68px;
+    font-size:.6rem;
   }
 }
 @media(prefers-reduced-motion:reduce){
