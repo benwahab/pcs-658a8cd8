@@ -1244,6 +1244,63 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   border:0!important;
   box-shadow:none!important;
 }
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome,
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport{
+  width:48px!important;
+  min-width:48px!important;
+  height:48px!important;
+  min-height:48px!important;
+  border-radius:50%!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.4)!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.28)!important;
+  transition:transform .18s ease,filter .18s ease,box-shadow .18s ease!important;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome{
+  background:linear-gradient(145deg,#9b5cff,#5d20d6)!important;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport{
+  background:linear-gradient(145deg,#ff5b6e,#d91f4a)!important;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
+  width:25px!important;
+  height:25px!important;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
+  top:51px!important;
+  width:82px!important;
+  font-size:.7rem!important;
+  font-weight:850!important;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome:hover,
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport:hover{
+  transform:scale(1.08)!important;
+  filter:brightness(1.08)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.4),0 0 18px rgba(125,72,255,.25)!important;
+}
+@media(max-width:700px){
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome,
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport{
+    width:44px!important;
+    min-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome svg,
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport svg{
+    width:23px!important;
+    height:23px!important;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
+    top:47px!important;
+    font-size:.64rem!important;
+  }
+}
+
 .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions > button:first-child{
   color:#ffd21a!important;
   background:transparent!important;
