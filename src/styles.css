@@ -1598,3 +1598,215 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 }
 
 
+
+
+/* ===== PCS — nouveau rendu vidéo immersif =====
+ * Référence : feed vertical citoyen plein écran.
+ * Cette couche remplace uniquement le rendu visuel vidéo ; les données,
+ * la modération et la logique de lecture restent inchangées.
+ */
+.citizenSlideTrack .slideContent{
+  z-index:2;
+}
+.citizenSlideTrack .mediaCarousel,
+.citizenSlideTrack .mediaCarouselPlaceholder{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-width:100vw!important;
+  max-width:none!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  border-radius:0!important;
+  background:#030605!important;
+  overflow:hidden!important;
+  display:block!important;
+}
+.citizenSlideTrack .mediaCarouselItem{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-width:100vw!important;
+  min-height:100dvh!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  border-radius:0!important;
+  overflow:hidden!important;
+  background:#030605!important;
+}
+.citizenSlideTrack .mediaCarouselItem > video{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-width:100vw!important;
+  min-height:100dvh!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  background:#030605!important;
+  box-sizing:border-box!important;
+}
+.citizenSlideTrack .mediaCarouselItem > img{
+  position:absolute!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+}
+.citizenSlideTrack .slideContent::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(0,0,0,.05) 0%,transparent 32%,rgba(0,0,0,.08) 56%,rgba(0,0,0,.82) 100%),
+    linear-gradient(90deg,rgba(0,0,0,.12) 0%,transparent 42%,rgba(0,0,0,.14) 100%);
+}
+.citizenSlideTrack .slideOverlay{
+  z-index:3!important;
+  left:0!important;
+  right:88px!important;
+  bottom:30px!important;
+  width:auto!important;
+  max-height:48%!important;
+  padding:50px 18px 18px!important;
+  gap:5px!important;
+  pointer-events:none!important;
+  background:transparent!important;
+}
+.citizenSlideTrack .slideOverlay .feedEyebrow,
+.citizenSlideTrack .slideOverlay .row,
+.citizenSlideTrack .slideOverlay h2,
+.citizenSlideTrack .slideOverlay>p:not(.eyebrow){
+  text-shadow:0 2px 7px rgba(0,0,0,.9);
+}
+.citizenSlideTrack .slideOverlay h2{
+  font-size:clamp(1.25rem,4.5vw,2rem)!important;
+  line-height:1.12!important;
+}
+.citizenSlideTrack .slideOverlay>p:not(.eyebrow){
+  font-size:.9rem!important;
+  line-height:1.35!important;
+}
+.citizenSlideTrack .citizenVideoInteractions{
+  position:absolute!important;
+  right:-74px!important;
+  bottom:8px!important;
+  left:auto!important;
+  width:62px!important;
+  margin:0!important;
+  z-index:5!important;
+  transform:none!important;
+  pointer-events:auto!important;
+}
+.citizenSlideTrack .citizenVideoActions{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:16px!important;
+  width:62px!important;
+}
+.citizenSlideTrack .citizenVideoAction{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  width:56px!important;
+  min-width:56px!important;
+  height:56px!important;
+  min-height:56px!important;
+  padding:0!important;
+  border:1.5px solid rgba(255,255,255,.85)!important;
+  border-radius:50%!important;
+  background:rgba(0,0,0,.30)!important;
+  color:#fff!important;
+  box-shadow:0 6px 18px rgba(0,0,0,.3)!important;
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+  font-size:1.35rem!important;
+  line-height:1!important;
+}
+.citizenSlideTrack .citizenVideoAction span{
+  line-height:1!important;
+}
+.citizenSlideTrack .citizenVideoAction small{
+  position:absolute;
+  transform:translateY(43px);
+  width:76px;
+  color:#fff;
+  font-size:.68rem;
+  font-weight:800;
+  text-align:center;
+  text-shadow:0 2px 6px #000;
+}
+.citizenSlideTrack .citizenVideoAction.is-active{
+  background:linear-gradient(145deg,#5b2cff,#7b39ff)!important;
+  border-color:#fff!important;
+}
+.citizenSlideTrack .citizenPublicComments{
+  pointer-events:auto!important;
+  position:fixed!important;
+  left:12px!important;
+  right:82px!important;
+  bottom:84px!important;
+  z-index:20!important;
+  max-height:42dvh!important;
+}
+.citizenSlideTrack .mediaCarouselNav{
+  z-index:6!important;
+}
+@media(max-width:700px){
+  .citizenSlideTrack .slideOverlay{
+    right:76px!important;
+    bottom:20px!important;
+    max-height:52%!important;
+    padding:42px 10px 14px!important;
+  }
+  .citizenSlideTrack .citizenVideoInteractions{
+    right:-64px!important;
+    bottom:4px!important;
+  }
+  .citizenSlideTrack .citizenVideoActions{
+    gap:15px!important;
+  }
+  .citizenSlideTrack .citizenVideoAction{
+    width:50px!important;
+    min-width:50px!important;
+    height:50px!important;
+    min-height:50px!important;
+    font-size:1.2rem!important;
+  }
+  .citizenSlideTrack .citizenVideoAction small{
+    transform:translateY(39px);
+    font-size:.64rem;
+  }
+  .citizenSlideTrack .citizenPublicComments{
+    left:10px!important;
+    right:70px!important;
+    bottom:76px!important;
+    max-height:44dvh!important;
+  }
+}
+@media(max-height:620px){
+  .citizenSlideTrack .slideOverlay{
+    max-height:58%!important;
+  }
+}
