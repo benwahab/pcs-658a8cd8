@@ -105,41 +105,49 @@ export default function Home() {
     // On entering the home route, always begin at the report-entry slide.
     resetHomePosition();
 
-    // First-visit discoverability hint: briefly move the real feed a few pixels
-    // upward and return it to the top. This previews the existing native scroll
-    // gesture without changing the feed position or navigation logic.
+    // Scroll discoverability hint: after a few seconds of inactivity on the
+    // home page, briefly move the real feed and return it to the top. This is
+    // deliberately session-based, not localStorage-based, so it can replay on
+    // every new arrival on the home route.
     let hintCancelled = false;
     let hinting = false;
     let hintStartTimer: number | undefined;
     let hintReturnTimer: number | undefined;
-    const cancelScrollHint = () => {
-      hintCancelled = true;
-      if (hintStartTimer !== undefined) window.clearTimeout(hintStartTimer);
-      if (hintReturnTimer !== undefined) window.clearTimeout(hintReturnTimer);
-      if (hinting) {
-        hinting = false;
-        feed.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      }
-    };
+    let hintResetTimer: number | undefined;
 
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const scheduleScrollHint = () => {
+      if (hintCancelled || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (hintStartTimer !== undefined) window.clearTimeout(hintStartTimer);
       hintStartTimer = window.setTimeout(() => {
-        if (hintCancelled || feed.scrollTop > 2) return;
+        if (hintCancelled || hinting || feed.scrollTop > 2) return;
 
         hinting = true;
         feed.scrollTo({ top: 26, left: 0, behavior: "smooth" });
         hintReturnTimer = window.setTimeout(() => {
           if (!hintCancelled) {
             feed.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-            window.setTimeout(() => {
+            hintResetTimer = window.setTimeout(() => {
               hinting = false;
             }, 420);
           } else {
             hinting = false;
           }
         }, 520);
-      }, 1350);
-    }
+      }, 3000);
+    };
+
+    const cancelScrollHint = () => {
+      hintCancelled = true;
+      if (hintStartTimer !== undefined) window.clearTimeout(hintStartTimer);
+      if (hintReturnTimer !== undefined) window.clearTimeout(hintReturnTimer);
+      if (hintResetTimer !== undefined) window.clearTimeout(hintResetTimer);
+      if (hinting) {
+        hinting = false;
+        feed.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      }
+    };
+
+    scheduleScrollHint();
     window.addEventListener("pcs-home-reset", resetHomePosition);
 
     let lastScrollTop = feed.scrollTop;
