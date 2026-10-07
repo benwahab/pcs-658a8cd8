@@ -976,6 +976,29 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   background:#030605!important;
   box-sizing:border-box!important;
 }
+/* PCS mobile feed: force media to the full viewport, without letterbox bands. */
+.citizenSlideTrack .mediaCarouselItem{
+  position:relative!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-height:none!important;
+  overflow:hidden!important;
+}
+.citizenSlideTrack .mediaCarouselItem .feedVideoFrame,
+.citizenSlideTrack .mediaCarouselItem .feedVideoFrame video{
+  position:absolute!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-width:100vw!important;
+  min-height:100dvh!important;
+  max-width:none!important;
+  max-height:none!important;
+}
+.citizenSlideTrack .mediaCarouselItem .feedVideoFrame{
+  display:block!important;
+}
 .citizenSlideTrack .mediaCarouselItem img,
 .citizenSlideTrack .mediaCarouselItem video{
   display:block!important;
