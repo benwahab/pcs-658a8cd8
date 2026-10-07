@@ -35,6 +35,7 @@ export default function Home() {
   const [headerHidden, setHeaderHidden] = useState(false);
   const [headerScrolled, setHeaderScrolled] = useState(false);
   const [introFirstVisit, setIntroFirstVisit] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -90,9 +91,21 @@ export default function Home() {
     const feed = document.querySelector<HTMLElement>(".citizenFeed");
     if (!feed) return;
 
+    const mobileHint = window.matchMedia("(max-width: 700px), (pointer: coarse)");
+    let swipeHintTimer: number | undefined;
+    let swipeHintHideTimer: number | undefined;
+
+    const showMobileSwipeHint = () => {
+      if (!mobileHint.matches) return;
+      setShowSwipeHint(true);
+      if (swipeHintHideTimer !== undefined) window.clearTimeout(swipeHintHideTimer);
+      swipeHintHideTimer = window.setTimeout(() => setShowSwipeHint(false), 5200);
+    };
+
     const resetHomePosition = () => {
       setHeaderHidden(false);
       setHeaderScrolled(false);
+      setShowSwipeHint(false);
       feed.scrollTo({ top: 0, left: 0, behavior: "auto" });
       document.querySelector<HTMLElement>("main")?.scrollTo({ top: 0, left: 0, behavior: "auto" });
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -148,10 +161,13 @@ export default function Home() {
 
     const cancelScrollHint = () => {
       hintCancelled = true;
+      setShowSwipeHint(false);
       if (hintStartTimer !== undefined) window.clearTimeout(hintStartTimer);
       if (hintReturnTimer !== undefined) window.clearTimeout(hintReturnTimer);
       if (hintResetTimer !== undefined) window.clearTimeout(hintResetTimer);
       if (hintRepeatTimer !== undefined) window.clearTimeout(hintRepeatTimer);
+      if (swipeHintTimer !== undefined) window.clearTimeout(swipeHintTimer);
+      if (swipeHintHideTimer !== undefined) window.clearTimeout(swipeHintHideTimer);
       if (hinting) {
         hinting = false;
         feed.style.scrollSnapType = "";
@@ -159,6 +175,8 @@ export default function Home() {
       }
     };
 
+    if (swipeHintTimer !== undefined) window.clearTimeout(swipeHintTimer);
+    swipeHintTimer = window.setTimeout(showMobileSwipeHint, 900);
     scheduleScrollHint();
     window.addEventListener("pcs-home-reset", resetHomePosition);
 
@@ -176,6 +194,7 @@ export default function Home() {
         return;
       }
 
+      if (current > 8) setShowSwipeHint(false);
       setHeaderScrolled(current > 8);
 
       if (current <= 8) {
@@ -200,6 +219,8 @@ export default function Home() {
       window.removeEventListener("pcs-home-reset", resetHomePosition);
       feed.removeEventListener("scroll", onScroll);
       cancelEvents.forEach((eventName) => feed.removeEventListener(eventName, cancelScrollHint));
+      if (swipeHintTimer !== undefined) window.clearTimeout(swipeHintTimer);
+      if (swipeHintHideTimer !== undefined) window.clearTimeout(swipeHintHideTimer);
       cancelScrollHint();
     };
   }, []);
@@ -270,6 +291,17 @@ export default function Home() {
           </div>
         </div>
       </article>
+
+      <div
+        className={`citizenSwipeHint${showSwipeHint ? " isVisible" : ""}`}
+        aria-hidden="true"
+      >
+        <span className="citizenSwipeHintIcon">
+          <span className="citizenSwipeHintDot" />
+          <span className="citizenSwipeHintArrow">↑</span>
+        </span>
+        <span>Faites glisser vers le haut</span>
+      </div>
 
       {error && (
         <article className="citizenSlide">
