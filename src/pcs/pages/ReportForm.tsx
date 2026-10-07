@@ -58,6 +58,7 @@ export default function ReportForm() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [gpsNoticeOpen, setGpsNoticeOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([listCategories(), listRegions(), listAllCommunes()])
@@ -88,6 +89,7 @@ export default function ReportForm() {
           lng: position.coords.longitude,
         });
         setLocation((value) => value || "Position GPS enregistrée");
+        setGpsNoticeOpen(false);
       },
       () => {
         setError(
@@ -314,9 +316,59 @@ export default function ReportForm() {
           />
         </label>
 
-        <button type="button" className="mediaPickBtn" onClick={locate} disabled={saving}>
+        <button
+          type="button"
+          className="mediaPickBtn"
+          onClick={() => setGpsNoticeOpen(true)}
+          disabled={saving}
+        >
           Utiliser ma position GPS
         </button>
+        {gpsNoticeOpen && (
+          <div
+            className="gpsNoticeBackdrop"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setGpsNoticeOpen(false);
+            }}
+          >
+            <div
+              className="gpsNotice"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="gps-notice-title"
+              aria-describedby="gps-notice-description"
+            >
+              <div className="gpsNoticeIcon" aria-hidden="true">📍</div>
+              <h2 id="gps-notice-title">Position GPS</h2>
+              <p id="gps-notice-description">
+                Pour permettre aux agents terrain de retrouver exactement le
+                problème signalé, vous devez prendre la position GPS à
+                proximité immédiate du problème.
+              </p>
+              <p>
+                Si vous êtes éloigné, la position enregistrée peut être
+                différente du lieu réel et induire les agents terrain en erreur.
+              </p>
+              <div className="gpsNoticeActions">
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={() => setGpsNoticeOpen(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="button primary"
+                  onClick={locate}
+                >
+                  J’ai compris, continuer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {coords && (
           <p className="muted">
             GPS : {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
