@@ -44,8 +44,7 @@ create policy reports_select_scoped
 on public.reports
 for select
 using (
-  citizen_id = auth.uid()
-  or private.is_staff()
+  private.is_staff()
   or exists (
     select 1
     from public.mairies m
@@ -89,12 +88,7 @@ for select
 using (
   (agent_id = auth.uid() and private.is_active_field_agent())
   or private.is_staff()
-  or exists (
-    select 1
-    from public.reports r
-    where r.id = report_field_verifications.report_id
-      and r.citizen_id = auth.uid()
-  )
+  
   or exists (
     select 1
     from public.reports r
