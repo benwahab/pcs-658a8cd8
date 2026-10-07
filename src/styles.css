@@ -1843,3 +1843,16 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
     transform:translateY(20px)!important;
   }
 }
+
+
+/* PCS mobile feed: clean spacing for Accueil / Signaler rail items. */
+@media(max-width:700px){
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions{
+    gap:22px!important;
+  }
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailHome small,
+  .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailReport small{
+    top:38px!important;
+    line-height:1.1!important;
+  }
+}
