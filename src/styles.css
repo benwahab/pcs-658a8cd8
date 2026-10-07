@@ -1318,15 +1318,15 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 @media(max-width:700px){
   .citizenSlideTrack .slideOverlay{
     max-height:54%!important;
-    padding:112px 86px 24px 20px!important;
+    padding:112px 86px 82px 20px!important;
   }
   .citizenSlideTrack .slideOverlay:has(.citizenReportInteractions){
     max-height:54%!important;
-    padding-bottom:24px!important;
+    padding-bottom:82px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions{
     right:9px!important;
-    bottom:20px!important;
+    bottom:82px!important;
     width:50px!important;
   }
   .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions{
