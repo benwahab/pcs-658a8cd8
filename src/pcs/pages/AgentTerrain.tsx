@@ -68,8 +68,8 @@ export default function AgentTerrain(){
    }
   }
   setOfflinePending(
-   (await pendingFieldVerificationCount().catch(()=>0))+
-   (await pendingResolutionVideoCount().catch(()=>0))
+   (await (agentUserId?pendingFieldVerificationCount(agentUserId):Promise.resolve(0)).catch(()=>0))+
+   (await (agentUserId?pendingResolutionVideoCount(agentUserId):Promise.resolve(0)).catch(()=>0))
   );
  }
 
