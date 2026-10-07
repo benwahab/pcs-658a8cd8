@@ -716,7 +716,6 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                     </div>
                     <div className="citizenCommentBody">
                       <div className="citizenCommentMeta">
-                        <strong>{comment.display_name?.trim() || "Citoyen"}</strong>
                         <small>{new Date(comment.created_at).toLocaleString("fr-FR")}</small>
                       </div>
                       <p>{comment.body}</p>
