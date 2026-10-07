@@ -15,7 +15,7 @@ import { createReportMediaUrl } from "../services/media";
 import BrandLogo from "../components/BrandLogo";
 import introArtAsset from "@/assets/pcs-hero.webp.asset.json";
 import { MediaCarousel } from "../components/MediaCarousel";
-import { Home as HomeIcon, MessageCircle, Plus, Share } from "lucide-react";
+import { Flag, Home as HomeIcon, MessageCircle, Share } from "lucide-react";
 
 async function sharePublicReport(report: PublicReport, onFallbackMessage: (message: string) => void): Promise<boolean> {
   if (!report.id) return;
@@ -675,7 +675,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 <small>Accueil</small>
               </Link>
               <Link className="feedPrimary feedRailLink feedRailReport" to="/signaler" aria-label="Signaler un problème">
-                <Plus aria-hidden="true" strokeWidth={2.2} />
+                <Flag aria-hidden="true" strokeWidth={2.2} />
                 <small>Signaler</small>
               </Link>
             </div>
