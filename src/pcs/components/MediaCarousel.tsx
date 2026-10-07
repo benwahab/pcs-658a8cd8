@@ -13,7 +13,6 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
   const [autoplayAllowed, setAutoplayAllowed] = useState(true);
-  const [needsPlay, setNeedsPlay] = useState(false);
 
   useEffect(() => {
     const connection = (
@@ -78,10 +77,8 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       activeFeedVideo = video;
 
       void video.play()
-        .then(() => setNeedsPlay(false))
         .catch(() => {
-          // Keep a visible, user-gesture fallback instead of leaving a frozen frame.
-          setNeedsPlay(true);
+          // Native video controls remain available when autoplay is refused.
         });
     };
 
@@ -92,10 +89,8 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
 
     const onUserPlay = () => {
       activeFeedVideo = video;
-      setNeedsPlay(false);
+      // Native controls remain available for manual playback and audio.
     };
-
-    const onPlaybackError = () => setNeedsPlay(true);
 
     const onPointerStart = () => {
       // A tap directly on the video is a user gesture. Force a retry even
@@ -107,7 +102,6 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     video.addEventListener("canplay", onReady);
     video.addEventListener("loadeddata", onReady);
     video.addEventListener("play", onUserPlay);
-    video.addEventListener("error", onPlaybackError);
     video.addEventListener("pointerup", onPointerStart);
 
     const onVisibility = () => {
@@ -139,7 +133,6 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       video.removeEventListener("canplay", onReady);
       video.removeEventListener("loadeddata", onReady);
       video.removeEventListener("play", onUserPlay);
-      video.removeEventListener("error", onPlaybackError);
       video.removeEventListener("pointerup", onPointerStart);
       document.removeEventListener("visibilitychange", onVisibility);
       video.pause();
@@ -158,30 +151,11 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
         muted
         loop
         preload="auto"
+        controls
         aria-label="Vidéo du signalement"
+        controlsList="noremoteplayback"
+        disablePictureInPicture
       />
-      {needsPlay && (
-        <button
-          type="button"
-          className="videoPlayFallback"
-          aria-label="Lire la vidéo"
-          onClick={(event) => {
-            event.stopPropagation();
-            const video = ref.current;
-            if (!video) return;
-            video.muted = true;
-            video.defaultMuted = true;
-            video.playsInline = true;
-            if (activeFeedVideo && activeFeedVideo !== video) activeFeedVideo.pause();
-            activeFeedVideo = video;
-            void video.play()
-              .then(() => setNeedsPlay(false))
-              .catch(() => setNeedsPlay(true));
-          }}
-        >
-          <span aria-hidden="true">▶</span>
-        </button>
-      )}
     </div>
   );
 }
