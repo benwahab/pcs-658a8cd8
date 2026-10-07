@@ -709,7 +709,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                     Fermer ✕
                   </button>
                 </div>
-                {publicComments.length === 0 ? <p>Aucun commentaire public pour le moment.</p> : publicComments.map((comment) => (
+                {publicComments.filter((comment) => comment.body.trim().toLowerCase() !== "valider").length === 0 ? <p>Aucun commentaire public pour le moment.</p> : publicComments.filter((comment) => comment.body.trim().toLowerCase() !== "valider").map((comment) => (
                   <article key={comment.id} className="citizenPublicComment">
                     {comment.display_name && <strong>{comment.display_name}</strong>}
                     <p>{comment.body}</p>
