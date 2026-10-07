@@ -24,7 +24,7 @@ export default function OrganizationDashboard(){
  async function logout(){await supabase?.auth.signOut();nav("/")}
  async function act(fn:()=>Promise<any>){setError("");setBusy(true);try{await fn();await load()}catch(e){setError(e instanceof Error?e.message:"Opération impossible")}finally{setBusy(false)}}
  if(!membership&&!error)return <section className="narrow"><div className="card">Vérification du compte organisationnel…</div></section>;
- if(!membership&&error)return <section className="narrow"><div className="card"><h1>Accès organisationnel indisponible</h1><p className="error">{error}</p><p>Vérifiez que votre compte est actif et associé à une organisation.</p><button className="button primary" onClick={logout}>Se reconnecter</button><Link className="button" to="/">Retour à PCS</Link></div></section>;
+ if(!membership&&error)return <section className="narrow"><div className="card"><h1>Accès organisationnel indisponible</h1><p className="error">{error}</p><p>Vérifiez que votre compte est actif et associé à une organisation.</p><button className="button primary" onClick={logout}>Se reconnecter</button></div></section>;
  const central=membership?.unit?.unit_type==="central";
  return <section className="narrow">
   <div className="citizenSpaceTop"><div><p className="eyebrow">{membership?.organization?.name??"ORGANISATION"}</p><h1>{central?"Centre de contrôle":"Espace agence"}</h1><p>{central?"Transmission, acceptation et attribution des missions.":"Missions reçues et affectation aux agents de votre agence."}</p></div><button className="button" onClick={logout}>Déconnexion</button></div>
