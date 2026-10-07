@@ -248,7 +248,16 @@ function ConnectionStatus() {
 }
 
 function App({ children }: { children: ReactNode }) {
-  const [showSplash, setShowSplash] = useState(true);
+  const isInstalledPwa =
+    typeof window !== "undefined" &&
+    (window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches ||
+      ("standalone" in navigator &&
+        (navigator as Navigator & { standalone?: boolean }).standalone === true));
+
+  // Browser: keep the branded PCS splash.
+  // Installed PWA: let Android's native launch splash be the only splash.
+  const [showSplash, setShowSplash] = useState(!isInstalledPwa);
   const [isConnecting, setIsConnecting] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
 
   useEffect(() => {
@@ -278,9 +287,10 @@ function App({ children }: { children: ReactNode }) {
     }
   }, []);
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || isInstalledPwa) return;
 
-    // Dismiss the web splash after the PCS origin is reachable; the OS/PWA splash has already appeared.
+    // Browser only: keep the branded PCS splash for 5 seconds.
+    // Installed PWA skips this layer so Android's native launch splash is not followed by a second splash.
     let active = true;
     let retryTimer: number | undefined;
     let hideTimer: number | undefined;
@@ -335,7 +345,7 @@ function App({ children }: { children: ReactNode }) {
       if (retryTimer !== undefined) window.clearTimeout(retryTimer);
       if (hideTimer !== undefined) window.clearTimeout(hideTimer);
     };
-  }, []);
+  }, [isInstalledPwa]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
