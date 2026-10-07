@@ -1192,15 +1192,15 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   height:46px!important;
   min-height:46px!important;
   padding:0!important;
-  border-radius:50%!important;
+  border-radius:0!important;
   display:grid!important;
   place-items:center!important;
   color:#fff!important;
-  background:rgba(12,12,18,.42)!important;
-  border:1.5px solid rgba(255,255,255,.94)!important;
-  box-shadow:0 7px 20px rgba(0,0,0,.34)!important;
-  backdrop-filter:blur(7px);
-  -webkit-backdrop-filter:blur(7px);
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
   font-size:1.35rem!important;
   line-height:1!important;
   text-decoration:none!important;
@@ -1225,8 +1225,19 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   text-shadow:0 2px 7px rgba(0,0,0,.96);
 }
 .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedPrimary{
-  background:linear-gradient(145deg,#5b2cff,#7b39ff)!important;
-  border-color:#fff!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions > button:first-child{
+  color:#ffd21a!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions > button:first-child span{
+  font-size:1.5rem!important;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.55));
 }
 .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions button:hover,
 .citizenSlideTrack .slideOverlay .citizenReportInteractions .feedActions .feedRailLink:hover{
