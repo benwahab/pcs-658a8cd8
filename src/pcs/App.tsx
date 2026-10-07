@@ -182,7 +182,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <main>{children}</main>
 
       <footer className="appFooter">PCS — Plateforme de Citoyenneté et de Signalement</footer>
-    </>
+    </div>
   );
 }
 
@@ -422,7 +422,7 @@ function App({ children }: { children: ReactNode }) {
           </div>
         </>
         )}
-    </div>
+    </>
   );
 }
 
