@@ -226,6 +226,28 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reportId = params.get("pcsReturnReport");
+    if (!reportId || !reports.length) return;
+    const scrollToReturnedReport = () => {
+      const feed = document.querySelector<HTMLElement>(".citizenFeed");
+      const target = feed?.querySelector<HTMLElement>(`[data-report-id="${CSS.escape(reportId)}"]`);
+      if (!feed || !target) return false;
+      setHeaderHidden(false);
+      setHeaderScrolled(true);
+      target.scrollIntoView({ block: "start", behavior: "auto" });
+      window.history.replaceState(null, "", "/");
+      return true;
+    };
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      if (scrollToReturnedReport() || attempts >= 20) window.clearInterval(timer);
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [reports]);
+
   return (
     <section className="citizenFeed">
       <div
