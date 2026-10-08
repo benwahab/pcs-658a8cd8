@@ -59,6 +59,19 @@ export default function ReportForm() {
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [gpsNoticeOpen, setGpsNoticeOpen] = useState(false);
+  const returnTargetRef = useRef<{ type: "home" | "report"; reportId?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem("pcs-report-return-v1");
+      const parsed = raw ? JSON.parse(raw) as { type?: string; reportId?: string } : null;
+      returnTargetRef.current = parsed?.type === "report" && parsed.reportId
+        ? { type: "report", reportId: parsed.reportId }
+        : { type: "home" };
+    } catch {
+      returnTargetRef.current = { type: "home" };
+    }
+  }, []);
 
   useEffect(() => {
     Promise.all([listCategories(), listRegions(), listAllCommunes()])
@@ -204,6 +217,15 @@ export default function ReportForm() {
       });
 
       setSubmitted(true);
+      window.setTimeout(() => {
+        const target = returnTargetRef.current ?? { type: "home" as const };
+        try { window.sessionStorage.removeItem("pcs-report-return-v1"); } catch {}
+        const query = target.type === "report" && target.reportId
+          ? `?pcsReturnReport=${encodeURIComponent(target.reportId)}`
+          : "";
+        window.history.replaceState(null, "", `/${query}`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      }, 3000);
     } catch (submitError) {
       setError(
         submitError instanceof Error && /^(La vidéo|Le fichier|Type vidéo|L’extension|Le contenu|La précision GPS|Coordonnées GPS|Supabase)/i.test(submitError.message)
