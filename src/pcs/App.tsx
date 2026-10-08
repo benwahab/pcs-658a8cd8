@@ -209,18 +209,14 @@ export function Shell({ children }: { children: ReactNode }) {
           </div>
         </details>
 
-        <span className="session" data-pcs-tour="account">
-          {email ? (
-            <>
-              <span>{email}</span>
-              <button className="button" onClick={logout}>
-                Déconnexion
-              </button>
-            </>
-          ) : (
-            "Visiteur"
-          )}
-        </span>
+        {email && (
+          <span className="session" data-pcs-tour="account">
+            <span>{email}</span>
+            <button className="button" onClick={logout}>
+              Déconnexion
+            </button>
+          </span>
+        )}
       </header>
 
       <main>{children}</main>
