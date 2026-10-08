@@ -1623,10 +1623,14 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .app > header.feedImmersiveHeader nav a{
   color:#3E2E68;
 }
-.citizenSlideIntro .slideContent .feedEyebrow{
-  color:#FFFFFF!important;
-  -webkit-text-fill-color:#FFFFFF!important;
-  text-shadow:0 2px 5px rgba(0,0,0,.72);
+/* Accueil citoyen : toutes les informations textuelles de l'introduction sont noires pour rester lisibles sur l'image. */
+.citizenSlideIntro .slideContent .feedEyebrow,
+.citizenSlideIntro .slideContent h1,
+.citizenSlideIntro .slideContent h1 strong,
+.citizenSlideIntro .slideContent > p:not(.eyebrow){
+  color:#000000!important;
+  -webkit-text-fill-color:#000000!important;
+  text-shadow:none!important;
 }
 .citizenSlideIntro .slideContent h1 strong,
 .citizenSlideIntro .slideContent h2 strong{
