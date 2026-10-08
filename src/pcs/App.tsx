@@ -7,6 +7,246 @@ import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import BrandLogo from "./components/BrandLogo";
 
 
+import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { Link, useLocation, useNavigate } from "@/pcs/router";
+import { supabase, isSupabaseConfigured } from "./lib/supabase";
+import OnboardingTour from "./components/OnboardingTour";
+import PwaInstallPrompt from "./components/PwaInstallPrompt";
+import BrandLogo from "./components/BrandLogo";
+
+
+export function Shell({ children }: { children: ReactNode }) {
+  const [email, setEmail] = useState<string | null>(null);
+  const [feedHeaderHidden, setFeedHeaderHidden] = useState(false);
+  // Professional access: collapsed by default and auto-collapses 5 seconds after opening.
+  const professionalMenuTimer = useRef<number | undefined>(undefined);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isMairie = location.pathname === "/mairie";
+  const isPhoneClient =
+    typeof navigator !== "undefined" &&
+    (((navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile === true) ||
+      /Android.*Mobile|iPhone|iPod/i.test(navigator.userAgent));
+
+  useEffect(() => {
+    if (location.pathname !== "/") {
+      setFeedHeaderHidden(false);
+      return;
+    }
+
+    let lastScrollTop = 0;
+    let activeScrollTarget: HTMLElement | null = null;
+
+    const getScrollTop = (target?: EventTarget | null) => {
+      const element = target instanceof HTMLElement ? target : null;
+      const feed = document.querySelector<HTMLElement>(".citizenFeed");
+      const main = document.querySelector<HTMLElement>("main");
+      return Math.max(
+        0,
+        element?.scrollTop ?? 0,
+        feed?.scrollTop ?? 0,
+        main?.scrollTop ?? 0,
+        window.scrollY,
+        document.documentElement.scrollTop,
+      );
+    };
+
+    const onAnyScroll = (event: Event) => {
+      const target = event.target instanceof HTMLElement ? event.target : null;
+      const current = getScrollTop(target);
+      if (target && target.scrollHeight > target.clientHeight + 2) {
+        activeScrollTarget = target;
+      }
+      const position = activeScrollTarget?.scrollTop ?? current;
+      if (position <= 8 && current <= 8) {
+        setFeedHeaderHidden(false);
+      } else if (position > lastScrollTop + 3 || current > lastScrollTop + 3) {
+        setFeedHeaderHidden(true);
+      } else if (position < lastScrollTop - 3 || current < lastScrollTop - 3) {
+        setFeedHeaderHidden(false);
+      }
+      lastScrollTop = Math.max(position, current);
+    };
+
+    const initialize = () => {
+      activeScrollTarget = document.querySelector<HTMLElement>(".citizenFeed");
+      lastScrollTop = getScrollTop(activeScrollTarget);
+      setFeedHeaderHidden(lastScrollTop > 8);
+    };
+    const frame = requestAnimationFrame(initialize);
+    document.addEventListener("scroll", onAnyScroll, { passive: true, capture: true });
+    window.addEventListener("scroll", onAnyScroll, { passive: true });
+
+    const observer = new MutationObserver(() => {
+      if (!activeScrollTarget) {
+        activeScrollTarget = document.querySelector<HTMLElement>(".citizenFeed");
+        if (activeScrollTarget) lastScrollTop = activeScrollTarget.scrollTop;
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("scroll", onAnyScroll, true);
+      window.removeEventListener("scroll", onAnyScroll);
+      observer.disconnect();
+    };
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!supabase) return;
+
+    supabase.auth
+      .getUser()
+      .then(({ data }) => setEmail(data.user?.email ?? null));
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setEmail(session?.user?.email ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  function closeProfessionalMenu() {
+    if (professionalMenuTimer.current !== undefined) {
+      window.clearTimeout(professionalMenuTimer.current);
+      professionalMenuTimer.current = undefined;
+    }
+    document.querySelectorAll<HTMLDetailsElement>("details.feedAccessHeader, details.feedAccessSubmenu").forEach((menu) => {
+      menu.open = false;
+    });
+  }
+
+  function refreshProfessionalMenuTimer() {
+    if (professionalMenuTimer.current !== undefined) {
+      window.clearTimeout(professionalMenuTimer.current);
+      professionalMenuTimer.current = undefined;
+    }
+
+    const menu = document.querySelector<HTMLDetailsElement>("details.feedAccessHeader");
+    if (!menu?.open) return;
+
+    professionalMenuTimer.current = window.setTimeout(() => {
+      menu.open = false;
+      professionalMenuTimer.current = undefined;
+    }, 5000);
+  }
+
+  async function logout() {
+    await supabase?.auth.signOut();
+    setEmail(null);
+    navigate("/");
+  }
+
+  if (isMairie) {
+    return <div className="app mairieApp">{children}</div>;
+  }
+
+  return (
+    <div className="app">
+      <header className={"feedImmersiveHeader" + (feedHeaderHidden ? " is-hidden" : "")}>
+        <Link className="brand" to="/">
+          <BrandLogo className="brandLogo" />
+        </Link>
+
+        <nav data-pcs-tour="app-nav">
+          <Link
+            to="/"
+            onClick={(event) => {
+              if (location.pathname === "/") {
+                event.preventDefault();
+                window.dispatchEvent(new Event("pcs-home-reset"));
+              }
+            }}
+          >
+            Accueil
+          </Link>
+        </nav>
+
+        <details
+          className="feedAccess feedAccessHeader"
+          data-pcs-tour="professional-access"
+          onToggle={(event) => {
+            const menu = event.currentTarget;
+            if (professionalMenuTimer.current !== undefined) {
+              window.clearTimeout(professionalMenuTimer.current);
+              professionalMenuTimer.current = undefined;
+            }
+            if (menu.open) {
+              refreshProfessionalMenuTimer();
+            }
+          }}
+          onPointerDown={(event) => {
+            if (event.currentTarget.open) refreshProfessionalMenuTimer();
+          }}
+          onInput={refreshProfessionalMenuTimer}
+          onChange={refreshProfessionalMenuTimer}
+        >
+          <summary>
+            <span className="feedAccessIcon">◈</span>
+            <span>Espace professionnel</span>
+            <span className="feedAccessChevron">▾</span>
+          </summary>
+          <div onPointerDown={refreshProfessionalMenuTimer} onInput={refreshProfessionalMenuTimer} onChange={refreshProfessionalMenuTimer}>
+            {isPhoneClient ? (
+              <Link to="/connexion-operationnelle?mode=agent" onClick={closeProfessionalMenu}>👷 Agent terrain</Link>
+            ) : (
+              <>
+                <Link to="/cst" onClick={closeProfessionalMenu}>🖥️ CST — Supervision technique</Link>
+                <Link to="/connexion-operationnelle" onClick={closeProfessionalMenu}>🏛️ Mairie</Link>
+                <Link to="/connexion-operationnelle?mode=agent" onClick={closeProfessionalMenu}>👷 Agent terrain</Link>
+                <Link to="/connexion-operationnelle?mode=moderator" onClick={closeProfessionalMenu}>🛡️ Modérateur</Link>
+                <details className="feedAccessSubmenu">
+                  <summary>⚡ NIGELEC <span aria-hidden="true">▸</span></summary>
+                  <div>
+                    <Link to="/connexion-nigelec?type=central" onClick={closeProfessionalMenu}>Accès au compte central</Link>
+                    <Link to="/connexion-nigelec?type=agency" onClick={closeProfessionalMenu}>Accès aux comptes agences</Link>
+                  </div>
+                </details>
+                <details className="feedAccessSubmenu">
+                  <summary>💧 NDE <span aria-hidden="true">▸</span></summary>
+                  <div>
+                    <Link to="/connexion-nde?type=central" onClick={closeProfessionalMenu}>Accès au compte central</Link>
+                    <Link to="/connexion-nde?type=agency" onClick={closeProfessionalMenu}>Accès aux comptes agences</Link>
+                  </div>
+                </details>
+              </>
+            )}
+          </div>
+        </details>
+
+        <span className="session" data-pcs-tour="account">
+          {email ? (
+            <>
+              <span>{email}</span>
+              <button className="button" onClick={logout}>
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            "Visiteur"
+          )}
+        </span>
+      </header>
+
+      <main>{children}</main>
+
+      <footer className="appFooter">PCS — Plateforme de Citoyenneté et de Signalement</footer>
+    </div>
+  );
+}
+import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { Link, useLocation, useNavigate } from "@/pcs/router";
+import { supabase, isSupabaseConfigured } from "./lib/supabase";
+import OnboardingTour from "./components/OnboardingTour";
+import PwaInstallPrompt from "./components/PwaInstallPrompt";
+import BrandLogo from "./components/BrandLogo";
+
+
 export function Shell({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [feedHeaderHidden, setFeedHeaderHidden] = useState(false);
