@@ -286,6 +286,9 @@ export default function Home() {
               className="feedPrimary"
               data-pcs-tour="create-report"
               to="/signaler"
+              onClick={() => {
+                try { window.sessionStorage.setItem("pcs-report-return-v1", JSON.stringify({ type: "home" })); } catch {}
+              }}
             >
               ＋ Signaler un problème
             </Link>
@@ -603,7 +606,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   };
 
   return (
-    <article ref={slideRef} className="citizenSlide citizenSlideTrack">
+    <article ref={slideRef} className="citizenSlide citizenSlideTrack" data-report-id={report.id}>
       <div className="slideContent">
         {mediaReady && media.length > 0 ? (
           <MediaCarousel media={media} />
@@ -688,7 +691,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 <HomeIcon aria-hidden="true" strokeWidth={2.2} />
                 <small>Accueil</small>
               </Link>
-              <Link className="feedPrimary feedRailLink feedRailReport" to="/signaler" aria-label="Signaler un problème">
+              <Link className="feedPrimary feedRailLink feedRailReport" to="/signaler" aria-label="Signaler un problème" onClick={() => {
+                try { window.sessionStorage.setItem("pcs-report-return-v1", JSON.stringify({ type: "report", reportId: report.id })); } catch {}
+              }}>
                 <Flag aria-hidden="true" strokeWidth={2.2} />
                 <small>Signaler</small>
               </Link>
