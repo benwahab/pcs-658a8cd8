@@ -112,7 +112,7 @@ export async function validateCitizenVideo(file: File) {
 
 export async function createReportMediaUrl(
   path: string,
-  expiresIn = 3600,
+  expiresIn = 60,
 ): Promise<string> {
   if (!supabase) {
     throw new Error("Supabase n’est pas configuré.");
