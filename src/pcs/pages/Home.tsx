@@ -432,6 +432,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   useEffect(() => {
     if (!mediaReady || !supabase || !report.id) return;
 
+    // Clear the previous slide's media before loading this report. Never keep a
+    // prior report's image visible while the next report's moderation is checked.
+    setMedia([]);
     let cancelled = false;
     const reportId = report.id;
 
