@@ -334,12 +334,23 @@ function App({ children }: { children: ReactNode }) {
     let active = true;
     let retryTimer: number | undefined;
     let hideTimer: number | undefined;
+    let fallbackTimer: number | undefined;
     let controller: AbortController | undefined;
 
     const wait = (ms: number) =>
       new Promise<void>((resolve) => {
         retryTimer = window.setTimeout(resolve, ms);
       });
+
+    // Never let a connectivity probe keep the full-screen splash over the app forever.
+    // If the server is unreachable, release the UI after a short grace period and let
+    // the app display its own offline/error states.
+    fallbackTimer = window.setTimeout(() => {
+      if (!active) return;
+      setShowSplash(false);
+      document.documentElement.dataset.pcsSplashReady = "true";
+      window.dispatchEvent(new Event("pcs-splash-completed"));
+    }, 8000);
 
     const checkConnection = async () => {
       while (active) {
@@ -356,6 +367,10 @@ function App({ children }: { children: ReactNode }) {
             window.clearTimeout(requestTimeout);
             if (!active) return;
             setIsConnecting(false);
+            if (fallbackTimer !== undefined) {
+              window.clearTimeout(fallbackTimer);
+              fallbackTimer = undefined;
+            }
             hideTimer = window.setTimeout(() => {
               if (active) {
                 setShowSplash(false);
@@ -384,6 +399,7 @@ function App({ children }: { children: ReactNode }) {
       controller?.abort();
       if (retryTimer !== undefined) window.clearTimeout(retryTimer);
       if (hideTimer !== undefined) window.clearTimeout(hideTimer);
+      if (fallbackTimer !== undefined) window.clearTimeout(fallbackTimer);
     };
   }, [isInstalledPwa]);
 
