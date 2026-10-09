@@ -630,12 +630,8 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   return (
     <article ref={slideRef} className="citizenSlide citizenSlideTrack" data-report-id={report.id}>
       <div className="slideContent">
-        {mediaReady && media.length > 0 ? (
+        {mediaReady && media.length > 0 && (
           <MediaCarousel media={media} />
-        ) : mediaReady ? null : (
-          <div className="mediaCarousel mediaCarouselPlaceholder" aria-hidden="true">
-            <div className="mediaCarouselItem" />
-          </div>
         )}
 
         <div className="slideOverlay">
