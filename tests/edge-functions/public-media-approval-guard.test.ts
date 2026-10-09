@@ -8,11 +8,17 @@ const readSource = (path: string) =>
 describe("public media approval guards", () => {
   const home = readSource("src/pcs/pages/Home.tsx");
   const detail = readSource("src/pcs/pages/ReportDetail.tsx");
+  const mediaService = readSource("src/pcs/services/media.ts");
 
   it("requires explicit approval before media enters the public home feed", () => {
     expect(home).toContain('item.moderation_status === "approved"');
     expect(home).toContain('<MediaCarousel media={media} />');
     expect(home).not.toContain("mediaCarouselPlaceholder");
+  });
+
+  it("uses short-lived public media links to limit exposure after a moderation change", () => {
+    expect(mediaService).toContain("expiresIn = 60");
+    expect(mediaService).toContain('body: { path, expiresIn }');
   });
 
   it("requires explicit approval before media enters public report details", () => {
