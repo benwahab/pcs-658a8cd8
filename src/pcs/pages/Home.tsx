@@ -709,7 +709,22 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 <Share2 aria-hidden="true" strokeWidth={2.2} />
                 <small>{shareCount}</small>
               </button>
-              <Link className="feedSecondary feedRailLink feedRailHome" to="/" aria-label="Accueil">
+              <Link className="feedSecondary feedRailLink feedRailHome" to="/" aria-label="Accueil" onClick={(event) => {
+                // The feed is already on the home route, so navigating to "/"
+                // alone does not move the scroll container back to its first slide.
+                event.preventDefault();
+                const feed = document.querySelector<HTMLElement>(".citizenFeed");
+                const intro = feed?.querySelector<HTMLElement>(".citizenSlideIntro");
+                setHeaderHidden(false);
+                setHeaderScrolled(false);
+                setShowSwipeHint(false);
+                setCommentsOpen(false);
+                feed?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+                document.querySelector<HTMLElement>("main")?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+                window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+                intro?.scrollIntoView({ block: "start", behavior: "auto" });
+                feed?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+              }}>
                 <HomeIcon aria-hidden="true" strokeWidth={2.2} />
                 <small>Accueil</small>
               </Link>
