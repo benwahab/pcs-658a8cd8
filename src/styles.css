@@ -999,6 +999,17 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .citizenSlideTrack .mediaCarouselItem .feedVideoFrame{
   display:block!important;
 }
+/* Prevent partially decoded images/first video frames from flashing into the feed. */
+.citizenFeedMediaImage.mediaImageLoading,
+.citizenSlideTrack .mediaCarouselItem video.feedVideoLoading{
+  opacity:0!important;
+}
+.citizenFeedMediaImage.mediaImageReady,
+.citizenSlideTrack .mediaCarouselItem video.feedVideoReady{
+  opacity:1!important;
+  transition:opacity .12s ease-out;
+}
+.mediaCarouselItem:has(.mediaImageLoading){background:#030605!important}
 .citizenSlideTrack .mediaCarouselItem img,
 .citizenSlideTrack .mediaCarouselItem video{
   display:block!important;
