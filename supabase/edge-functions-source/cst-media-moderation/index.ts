@@ -22,7 +22,7 @@ Deno.serve(async(req)=>{
       .from("report_media")
       .select("id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status,reports!inner(id,reference_code,title,description,status,priority,location_label,created_at,is_public,region_id)")
       .eq("media_role","citizen_evidence")
-      .like("media_type","video/%")
+      .or("media_type.like.video/%,media_type.like.image/%")
       .eq("moderation_status","pending")
       .order("created_at",{ascending:false});
 
@@ -57,11 +57,11 @@ Deno.serve(async(req)=>{
   }
   const mediaId=String(body.media_id??"").trim(); if(!mediaId)return json({error:"Média requis."},400);
   const {data:media,error:mediaError}=await admin.from("report_media").select("id,report_id,storage_path,media_role,media_type,moderation_status").eq("id",mediaId).maybeSingle();
-  if(mediaError||!media||media.media_role!=="citizen_evidence" || !String(media.media_type??"").startsWith("video/"))return json({error:"Vidéo de signalement introuvable."},404);
-  if(media.moderation_status!=="pending")return json({error:"Cette vidéo a déjà été traitée."},409);
+  const mediaType=String(media?.media_type??""); if(mediaError||!media||media.media_role!=="citizen_evidence" || !(mediaType.startsWith("video/")||mediaType.startsWith("image/")))return json({error:"Média de signalement introuvable."},404);
+  if(media.moderation_status!=="pending")return json({error:"Ce média a déjà été traité."},409);
   if(isModerator){
     const {data:report}=await admin.from("reports").select("region_id").eq("id",media.report_id).maybeSingle();
-    if(!report||report.region_id!==moderatorRegionId)return json({error:"Cette vidéo n’appartient pas à votre région."},403);
+    if(!report||report.region_id!==moderatorRegionId)return json({error:"Ce média n’appartient pas à votre région."},403);
   }
   if(action==="approve"||action==="reject"){
     const reason=action==="reject"?String(body.reason??"").trim():null;
@@ -74,8 +74,8 @@ Deno.serve(async(req)=>{
     });
     if(decisionError){
       const code=decisionError.code;
-      if(code==="P0003")return json({error:"Cette vidéo a déjà été traitée."},409);
-      if(code==="P0002")return json({error:"Vidéo de signalement introuvable."},404);
+      if(code==="P0003")return json({error:"Ce média a déjà été traité."},409);
+      if(code==="P0002")return json({error:"Média de signalement introuvable."},404);
       if(code==="42501")return json({error:"Cette vidéo n’appartient pas à votre périmètre de modération."},403);
       if(code==="22023")return json({error:"Action de modération invalide."},400);
       return json({error:action==="approve"?"Approbation impossible.":"Rejet impossible."},500);
