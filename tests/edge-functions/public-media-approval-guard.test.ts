@@ -19,6 +19,6 @@ describe("public media approval guards", () => {
     expect(detail).toContain('select("id,storage_path,media_role,media_type,moderation_status")');
     expect(detail).toContain('m.moderation_status==="approved"');
     expect(detail).toContain("Promise.allSettled(approvedMedia.map");
-    expect(detail).toContain("result.status==="fulfilled"");
+    expect(detail).toContain('result.status==="fulfilled"');
   });
 });
