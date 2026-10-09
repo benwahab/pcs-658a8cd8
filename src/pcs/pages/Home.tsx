@@ -715,9 +715,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 event.preventDefault();
                 const feed = document.querySelector<HTMLElement>(".citizenFeed");
                 const intro = feed?.querySelector<HTMLElement>(".citizenSlideIntro");
-                setHeaderHidden(false);
-                setHeaderScrolled(false);
-                setShowSwipeHint(false);
+                // Reset the home feed through its public event; header and hint state
+                // belong to Home and are not in scope inside an individual report slide.
+                window.dispatchEvent(new Event("pcs-home-reset"));
                 setCommentsOpen(false);
                 feed?.scrollTo({ top: 0, left: 0, behavior: "auto" });
                 document.querySelector<HTMLElement>("main")?.scrollTo({ top: 0, left: 0, behavior: "auto" });
