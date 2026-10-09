@@ -12,6 +12,7 @@ let activeFeedVideo: HTMLVideoElement | null = null;
 function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
+  const [frameReady, setFrameReady] = useState(false);
   const [autoplayAllowed, setAutoplayAllowed] = useState(true);
   const [slowNetwork, setSlowNetwork] = useState(false);
 
@@ -155,6 +156,9 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     <div className="feedVideoFrame">
       <video
         ref={ref}
+        className={frameReady ? "feedVideoReady" : "feedVideoLoading"}
+        onLoadedData={() => setFrameReady(true)}
+        onPlaying={() => setFrameReady(true)}
         src={src}
         poster={poster}
         autoPlay
@@ -173,12 +177,14 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
 
 export function MediaCarousel({ media }: { media: MediaItem[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [imageReady, setImageReady] = useState(false);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const swipeHandled = useRef(false);
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [media]);
+    setImageReady(false);
+  }, [media, activeIndex]);
 
   if (!media.length) return null;
 
@@ -228,10 +234,15 @@ export function MediaCarousel({ media }: { media: MediaItem[] }) {
           <LazyFeedVideo src={item.url} poster={poster} />
         ) : (
           <img
-            className="citizenFeedMediaImage"
+            className={`citizenFeedMediaImage${imageReady ? " mediaImageReady" : " mediaImageLoading"}`}
             src={item.url}
             alt="Pièce jointe du signalement"
             decoding="async"
+            onLoad={(event) => {
+              const image = event.currentTarget;
+              void image.decode().catch(() => undefined).finally(() => setImageReady(true));
+            }}
+            onError={() => setImageReady(true)}
           />
         )}
       </div>
