@@ -186,7 +186,7 @@ Deno.serve(async(req)=>{
         const {error}=await admin.storage.from("report-media").upload(path,file,{contentType:file.type,upsert:false});
         if(error)throw new Error("Échec du stockage d’une photo.");
         uploaded.push(path);
-        const {error:rowError}=await admin.from("report_media").insert({report_id:report.id,storage_path:path,media_type:file.type,file_size:file.size,uploaded_by:null,media_role:"citizen_evidence",moderation_status:"approved"});
+        const {error:rowError}=await admin.from("report_media").insert({report_id:report.id,storage_path:path,media_type:file.type,file_size:file.size,uploaded_by:null,media_role:"citizen_evidence",moderation_status:"pending"});
         if(rowError)throw new Error("Impossible d’enregistrer une photo du signalement.");
       }
       if(videoFile){
