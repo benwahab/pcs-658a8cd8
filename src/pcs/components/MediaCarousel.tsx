@@ -103,7 +103,10 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
 
     const onUserPlay = () => {
       activeFeedVideo = video;
-      // Native controls remain available for manual playback and audio.
+      // Once the citizen explicitly starts playback, allow the browser to build
+      // a useful buffer even when the device prefers reduced data usage.
+      // This only affects the currently playing video.
+      video.preload = "auto";
     };
 
     video.addEventListener("canplay", onReady);
@@ -118,10 +121,10 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     document.addEventListener("visibilitychange", onVisibility);
 
     if (active) {
-      // Never eagerly download an entire potentially 100 MB video.
-      // Slow/3G connections load metadata only; faster connections may buffer
-      // the active video, while IntersectionObserver prevents off-screen loading.
-      video.preload = slowNetwork ? "metadata" : "auto";
+      // Only the active video may buffer. On 3G, allow the browser to build
+      // a buffer before autoplay starts; on 2G/Save-Data/reduced-motion, keep
+      // metadata-only until the citizen manually presses Play.
+      video.preload = slowNetwork && !autoplayAllowed ? "metadata" : "auto";
       video.muted = true;
       video.defaultMuted = true;
       video.playsInline = true;
@@ -158,7 +161,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
         playsInline
         muted
         loop={!slowNetwork}
-        preload={active ? "metadata" : "none"}
+        preload={active ? (slowNetwork && !autoplayAllowed ? "metadata" : "auto") : "none"}
         controls
         aria-label="Vidéo du signalement"
         controlsList="noremoteplayback"
