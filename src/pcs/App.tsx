@@ -85,6 +85,17 @@ export function Shell({ children }: { children: ReactNode }) {
     };
   }, [location.pathname]);
 
+  // Keep the professional menu collapsed consistently whenever the user changes page.
+  useEffect(() => {
+    if (professionalMenuTimer.current !== undefined) {
+      window.clearTimeout(professionalMenuTimer.current);
+      professionalMenuTimer.current = undefined;
+    }
+    document.querySelectorAll<HTMLDetailsElement>("details.feedAccessHeader, details.feedAccessSubmenu").forEach((menu) => {
+      menu.open = false;
+    });
+  }, [location.pathname]);
+
   useEffect(() => {
     if (!supabase) return;
 
