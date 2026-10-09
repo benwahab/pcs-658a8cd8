@@ -33,5 +33,8 @@ jobs:
         run: bun run lint
         continue-on-error: true
 
+      - name: Edge function regression tests
+        run: bun run test
+
       - name: Build
         run: bun run build
