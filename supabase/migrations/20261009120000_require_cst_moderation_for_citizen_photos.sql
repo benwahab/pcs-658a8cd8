@@ -43,65 +43,9 @@ where rm.media_role = 'citizen_evidence'
     where h.media_id = rm.id
   );
 
--- Prevent direct authenticated inserts from bypassing moderation.
-drop policy if exists media_insert on public.report_media;
-create policy media_insert on public.report_media
-for insert to authenticated
-with check (
-  uploaded_by = (select auth.uid())
-  and (
-    (
-      media_role = 'citizen_evidence'
-      and moderation_status = 'pending'
-      and media_type like 'image/%'
-      and exists (
-        select 1 from public.reports r
-        where r.id = report_media.report_id
-          and r.citizen_id = (select auth.uid())
-      )
-    )
-    or
-    (
-      media_role = 'citizen_evidence'
-      and moderation_status = 'pending'
-      and media_type like 'video/%'
-      and exists (
-        select 1 from public.reports r
-        where r.id = report_media.report_id
-          and r.citizen_id = (select auth.uid())
-      )
-    )
-    or
-    (
-      media_role = 'resolution_video'
-      and moderation_status = 'pending'
-      and media_type like 'video/%'
-      and captured_latitude is not null
-      and captured_longitude is not null
-      and accuracy_m is not null
-      and accuracy_m between 0 and 20
-      and file_size is not null
-      and file_size between 1 and 104857600
-      and exists (
-        select 1
-        from public.report_assignments ra
-        join public.reports r on r.id = ra.report_id
-        where ra.report_id = report_media.report_id
-          and ra.agent_id = (select auth.uid())
-          and ra.unassigned_at is null
-          and ra.assignment_status in ('assigned','accepted','in_progress')
-          and r.status = 'in_progress'
-          and r.latitude is not null
-          and r.longitude is not null
-          and earth_distance(
-            ll_to_earth(r.latitude, r.longitude),
-            ll_to_earth(report_media.captured_latitude, report_media.captured_longitude)
-          ) <= 20
-      )
-    )
-  )
-);
-
+-- Keep the existing authenticated insert policy unchanged: it is intentionally
+-- limited to field-agent resolution videos. Citizen evidence is uploaded only
+-- by the validated service-role submission function, which now sets pending.
 
 -- Reuse the existing atomic CST decision path for both citizen photos and videos.
 -- Authorization and regional routing remain enforced inside the database function.
