@@ -13,6 +13,8 @@ describe("public media approval guards", () => {
   it("requires explicit approval before media enters the public home feed", () => {
     expect(home).toContain('item.moderation_status === "approved"');
     expect(home).toContain('<MediaCarousel media={media} />');
+    expect(home).toContain("// Clear the previous slide's media before loading this report.");
+    expect(home).toContain("setMedia([]);\n    let cancelled = false;");
     expect(home).not.toContain("mediaCarouselPlaceholder");
   });
 
