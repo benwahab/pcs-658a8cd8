@@ -35,10 +35,14 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
       effectiveType === "2g" ||
       effectiveType === "3g";
 
+    // Avoid automatic playback and full-file preloading on 3G as well.
+    // Citizens can still start playback manually; on that explicit action,
+    // onUserPlay switches only this video to preload="auto".
     const autoplayAllowed =
       !saveData &&
       effectiveType !== "slow-2g" &&
       effectiveType !== "2g" &&
+      effectiveType !== "3g" &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     setSlowNetwork(slowNetwork);
@@ -122,9 +126,8 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
     document.addEventListener("visibilitychange", onVisibility);
 
     if (active) {
-      // Only the active video may buffer. On 3G, allow the browser to build
-      // a buffer before autoplay starts; on 2G/Save-Data/reduced-motion, keep
-      // metadata-only until the citizen manually presses Play.
+      // Only the active video may buffer. On 3G/2G, Save-Data, or reduced
+      // motion, keep metadata-only until the citizen manually presses Play.
       video.preload = slowNetwork && !autoplayAllowed ? "metadata" : "auto";
       video.muted = true;
       video.defaultMuted = true;
