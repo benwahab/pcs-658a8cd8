@@ -9,6 +9,7 @@ describe("public media approval guards", () => {
   const home = readSource("src/pcs/pages/Home.tsx");
   const detail = readSource("src/pcs/pages/ReportDetail.tsx");
   const mediaService = readSource("src/pcs/services/media.ts");
+  const mediaCarousel = readSource("src/pcs/components/MediaCarousel.tsx");
 
   it("requires explicit approval before media enters the public home feed", () => {
     expect(home).toContain('item.moderation_status === "approved"');
@@ -16,6 +17,12 @@ describe("public media approval guards", () => {
     expect(home).toContain("// Clear the previous slide's media before loading this report.");
     expect(home).toContain("setMedia([]);\n    let cancelled = false;");
     expect(home).not.toContain("mediaCarouselPlaceholder");
+  });
+
+  it("avoids autoplay and eager video buffering on 3G connections", () => {
+    expect(mediaCarousel).toContain('effectiveType !== "3g"');
+    expect(mediaCarousel).toContain('video.preload = slowNetwork && !autoplayAllowed ? "metadata" : "auto";');
+    expect(mediaCarousel).toContain('video.preload = "auto";');
   });
 
   it("uses short-lived public media links to limit exposure after a moderation change", () => {
