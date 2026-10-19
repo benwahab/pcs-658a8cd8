@@ -11,7 +11,7 @@ drop trigger if exists enforce_report_public_visibility_trigger on public.report
 create trigger enforce_report_public_visibility_trigger before insert or update of status, is_public on public.reports for each row execute function private.enforce_report_public_visibility();
 update public.reports set is_public = false where status = 'rejected';
 create or replace view public.public_reports as
-select r.id,r.reference_code,r.category_id,r.department_id,r.title,r.description,r.status,r.priority,r.latitude,r.longitude,r.location_label,r.resolution_note,r.created_at,r.updated_at,r.resolved_at,r.region_id,r.commune_id
+select r.id,r.reference_code,r.category_id,r.department_id,r.title,r.status,r.priority,r.latitude,r.longitude,r.location_label,r.resolution_note,r.created_at,r.updated_at,r.resolved_at,r.region_id,r.commune_id
 from public.reports r where r.is_public = true;
 create or replace view public.public_report_media as
 select rm.id,rm.report_id,rm.storage_path,rm.media_type,rm.file_size,rm.created_at,rm.captured_latitude,rm.captured_longitude,rm.media_role
