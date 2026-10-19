@@ -2183,4 +2183,8 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   .cstDashboard { padding: 20px 14px 36px; }
   .cstDashboard .cstNav a { min-height: 44px; }
 }
-
+/* Keep the fixed municipal navigation and workspace aligned at tablet widths. */
+@media (min-width: 761px) and (max-width: 1050px) {
+  .mairieSidebar { width: 205px; }
+  .mairieMain { width: calc(100% - 205px); }
+}
