@@ -360,7 +360,6 @@ Elle contient notamment :
 - `category_id`
 - `department_id`
 - `title`
-- `description`
 - `status`
 - `priority`
 - `latitude`
@@ -377,7 +376,6 @@ Elle contient notamment :
 Contraintes importantes :
 
 - titre : 5 à 120 caractères ;
-- description : 10 à 5000 caractères ;
 - référence publique unique ;
 - statut contrôlé ;
 - relation commune/région contrôlée.
@@ -418,7 +416,6 @@ En particulier :
 3. sélection de localité/commune ;
 4. sélection de catégorie ;
 5. titre ;
-6. description ;
 7. zone/adresse facultative ;
 8. position GPS obligatoire ;
 9. photos facultatives ;
@@ -433,7 +430,6 @@ Contraintes frontend actuellement visibles :
 - 8 Mo maximum par image ;
 - GPS requis ;
 - titre 5–120 caractères ;
-- description 10–5000 caractères.
 
 Le backend reste l'autorité finale : les validations frontend ne remplacent pas les contraintes SQL/RLS.
 
