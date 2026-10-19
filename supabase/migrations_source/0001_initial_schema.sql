@@ -54,7 +54,6 @@ create table if not exists public.reports (
   category_id uuid not null references public.categories(id),
   department_id uuid references public.departments(id),
   title text not null,
-  description text not null,
   status text not null default 'submitted',
   priority text not null default 'normal',
   latitude double precision,
