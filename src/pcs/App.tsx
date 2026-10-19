@@ -190,7 +190,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </Link>
         </nav>
 
-        {!authChecked || !email ? <details
+        {authChecked && !email ? <details
           className="feedAccess feedAccessHeader"
           data-pcs-tour="professional-access"
           onToggle={(event) => {
