@@ -184,10 +184,16 @@ export function MediaCarousel({ media }: { media: MediaItem[] }) {
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const swipeHandled = useRef(false);
 
+  // Reset the selected item only when the report's media collection changes.
+  // Including activeIndex here would reset every swipe back to the first item.
   useEffect(() => {
     setActiveIndex(0);
+  }, [media]);
+
+  // Each newly selected image needs its own decode/readiness state.
+  useEffect(() => {
     setImageReady(false);
-  }, [media, activeIndex]);
+  }, [activeIndex, media]);
 
   if (!media.length) return null;
 
