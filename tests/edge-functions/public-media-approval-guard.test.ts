@@ -19,6 +19,12 @@ describe("public media approval guards", () => {
     expect(home).not.toContain("mediaCarouselPlaceholder");
   });
 
+  it("preserves horizontal media navigation instead of resetting each swipe", () => {
+    expect(mediaCarousel).toContain("Including activeIndex here would reset every swipe");
+    expect(mediaCarousel).toContain("  }, [media]);");
+    expect(mediaCarousel).not.toContain("  }, [media, activeIndex]);");
+  });
+
   it("avoids autoplay and eager video buffering on 3G connections", () => {
     expect(mediaCarousel).toContain('effectiveType !== "3g"');
     expect(mediaCarousel).toContain('video.preload = slowNetwork && !autoplayAllowed ? "metadata" : "auto";');
