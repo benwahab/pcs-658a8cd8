@@ -9,7 +9,7 @@ type MediaItem = {
 
 let activeFeedVideo: HTMLVideoElement | null = null;
 
-function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
+function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string; onError?: (failedUrl: string) => void }) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
   const [frameReady, setFrameReady] = useState(false);
@@ -162,6 +162,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
         className={frameReady ? "feedVideoReady" : "feedVideoLoading"}
         onLoadedData={() => setFrameReady(true)}
         onPlaying={() => setFrameReady(true)}
+        onError={() => onError?.(src)}
         src={src}
         poster={poster}
         autoPlay
@@ -178,7 +179,7 @@ function LazyFeedVideo({ src, poster }: { src: string; poster?: string }) {
   );
 }
 
-export function MediaCarousel({ media }: { media: MediaItem[] }) {
+export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onMediaError?: (mediaId: string, failedUrl: string) => void }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [imageReady, setImageReady] = useState(false);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -240,7 +241,7 @@ export function MediaCarousel({ media }: { media: MediaItem[] }) {
     >
       <div className="mediaCarouselItem" key={item.id}>
         {isVideo ? (
-          <LazyFeedVideo src={item.url} poster={poster} />
+          <LazyFeedVideo src={item.url} poster={poster} onError={(failedUrl) => onMediaError?.(item.id, failedUrl)} />
         ) : (
           <img
             className={`citizenFeedMediaImage${imageReady ? " mediaImageReady" : " mediaImageLoading"}`}
@@ -251,7 +252,10 @@ export function MediaCarousel({ media }: { media: MediaItem[] }) {
               const image = event.currentTarget;
               void image.decode().catch(() => undefined).finally(() => setImageReady(true));
             }}
-            onError={() => setImageReady(true)}
+            onError={() => {
+              setImageReady(true);
+              onMediaError?.(item.id, item.url);
+            }}
           />
         )}
       </div>
