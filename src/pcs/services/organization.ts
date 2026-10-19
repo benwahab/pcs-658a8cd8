@@ -70,7 +70,7 @@ export async function listOrganizationTransfers(){
   if(error) throw error;
   const rows=data??[], ids=rows.map((x:any)=>x.report_id);
   if(!ids.length) return rows;
-  const {data:reports,error:re}=await supabase.from("public_reports").select("id,reference_code,title,description,status,priority,latitude,longitude,location_label,created_at").in("id",ids);
+  const {data:reports,error:re}=await supabase.from("public_reports").select("id,reference_code,title,status,priority,latitude,longitude,location_label,created_at").in("id",ids);
   if(re) throw re;
   const byId=new Map((reports??[]).map((r:any)=>[r.id,r]));
   return rows.map((r:any)=>({...r,reports:byId.get(r.report_id)??null}));
@@ -123,7 +123,7 @@ export async function listAgencyMissions(unitId:string){
   if(error) throw error;
   const rows=data??[], ids=rows.map((x:any)=>x.report_id);
   if(!ids.length) return rows;
-  const {data:reports,error:re}=await supabase.from("public_reports").select("id,reference_code,title,description,status,priority,latitude,longitude,location_label,created_at").in("id",ids);
+  const {data:reports,error:re}=await supabase.from("public_reports").select("id,reference_code,title,status,priority,latitude,longitude,location_label,created_at").in("id",ids);
   if(re) throw re;
   const byId=new Map((reports??[]).map((r:any)=>[r.id,r]));
   return rows.map((r:any)=>({...r,reports:byId.get(r.report_id)??null}));
