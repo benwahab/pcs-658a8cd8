@@ -13,7 +13,7 @@ describe("public media approval guards", () => {
 
   it("requires explicit approval before media enters the public home feed", () => {
     expect(home).toContain('item.moderation_status === "approved"');
-    expect(home).toContain('<MediaCarousel media={media} />');
+    expect(home).toContain('<MediaCarousel media={media} onMediaError={refreshFailedMediaUrl} />');
     expect(home).toContain("// Clear the previous slide's media before loading this report.");
     expect(home).toContain("setMedia([]);\n    let cancelled = false;");
     expect(home).not.toContain("mediaCarouselPlaceholder");
@@ -23,6 +23,15 @@ describe("public media approval guards", () => {
     expect(mediaCarousel).toContain("Including activeIndex here would reset every swipe");
     expect(mediaCarousel).toContain("  }, [media]);");
     expect(mediaCarousel).not.toContain("  }, [media, activeIndex]);");
+  });
+
+  it("renews only a failed media URL through the approval-checking service", () => {
+    expect(home).toContain("const refreshFailedMediaUrl = async (mediaId: string, failedUrl: string) =>");
+    expect(home).toContain("current.url !== failedUrl");
+    expect(home).toContain("mediaUrlRefreshInFlight.current.has(mediaId)");
+    expect(home).toContain("createReportMediaUrl(current.storage_path)");
+    expect(mediaCarousel).toContain("onError={() => onError?.(src)}");
+    expect(mediaCarousel).toContain("onMediaError?.(item.id, failedUrl)");
   });
 
   it("avoids autoplay and eager video buffering on 3G connections", () => {
