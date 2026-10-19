@@ -9,6 +9,7 @@ import BrandLogo from "./components/BrandLogo";
 
 export function Shell({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [feedHeaderHidden, setFeedHeaderHidden] = useState(false);
   // Professional access: collapsed by default and auto-collapses 5 seconds after opening.
   const professionalMenuTimer = useRef<number | undefined>(undefined);
@@ -97,19 +98,40 @@ export function Shell({ children }: { children: ReactNode }) {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase) {
+      setAuthChecked(true);
+      return;
+    }
 
+    let active = true;
+
+    // Resolve the existing session before deciding whether professional access
+    // should be visible, avoiding a brief flash on refresh.
     supabase.auth
       .getUser()
-      .then(({ data }) => setEmail(data.user?.email ?? null));
+      .then(({ data, error }) => {
+        if (!active) return;
+        setEmail(error ? null : data.user?.email ?? null);
+        setAuthChecked(true);
+      })
+      .catch(() => {
+        if (!active) return;
+        setEmail(null);
+        setAuthChecked(true);
+      });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
       setEmail(session?.user?.email ?? null);
+      setAuthChecked(true);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   function closeProfessionalMenu() {
@@ -168,7 +190,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </Link>
         </nav>
 
-        <details
+        {!authChecked || !email ? <details
           className="feedAccess feedAccessHeader"
           data-pcs-tour="professional-access"
           onToggle={(event) => {
@@ -218,7 +240,7 @@ export function Shell({ children }: { children: ReactNode }) {
               </>
             )}
           </div>
-        </details>
+        </details> : null}
 
         {email && (
           <span className="session" data-pcs-tour="account">
