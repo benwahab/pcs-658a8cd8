@@ -7,7 +7,7 @@ describe("public feed media visibility", () => {
 
   it("renders the media carousel only when approved media URLs exist", () => {
     expect(home).toContain("{mediaReady && media.length > 0 && (");
-    expect(home).toContain("<MediaCarousel media={media} />");
+    expect(home).toContain("<MediaCarousel media={media} onMediaError={refreshFailedMediaUrl} />");
     expect(home).not.toContain("mediaCarouselPlaceholder");
   });
 
