@@ -365,7 +365,7 @@ export default function Home() {
 
 function PublicReportSlide({ report }: { report: PublicReport }) {
   const [media, setMedia] = useState<
-    { id: string; url: string; media_role: string; media_type: string }[]
+    { id: string; url: string; storage_path: string; media_role: string; media_type: string }[]
   >([]);
   const [mediaReady, setMediaReady] = useState(false);
   const [mediaRefresh, setMediaRefresh] = useState(0);
@@ -380,6 +380,26 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   const [confirmationPulse, setConfirmationPulse] = useState(false);
   const [shareCount, setShareCount] = useState(0);
   const slideRef = useRef<HTMLElement | null>(null);
+  const mediaUrlRefreshInFlight = useRef(new Set<string>());
+
+  const refreshFailedMediaUrl = async (mediaId: string, failedUrl: string) => {
+    const current = media.find((item) => item.id === mediaId);
+    if (!current?.storage_path || current.url !== failedUrl || mediaUrlRefreshInFlight.current.has(mediaId)) return;
+
+    mediaUrlRefreshInFlight.current.add(mediaId);
+    try {
+      // Renew only the failed attachment. The server rechecks public visibility
+      // and approval before issuing a fresh short-lived URL.
+      const signedUrl = await createReportMediaUrl(current.storage_path);
+      setMedia((items) => items.map((item) =>
+        item.id === mediaId && item.url === failedUrl ? { ...item, url: signedUrl } : item
+      ));
+    } catch {
+      // Keep the rest of the report's media available if renewal fails.
+    } finally {
+      mediaUrlRefreshInFlight.current.delete(mediaId);
+    }
+  };
 
   useEffect(() => {
     if (!mediaReady) return;
@@ -465,6 +485,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         const settledUrls = await Promise.allSettled(
           publicEvidence.map(async (item) => ({
             id: item.id as string,
+            storage_path: item.storage_path as string,
             url: await createReportMediaUrl(item.storage_path as string),
             media_role: item.media_role ?? "citizen_evidence",
             media_type: item.media_type ?? "image",
@@ -634,7 +655,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     <article ref={slideRef} className="citizenSlide citizenSlideTrack" data-report-id={report.id}>
       <div className="slideContent">
         {mediaReady && media.length > 0 && (
-          <MediaCarousel media={media} />
+          <MediaCarousel media={media} onMediaError={refreshFailedMediaUrl} />
         )}
 
         <div className="slideOverlay">
