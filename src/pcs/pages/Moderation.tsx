@@ -8,7 +8,6 @@ type ReportRow = {
   id: string;
   reference_code: string;
   title: string;
-  description?: string | null;
   status: string;
 };
 
@@ -130,7 +129,6 @@ export default function Moderation() {
             <article className="card" key={report.id}>
               <strong>{report.reference_code}</strong>
               <h3>{report.title}</h3>
-              {report.description ? <p>{report.description}</p> : null}
               <small>Statut du signalement : {report.status}</small>
 
               <div className="moderationMedia" style={{ marginTop: 16 }}>
