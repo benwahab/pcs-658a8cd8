@@ -191,3 +191,22 @@ export async function createOrganizationAgency(input:{
  if(!data?.agency||!data?.admin_user_id)throw new Error(typeof data?.error==="string"?data.error:"Le service n’a pas confirmé la création du compte d’agence.");
  return data;
 }
+
+
+export async function uploadOrganizationLogo(organizationId:string,file:File){
+ if(!supabase)throw new Error("Supabase non configuré.");
+ if(!["image/jpeg","image/png","image/webp"].includes(file.type))throw new Error("Format accepté : JPG, PNG ou WEBP.");
+ if(file.size>2*1024*1024)throw new Error("Le logo ne doit pas dépasser 2 Mo.");
+ const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error("Session requise.");
+ const {data:org,error:orgError}=await supabase.from("organizations").select("id,logo_url").eq("id",organizationId).single();
+ if(orgError)throw orgError;
+ const extension=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
+ const path="organization/"+organizationId+"/"+crypto.randomUUID()+"."+extension;
+ const {error:uploadError}=await supabase.storage.from("organization-logos").upload(path,file,{contentType:file.type,upsert:false});
+ if(uploadError)throw uploadError;
+ const {data}=supabase.storage.from("organization-logos").getPublicUrl(path);
+ const {error:updateError}=await supabase.from("organizations").update({logo_url:data.publicUrl}).eq("id",organizationId);
+ if(updateError){await supabase.storage.from("organization-logos").remove([path]);throw updateError;}
+ if(org.logo_url){const oldPath=org.logo_url.split("/organization-logos/")[1]?.split("?")[0];if(oldPath)await supabase.storage.from("organization-logos").remove([decodeURIComponent(oldPath)]);}
+ return data.publicUrl;
+}
