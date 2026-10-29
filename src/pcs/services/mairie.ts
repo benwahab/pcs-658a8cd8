@@ -22,8 +22,7 @@ export async function listMyAgents(){if(!supabase)throw new Error("Supabase non 
 export async function listMairieReports(){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.from("reports").select("*,categories(name),regions(name)").order("created_at",{ascending:false});if(error)throw error;return data??[];}
 export async function listMairieTransmissionTargets():Promise<MairieTransmissionTarget[]>{
  if(!supabase)throw new Error("Supabase non configuré.");
- const rpc=supabase.rpc as unknown as (fn:string,args?:Record<string,unknown>)=>Promise<{data:unknown;error:{message:string}|null}>;
- const {data,error}=await rpc("list_mairie_transmission_targets");
+ const {data,error}=await supabase.rpc("list_mairie_transmission_targets");
  if(error)throw error;
  return Array.isArray(data)?data as MairieTransmissionTarget[]:[];
 }
