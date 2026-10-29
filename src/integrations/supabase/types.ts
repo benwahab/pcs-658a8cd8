@@ -675,6 +675,7 @@ export type Database = {
           location_label: string | null
           longitude: number | null
           mayor_name: string | null
+          logo_url: string | null
           name: string
           phone: string | null
           region_id: string
