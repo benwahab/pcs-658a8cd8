@@ -68,6 +68,7 @@ export function CSTDashboard(){
    });
   });
   queueLoadedAt.current=now;
+  setError(previous=>/modération|file vidéo|description does not exist/i.test(previous)?"":previous);
  };
  useEffect(()=>{
   let active=true;
@@ -86,7 +87,7 @@ export function CSTDashboard(){
    }catch(e){if(active)setError(e instanceof Error?e.message:"Impossible de charger la file de modération.")}
   };
   void verify();
-  const healthCheck=async()=>{try{const h=await health();if(active){setData(h);setLast(new Date().toLocaleTimeString("fr-FR"));setError("")}}catch(e){if(active)setError(e instanceof Error?e.message:"Supervision indisponible.")}};
+  const healthCheck=async()=>{try{const h=await health();if(active){setData(h);setLast(new Date().toLocaleTimeString("fr-FR"))}}catch(e){if(active)setError(e instanceof Error?e.message:"Supervision indisponible.")}};
   void healthCheck();
   const healthTimer=window.setInterval(()=>{if(active&&dashboardActive.current)void healthCheck()},5000);
   const queueTimer=window.setInterval(()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible")void refreshQueue().catch(e=>{if(active&&dashboardActive.current)setError(e instanceof Error?e.message:"Impossible d’actualiser la file de modération.")})},60000);
