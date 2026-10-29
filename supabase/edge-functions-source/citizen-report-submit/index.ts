@@ -172,7 +172,7 @@ Deno.serve(async(req)=>{
     const referenceCode="PCS-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+crypto.randomUUID().slice(0,8).toUpperCase();
     const {data:report,error:reportError}=await admin.from("reports").insert({
       reference_code:referenceCode,category_id:categoryId,title,
-      location_label:locationLabel,latitude,longitude,region_id:regionId,commune_id:communeId,status:"submitted",is_public:true
+      location_label:locationLabel,latitude,longitude,region_id:regionId,commune_id:communeId,status:"submitted",is_public:false
     }).select("id,reference_code").single();
     if(reportError){
       if(reportError.code==="23505"&&/20 mètres|déjà été signalé/i.test(reportError.message||""))return json({error:"Ce problème a déjà été signalé à proximité."},409);
