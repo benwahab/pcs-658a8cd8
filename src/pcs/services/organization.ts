@@ -4,7 +4,7 @@ export type OrganizationMembership={
   organization_id:string;
   unit_id:string|null;
   role:"admin"|"supervisor"|"operator";
-  organization:{id:string;name:string;code:string;type:string};
+  organization:{id:string;name:string;code:string;type:string;logo_url:string|null};
   unit:{id:string;name:string;code:string;unit_type:"central"|"agency"}|null;
 };
 
@@ -24,7 +24,7 @@ export async function getMyOrganizationMembership():Promise<OrganizationMembersh
   const organizationIds=[...new Set(memberships.map((m:any)=>m.organization_id).filter(Boolean))];
   const unitIds=[...new Set(memberships.map((m:any)=>m.unit_id).filter(Boolean))];
   const [{data:organizations,error:orgError},{data:linkedUnits,error:unitError}] = await Promise.all([
-    supabase.from("organizations").select("id,name,code,type,is_active").in("id",organizationIds),
+    supabase.from("organizations").select("id,name,code,type,is_active,logo_url").in("id",organizationIds),
     unitIds.length
       ? supabase.from("organization_units").select("id,organization_id,name,code,unit_type,is_active").in("id",unitIds)
       : Promise.resolve({data:[],error:null} as any)
