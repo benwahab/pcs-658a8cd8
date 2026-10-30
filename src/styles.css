@@ -2188,3 +2188,294 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   .mairieSidebar { width: 205px; }
   .mairieMain { width: calc(100% - 205px); }
 }
+
+
+/* ===== PCS CST — modernisation visuelle premium, sans changement métier ===== */
+.cstDashboard {
+  --cst-violet-950: #241044;
+  --cst-violet-900: #32105c;
+  --cst-violet-700: #5b2a91;
+  --cst-violet-500: #8055c7;
+  --cst-lavender: #a78bfa;
+  --cst-lavender-100: #eee7fb;
+  --cst-text: #241b3d;
+  --cst-muted: #756b89;
+  position: relative;
+  padding: 28px 34px 56px 292px;
+  background:
+    radial-gradient(ellipse at 78% 0%, #e8defb 0%, transparent 38%),
+    linear-gradient(145deg, #fbfaff 0%, #f5f1fc 54%, #eee8f8 100%);
+  color: var(--cst-text);
+}
+.cstDashboard .cstNav {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  width: 258px;
+  height: 100dvh;
+  margin: 0;
+  padding: 22px 14px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, #241044 0%, #32105c 56%, #1e0b38 100%);
+  box-shadow: 10px 0 35px #24104424;
+  scrollbar-width: thin;
+  scrollbar-color: #8d70bd transparent;
+}
+.cstDashboard .cstNav::before {
+  content: "PCS  /  CST\\A Centre de Supervision Technique";
+  white-space: pre-wrap;
+  display: block;
+  padding: 12px 10px 22px;
+  margin-bottom: 10px;
+  color: #fff;
+  font-size: 1.02rem;
+  font-weight: 850;
+  line-height: 1.55;
+  letter-spacing: .01em;
+  border-bottom: 1px solid #ffffff24;
+}
+.cstDashboard .cstNav a {
+  display: flex;
+  align-items: center;
+  min-height: 43px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: #eee7fb;
+  font-size: .82rem;
+  font-weight: 650;
+  white-space: normal;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.cstDashboard .cstNav a:hover,
+.cstDashboard .cstNav a:focus-visible {
+  color: #fff;
+  background: linear-gradient(100deg, #6736a6, #4a247b);
+  border-color: #a78bfa55;
+  transform: translateX(2px);
+}
+.cstDashboard .cstTopbar {
+  align-items: center;
+  padding: 0 0 22px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #ded5ef;
+}
+.cstDashboard .cstTopbar h1 {
+  color: #2d1850;
+  font-size: clamp(1.65rem, 2.5vw, 2.35rem);
+  letter-spacing: -.035em;
+  font-weight: 850;
+}
+.cstDashboard .cstSubtitle,
+.cstDashboard .cstMuted {
+  color: var(--cst-muted);
+}
+.cstDashboard .cstEnv {
+  color: #176b51;
+  background: #e4f5ed;
+  border-color: #c7e9d9;
+  letter-spacing: .04em;
+}
+.cstDashboard .cstModules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.cstDashboard .cstModuleCard {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid #e6def3;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #fff 0%, #faf8ff 100%);
+  box-shadow: 0 10px 30px #35205c0b;
+}
+.cstDashboard .cstModuleCard h2 {
+  margin: 4px 0 8px;
+  color: #3b2064;
+  font-size: 1.08rem;
+}
+.cstDashboard .cstModuleCard p:not(.eyebrow) {
+  margin: 0;
+  color: #766b8b;
+  font-size: .78rem;
+  line-height: 1.6;
+}
+.cstDashboard .eyebrow {
+  color: #7957b0;
+  font-size: .66rem;
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+.cstDashboard .cstOverviewGrid {
+  grid-template-columns: minmax(190px, 1.4fr) repeat(4, minmax(130px, 1fr));
+  gap: 13px;
+  margin: 18px 0;
+}
+.cstDashboard .cstCard {
+  min-width: 0;
+  padding: 19px;
+  border: 1px solid #e7e0f2;
+  border-radius: 17px;
+  background: #ffffffed;
+  box-shadow: 0 8px 28px #35205c0b, 0 1px 0 #fff inset;
+  backdrop-filter: blur(12px);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.cstDashboard .cstCard:hover {
+  border-color: #cbb9e8;
+  box-shadow: 0 13px 32px #35205c14, 0 1px 0 #fff inset;
+  transform: translateY(-1px);
+}
+.cstDashboard .cstHero {
+  min-height: 132px;
+  border-left: 4px solid #7650b5;
+  background: linear-gradient(135deg, #fff 0%, #f4effc 100%);
+}
+.cstDashboard .cstHero h2 {
+  color: #4e3a7f;
+  font-size: 1.2rem;
+}
+.cstDashboard .cstMetric {
+  min-height: 132px;
+  justify-content: center;
+}
+.cstDashboard .cstMetric > span {
+  color: #766b8b;
+  font-size: .75rem;
+  font-weight: 650;
+}
+.cstDashboard .cstMetric strong {
+  color: #39215f;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  letter-spacing: -.035em;
+}
+.cstDashboard .cstMetric small {
+  color: #8b80a0;
+  font-size: .68rem;
+}
+.cstDashboard .cstSectionGrid {
+  gap: 16px;
+}
+.cstDashboard .cstSectionGrid h2,
+.cstDashboard .cstCard h2 {
+  color: #342052;
+  letter-spacing: -.02em;
+}
+.cstDashboard .cstTableWrap {
+  border-color: #e7e0f2;
+  border-radius: 13px;
+  background: #fff;
+}
+.cstDashboard .cstTableWrap th {
+  background: #f5f1fb;
+  color: #6d5b89;
+}
+.cstDashboard .cstTableWrap td {
+  color: #3d3450;
+}
+.cstDashboard .cstTableWrap tr:hover td {
+  background: #faf8fe;
+}
+.cstDashboard .cstTraceInput {
+  border-color: #ded4ef;
+  border-radius: 12px;
+  background: #fff;
+  color: #2e2147;
+}
+.cstDashboard .cstTraceInput:focus {
+  border-color: #8055c7;
+  box-shadow: 0 0 0 4px #a78bfa30;
+}
+.cstDashboard .cstEventList > div {
+  border-color: #e9e2f3;
+  background: #fbfaff;
+}
+.cstDashboard .cstQueueBadge,
+.cstDashboard .cstPendingBadge {
+  border-radius: 999px;
+}
+.cstDashboard .cstStatusDot.healthy { background: #159b78; box-shadow: 0 0 0 4px #159b7820; }
+.cstDashboard .cstStatusDot.degraded,
+.cstDashboard .cstStatusDot.warning { background: #e6a23c; box-shadow: 0 0 0 4px #e6a23c24; }
+.cstDashboard .cstStatusDot.critical { background: #d94b59; box-shadow: 0 0 0 4px #d94b5924; }
+.cstDashboard .cstHttpOk { color: #159b78; }
+.cstDashboard .cstHttpError { color: #d94b59; }
+.cstDashboard .cstBanner.critical {
+  border-color: #f0c7cc;
+  background: #fff1f2;
+  color: #9f2637;
+}
+.cstDashboard .button:not(.primary),
+.cstDashboard button:not(.primary) {
+  border-color: #ded4ef;
+  color: #4e3a7f;
+  background: #fff;
+}
+.cstDashboard .button.primary {
+  background: linear-gradient(135deg, #6a3ba4, #4e2a80);
+  border-color: #4e2a80;
+  box-shadow: 0 7px 18px #4e2a8025;
+}
+.cstDashboard .button.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7950b6, #5b3590);
+}
+.cstDashboard .cstVideoReview {
+  border-color: #e5dcf2;
+  border-radius: 15px;
+  background: #fff;
+}
+.cstDashboard .cstVideoPreview {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #241044;
+}
+@media (max-width: 1100px) {
+  .cstDashboard { padding-left: 264px; padding-right: 22px; }
+  .cstDashboard .cstNav { width: 232px; }
+  .cstDashboard .cstOverviewGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cstDashboard .cstHero { grid-column: 1 / -1; }
+  .cstDashboard .cstModules { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .cstDashboard { padding: 18px 14px 34px; }
+  .cstDashboard .cstNav {
+    position: sticky;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+    padding: 10px;
+    margin: 0 0 14px;
+    border-radius: 14px;
+  }
+  .cstDashboard .cstNav::before { display: none; }
+  .cstDashboard .cstNav a { flex: 0 0 auto; min-height: 42px; white-space: nowrap; }
+  .cstDashboard .cstTopbar { align-items: flex-start; flex-direction: column; }
+  .cstDashboard .cstTopActions { width: 100%; flex-wrap: wrap; }
+  .cstDashboard .cstModules,
+  .cstDashboard .cstOverviewGrid,
+  .cstDashboard .cstSectionGrid { grid-template-columns: 1fr; }
+  .cstDashboard .cstHero { grid-column: auto; }
+  .cstDashboard .cstCard { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cstDashboard .cstCard,
+  .cstDashboard .cstNav a { transition: none; }
+  .cstDashboard .cstCard:hover,
+  .cstDashboard .cstNav a:hover { transform: none; }
+}
