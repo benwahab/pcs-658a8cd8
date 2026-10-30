@@ -2584,3 +2584,41 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 @media(max-width:1100px){.cstDashboardRebuilt{grid-template-columns:220px minmax(0,1fr)!important}.cstDashboardRebuilt .cstSidebar{padding-inline:10px}.cstKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.cstOverviewLayout{grid-template-columns:repeat(2,minmax(0,1fr))}.cstTrendPanel{grid-column:1/-1}.cstProfessionalLinks{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.cstDashboardRebuilt{display:block!important}.cstDashboardRebuilt .cstSidebar{position:relative;width:100%;height:auto;min-height:0;padding:13px;gap:9px}.cstBrandLockup{padding-bottom:10px}.cstSidebarLabel,.cstSidebarNote{display:none}.cstDashboardRebuilt .cstSidebar .cstNav{display:flex;flex-direction:row;overflow-x:auto;padding-bottom:3px}.cstDashboardRebuilt .cstSidebar .cstNav a{flex:0 0 auto;min-height:38px;white-space:nowrap}.cstSidebarStatus{display:none}.cstDashboardRebuilt .cstWorkspace{padding:0 12px 28px}.cstUtilityBar{align-items:flex-start;padding:9px 0;flex-direction:column}.cstSearchVisual{width:100%}.cstUtilityRight{width:100%;justify-content:space-between}.cstPageHeading{align-items:flex-start;flex-direction:column;padding:18px 0 14px}.cstPageHeading h1{font-size:1.35rem}.cstKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cstKpiCard{padding:12px 9px;gap:8px}.cstKpiIcon{width:34px;height:34px;flex-basis:34px}.cstKpiCard strong{font-size:1.15rem}.cstKpiCard small{font-size:.59rem}.cstKpiCard em{font-size:.51rem}.cstOverviewLayout{grid-template-columns:1fr}.cstTrendPanel,.cstWidePanel{grid-column:auto}.cstTechMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.cstProfessionalLinks{grid-template-columns:1fr}.cstDashboardRebuilt .cstSectionGrid{grid-template-columns:1fr}.cstDashboardRebuilt .cstSectionGrid>.cstCard.cstWide{grid-column:auto}.cstDashboardRebuilt .cstVideoQueue{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.cstDashboardRebuilt *{scroll-behavior:auto!important;transition:none!important}}
+
+/* PCS — shared professional visual language */
+.mairieDashboard{background:#f5f7ff!important;color:#241548}
+.mairieDashboard .mairieSidebar{background:linear-gradient(180deg,#241044 0%,#32105c 58%,#1b0b34 100%)!important}
+.mairieDashboard .mairieNav a.active,.mairieDashboard .mairieNav a:hover{background:linear-gradient(100deg,#6530b7,#4c1e91)!important;border-color:#a98ae855}
+.mairieDashboard .mairieMain{background:#f5f7ff}
+.mairieDashboard .mairieTopbar,.mairieDashboard .mairieWelcome,.mairieDashboard .mairiePanel,.mairieDashboard .mairieStatCard{border-color:#e2e7f5!important;box-shadow:0 5px 18px #33205c08}
+.mairieDashboard .mairieStatCard.featured{background:linear-gradient(145deg,#32105c,#6331ae)!important}
+.mairieDashboard .mairiePanel{border-radius:12px!important;background:#fff}
+.organizationDashboard{width:100%;max-width:none!important;min-height:100vh;margin:0!important;padding:0!important;display:grid;grid-template-columns:255px minmax(0,1fr);gap:0!important;background:#f5f7ff;color:#241548}
+.organizationSidebar{position:sticky;top:0;height:100vh;padding:22px 14px 18px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(180deg,#241044,#32105c 58%,#1b0b34);color:#fff}
+.organizationBrand{display:flex;flex-direction:column;padding:4px 9px 20px;border-bottom:1px solid #ffffff25}
+.organizationBrand span{font-size:1.8rem;font-weight:900;letter-spacing:-.05em}
+.organizationBrand small{margin-top:3px;color:#d7c9f4;font-size:.58rem;letter-spacing:.1em}
+.organizationSidebar>p{margin:4px 8px;color:#d7c9f4;font-size:.65rem;font-weight:800;letter-spacing:.12em}
+.organizationSidebar nav{display:flex;flex-direction:column;gap:5px}
+.organizationSidebar nav a{padding:11px 10px;border:1px solid transparent;border-radius:9px;color:#eee8fb;text-decoration:none;font-size:.76rem;font-weight:650}
+.organizationSidebar nav a.active,.organizationSidebar nav a:hover{background:linear-gradient(100deg,#6530b7,#4c1e91);border-color:#a98ae855;color:#fff}
+.organizationSidebarFoot{display:flex;align-items:center;gap:10px;margin-top:auto;padding:12px 10px;border:1px solid #8b61d5;border-radius:10px;background:#ffffff08}
+.organizationSidebarFoot strong,.organizationSidebarFoot small{display:block}
+.organizationSidebarFoot strong{font-size:.7rem}.organizationSidebarFoot small{margin-top:4px;color:#cbbce7;font-size:.6rem}
+.orgOnlineDot{width:8px;height:8px;border-radius:50%;background:#27c58a;box-shadow:0 0 0 4px #27c58a20}
+.organizationMain{min-width:0;padding:24px;display:flex;flex-direction:column;gap:14px}
+.organizationMain .citizenSpaceTop{margin:0;padding:18px 20px;border:1px solid #e2e7f5;border-radius:12px;background:#fff;box-shadow:0 5px 18px #33205c08}
+.organizationMain>.card{margin:0;padding:18px;border:1px solid #e2e7f5;border-radius:12px;background:#fff;box-shadow:0 5px 18px #33205c08}
+.organizationMain>.card h2{color:#291650;font-size:1rem}
+.organizationMain .card .card{margin:12px 0;padding:14px;border:1px solid #eceaf5;border-radius:10px;background:#fbfaff;box-shadow:none}
+.organizationMain .button.primary{background:#6331ae;border-color:#6331ae}
+.organizationMain .row{padding:11px 0;border-bottom:1px solid #eeedf5}
+.agentFeed{background:#f5f7ff!important;color:#241548}
+.agentFeedTop{background:#fff!important;border-bottom:1px solid #e2e7f5!important;box-shadow:0 4px 16px #33205c0a}
+.agentFeedTop strong{color:#28134f}
+.agentFeedTop small{color:#746b92}
+.agentFeed .missionRail button.railActive{background:#6331ae!important;color:#fff}
+.agentFeed .feedActionButton.primary{background:#6331ae!important;border-color:#6331ae!important}
+.agentFeedBottom{border-top:1px solid #e2e7f5!important;background:#fff!important;box-shadow:0 -5px 20px #33205c0a!important}
+.agentFeedBottom a.active,.agentFeedBottom button.active{color:#6331ae!important}
+@media(max-width:760px){.organizationDashboard{display:block}.organizationSidebar{position:relative;height:auto;padding:13px;gap:9px}.organizationBrand{padding:0 8px 10px}.organizationSidebar>p,.organizationSidebarFoot{display:none}.organizationSidebar nav{display:flex;flex-direction:row;overflow-x:auto}.organizationSidebar nav a{flex:0 0 auto;white-space:nowrap}.organizationMain{padding:12px}.organizationMain .citizenSpaceTop{align-items:flex-start;gap:12px;flex-direction:column}}
