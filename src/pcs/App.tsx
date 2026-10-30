@@ -16,6 +16,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isMairie = location.pathname === "/mairie";
+  const isCst = location.pathname === "/cst" || location.pathname.startsWith("/cst/");
   const isPhoneClient =
     typeof navigator !== "undefined" &&
     (((navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile === true) ||
@@ -171,7 +172,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app">
-      <header className={"feedImmersiveHeader" + (feedHeaderHidden ? " is-hidden" : "")}>
+      {!isCst && <header className={"feedImmersiveHeader" + (feedHeaderHidden ? " is-hidden" : "")}>
         <Link className="brand" to="/">
           <BrandLogo className="brandLogo" />
         </Link>
@@ -250,7 +251,7 @@ export function Shell({ children }: { children: ReactNode }) {
             </button>
           </span>
         )}
-      </header>
+      </header>}
 
       <main>{children}</main>
 
