@@ -1120,7 +1120,7 @@ Créer des comptes de test représentant :
 7. unité affecte l'agent ;
 8. agent vérifie le GPS ;
 9. agent traite ;
-10. agent capture la vidéo ;
+10. agent sélectionne la vidéo de résolution depuis son appareil ;
 11. vidéo uploadée ;
 12. RPC de résolution ;
 13. rapport résolu ;
