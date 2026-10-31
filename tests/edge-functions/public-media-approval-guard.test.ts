@@ -40,8 +40,8 @@ describe("public media approval guards", () => {
     expect(mediaCarousel).toContain('video.preload = "auto";');
   });
 
-  it("uses short-lived public media links to limit exposure after a moderation change", () => {
-    expect(mediaService).toContain("expiresIn = 60");
+  it("uses time-limited public media links and renews them before the one-hour expiry", () => {
+    expect(mediaService).toContain("expiresIn = 3600");
     expect(mediaService).toContain('body: { path, expiresIn }');
   });
 
