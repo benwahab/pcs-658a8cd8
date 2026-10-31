@@ -17,29 +17,6 @@ const VIDEO_EXTENSIONS: Record<string, string[]> = {
   "video/quicktime": ["mov", "qt"],
 };
 
-export function getVideoDuration(file: File): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement("video");
-    const url = URL.createObjectURL(file);
-
-    video.preload = "metadata";
-
-    const cleanup = () => URL.revokeObjectURL(url);
-
-    video.onloadedmetadata = () => {
-      cleanup();
-      resolve(video.duration);
-    };
-
-    video.onerror = () => {
-      cleanup();
-      reject(new Error("Vidéo illisible ou format non pris en charge."));
-    };
-
-    video.src = url;
-  });
-}
-
 async function detectVideoContainer(
   file: File,
 ): Promise<"mp4" | "webm" | null> {
@@ -106,8 +83,7 @@ export async function validateCitizenVideo(file: File) {
     );
   }
 
-  const duration = await getVideoDuration(file).catch(() => null);
-  return { duration, container };
+  return { container };
 }
 
 export async function createReportMediaUrl(
