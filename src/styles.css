@@ -2628,3 +2628,12 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .agentFeedBottom{border-top:1px solid #e2e7f5!important;background:#fff!important;box-shadow:0 -5px 20px #33205c0a!important}
 .agentFeedBottom a.active,.agentFeedBottom button.active{color:#6331ae!important}
 @media(max-width:760px){.organizationDashboard{display:block}.organizationSidebar{position:relative;height:auto;padding:13px;gap:9px}.organizationBrand{padding:0 8px 10px}.organizationSidebar>p,.organizationSidebarFoot{display:none}.organizationSidebar nav{display:flex;flex-direction:row;overflow-x:auto}.organizationSidebar nav a{flex:0 0 auto;white-space:nowrap}.organizationMain{padding:12px}.organizationMain .citizenSpaceTop{align-items:flex-start;gap:12px;flex-direction:column}}
+
+/* PCS accueil — rétablir le texte blanc pour assurer sa lisibilité sur le visuel. */
+.citizenSlideIntro .slideContent h1,
+.citizenSlideIntro .slideContent h1 strong,
+.citizenSlideIntro .slideContent > p:not(.eyebrow) {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.72) !important;
+}
