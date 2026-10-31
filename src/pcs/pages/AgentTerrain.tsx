@@ -27,7 +27,7 @@ export default function AgentTerrain(){
  const [verifyId,setVerifyId]=useState<string|null>(null);
  const [videoId,setVideoId]=useState<string|null>(null);
  const [video,setVideo]=useState<File|null>(null);
- const [cameraError,setCameraError]=useState(""),[videoPreviewUrl,setVideoPreviewUrl]=useState("");
+ const [videoError,setVideoError]=useState(""),[videoPreviewUrl,setVideoPreviewUrl]=useState("");
  const previewRef=useRef<HTMLVideoElement|null>(null),previewUrlRef=useRef("");
  const [busy,setBusy]=useState(false);
  const [index,setIndex]=useState(0);
@@ -213,8 +213,8 @@ export default function AgentTerrain(){
   });
  }
 
- function cancelCapture(){
-  setVideo(null);setCameraError("");setVideoId(null);
+ function cancelVideoSelection(){
+  setVideo(null);setVideoError("");setVideoId(null);
   if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);
   previewUrlRef.current="";setVideoPreviewUrl("");
  }
@@ -342,7 +342,7 @@ export default function AgentTerrain(){
         {s==="verification"&&
          <button className="feedActionButton primary" disabled={busy} onClick={()=>setVerifyId(m.reports.id)}>✓ Confirmer sur place</button>}
         {s==="in_progress"&&
-         <button className="feedActionButton primary" disabled={busy} onClick={()=>{cancelCapture();setVideoId(m.id);}}>● Publier la résolution</button>}
+         <button className="feedActionButton primary" disabled={busy} onClick={()=>{cancelVideoSelection();setVideoId(m.id);}}>● Publier la résolution</button>}
        </div>
        {verifyId===m.reports?.id&&
         <div className="agentActionSheet">
@@ -355,15 +355,15 @@ export default function AgentTerrain(){
        {videoId===m.id&&
         <div className="agentActionSheet">
          <strong>Importer la vidéo de résolution</strong>
-         {cameraError&&<p role="alert" style={{color:"#b91c1c"}}>{cameraError}</p>}
+         {videoError&&<p role="alert" style={{color:"#b91c1c"}}>{videoError}</p>}
          {video&&videoPreviewUrl&&<><video ref={previewRef} controls playsInline style={{width:"100%",maxHeight:"42vh",borderRadius:12,background:"#111",objectFit:"contain"}}/><p>Vidéo prête ({(video.size/1024/1024).toFixed(1)} Mo).</p></>}
          <div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"10px 0"}}>
           <button type="button" className="feedActionButton primary" disabled={busy} onClick={()=>document.getElementById("agent-resolution-video-import")?.click()}>{video?"Choisir une autre vidéo":"Choisir une vidéo"}</button>
-          <input id="agent-resolution-video-import" hidden type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" onChange={event=>{const file=event.target.files?.[0]??null;event.target.value="";if(!file)return;if(file.size<=0){setCameraError("Le fichier vidéo est vide.");return;}if(file.size>100*1024*1024){setCameraError("La vidéo ne doit pas dépasser 100 Mo.");return;}if(!["video/mp4","video/webm","video/quicktime"].includes(file.type)){setCameraError("Format vidéo non pris en charge. Utilisez MP4, WebM ou MOV.");return;}setCameraError("");setVideo(file);if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);previewUrlRef.current=URL.createObjectURL(file);setVideoPreviewUrl(previewUrlRef.current);}} />
+          <input id="agent-resolution-video-import" hidden type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" onChange={event=>{const file=event.target.files?.[0]??null;event.target.value="";if(!file)return;if(file.size<=0){setVideoError("Le fichier vidéo est vide.");return;}if(file.size>100*1024*1024){setVideoError("La vidéo ne doit pas dépasser 100 Mo.");return;}if(!["video/mp4","video/webm","video/quicktime"].includes(file.type)){setVideoError("Format vidéo non pris en charge. Utilisez MP4, WebM ou MOV.");return;}setVideoError("");setVideo(file);if(previewUrlRef.current)URL.revokeObjectURL(previewUrlRef.current);previewUrlRef.current=URL.createObjectURL(file);setVideoPreviewUrl(previewUrlRef.current);}} />
          </div>
          <p>Formats acceptés : MP4, WebM ou MOV. Taille maximale : 100 Mo, sans limite de durée. Une position GPS précise à 20 mètres ou moins du signalement reste requise.</p>
          <button className="feedActionButton primary" disabled={!video||busy} onClick={()=>resolve(m)}>{busy?"Envoi…":"Envoyer la vidéo de résolution"}</button>
-         <button type="button" className="feedActionButton" disabled={busy} onClick={cancelCapture}>Annuler</button>
+         <button type="button" className="feedActionButton" disabled={busy} onClick={cancelVideoSelection}>Annuler</button>
         </div>}
       </div>
       <div className="missionRail">
