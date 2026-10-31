@@ -16,7 +16,8 @@ export function Shell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isMairie = location.pathname === "/mairie";
-  const isCst = location.pathname === "/cst" || location.pathname.startsWith("/cst/");
+  // Keep the global PCS header on the CST login/recovery screen; hide it only inside the authenticated CST workspace.
+  const isCstDashboard = location.pathname.startsWith("/cst/");
   const isPhoneClient =
     typeof navigator !== "undefined" &&
     (((navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile === true) ||
@@ -172,7 +173,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app">
-      {!isCst && <header className={"feedImmersiveHeader" + (feedHeaderHidden ? " is-hidden" : "")}>
+      {!isCstDashboard && <header className={"feedImmersiveHeader" + (feedHeaderHidden ? " is-hidden" : "")}>
         <Link className="brand" to="/">
           <BrandLogo className="brandLogo" />
         </Link>
