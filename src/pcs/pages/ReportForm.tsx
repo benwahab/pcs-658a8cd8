@@ -13,6 +13,7 @@ import {
 } from "../services/mairie";
 import {
   MAX_VIDEO_SIZE_BYTES,
+  compressCitizenPhoto,
   validateCitizenVideo,
 } from "../services/media";
 
@@ -127,7 +128,7 @@ export default function ReportForm() {
       for (const file of selected.slice(0, available)) {
         if (!file.type.startsWith("image/")) throw new Error("Un fichier sélectionné n’est pas une image valide.");
         if (file.size <= 0 || file.size > MAX_IMAGE_SIZE_BYTES) throw new Error("Chaque photo doit être lisible et ne pas dépasser 8 Mo.");
-        snapshots.push(await snapshotSelectedFile(file));
+        snapshots.push(await compressCitizenPhoto(await snapshotSelectedFile(file)));
       }
       setFiles((current) => [...current, ...snapshots].slice(0, MAX_PHOTOS));
       if (exceededLimit) setError("Vous pouvez joindre au maximum 5 photos par signalement.");
