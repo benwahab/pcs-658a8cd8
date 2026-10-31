@@ -85,30 +85,46 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     const telemetryUrl = `${import.meta.env['VITE_SUPABASE_URL'] || ''}/functions/v1/cst-telemetry`;
 
     if (isBrowser && !isTelemetryRequest && telemetryUrl.startsWith('http')) {
-      void fetch(telemetryUrl, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          ...(token ? { Authorization: token } : {}),
-        },
-        body: JSON.stringify({
-          events: [{
-            trace_id: trace.traceId,
-            occurred_at: Date.now(),
-            method,
-            endpoint: requestUrl,
-            status_code: response?.status ?? 0,
-            latency_ms: latency,
-            ...(response ? {} : { error_class: lastError instanceof Error ? lastError.name : 'NetworkError' }),
-          }],
-        }),
-        keepalive: true,
-      }).catch(() => undefined);
+      queueTelemetry(telemetryUrl, token, {
+        trace_id: trace.traceId,
+        occurred_at: Date.now(),
+        method,
+        endpoint: requestUrl,
+        status_code: response?.status ?? 0,
+        latency_ms: latency,
+        ...(response ? {} : { error_class: lastError instanceof Error ? lastError.name : 'NetworkError' }),
+      });
     }
 
     if (response) return response;
     throw lastError instanceof Error ? lastError : new Error('Réseau indisponible.');
   };
+}
+// Telemetry is batched (one POST every 10 s, max 50 events) and paused for
+// 60 s after a 429 so request monitoring never trips the server rate limit.
+const telemetryQueue: Record<string, unknown>[] = [];
+let telemetryTimer: ReturnType<typeof setTimeout> | undefined;
+let telemetryPausedUntil = 0;
+function queueTelemetry(url: string, token: string | null, event: Record<string, unknown>) {
+  if (Date.now() < telemetryPausedUntil) return;
+  if (telemetryQueue.length >= 50) return;
+  telemetryQueue.push(event);
+  if (telemetryTimer) return;
+  telemetryTimer = setTimeout(() => {
+    telemetryTimer = undefined;
+    const events = telemetryQueue.splice(0, telemetryQueue.length);
+    if (!events.length) return;
+    void fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(token ? { Authorization: token } : {}) },
+      body: JSON.stringify({ events }),
+      keepalive: true,
+    })
+      .then((res) => {
+        if (res.status === 429) telemetryPausedUntil = Date.now() + 60_000;
+      })
+      .catch(() => undefined);
+  }, 10_000);
 }
 function createSupabaseClient() {
   // Public (publishable) fallbacks for the official PCS project, used when the

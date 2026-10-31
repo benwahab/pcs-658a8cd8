@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -673,9 +673,9 @@ export type Database = {
           is_active: boolean
           latitude: number | null
           location_label: string | null
+          logo_url: string | null
           longitude: number | null
           mayor_name: string | null
-          logo_url: string | null
           name: string
           phone: string | null
           region_id: string
@@ -690,9 +690,9 @@ export type Database = {
           is_active?: boolean
           latitude?: number | null
           location_label?: string | null
+          logo_url?: string | null
           longitude?: number | null
           mayor_name?: string | null
-          logo_url?: string | null
           name: string
           phone?: string | null
           region_id: string
@@ -707,9 +707,9 @@ export type Database = {
           is_active?: boolean
           latitude?: number | null
           location_label?: string | null
+          logo_url?: string | null
           longitude?: number | null
           mayor_name?: string | null
-          logo_url?: string | null
           name?: string
           phone?: string | null
           region_id?: string
@@ -2149,6 +2149,7 @@ export type Database = {
           is_active: boolean
           latitude: number | null
           location_label: string | null
+          logo_url: string | null
           longitude: number | null
           mayor_name: string | null
           name: string
@@ -2364,6 +2365,7 @@ export type Database = {
           is_active: boolean
           latitude: number | null
           location_label: string | null
+          logo_url: string | null
           longitude: number | null
           mayor_name: string | null
           name: string
