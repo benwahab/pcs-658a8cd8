@@ -5,18 +5,32 @@ import {supabase} from "@/pcs/lib/supabase";
 async function callCst(body:Record<string,unknown>){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-auth",{body});if(error)throw new Error(error.message||"Service CST indisponible.");if(data?.error)throw new Error(data.error);return data as any;}
 async function health(){
  if(!supabase)throw new Error("Supabase non configuré.");
- const invoke=async(accessToken:string)=>supabase!.functions.invoke("cst-health",{method:"GET",headers:{Authorization:`Bearer ${accessToken}`}});
+ const invoke=(accessToken:string)=>supabase!.functions.invoke("cst-health",{method:"GET",headers:{Authorization:`Bearer ${accessToken}`}});
+ const refreshAccessToken=async()=>{
+  const {data,error}=await supabase!.auth.refreshSession();
+  if(error||!data.session?.access_token)throw new Error("Votre session CST a expiré. Reconnectez-vous.");
+  return data.session.access_token;
+ };
  const {data:sessionData,error:sessionError}=await supabase.auth.getSession();
  if(sessionError)throw new Error("Impossible de vérifier la session CST. Reconnectez-vous.");
  let accessToken=sessionData.session?.access_token;
  if(!accessToken)throw new Error("Votre session CST a expiré. Reconnectez-vous.");
+ // Refresh shortly before expiry to avoid sending a token that expires in transit.
+ if(sessionData.session?.expires_at && sessionData.session.expires_at*1000<=Date.now()+90000){
+  accessToken=await refreshAccessToken();
+ }
  let result=await invoke(accessToken);
  const status=(result.error as any)?.context?.status;
  if(status===401){
-   const {data:refreshed,error:refreshError}=await supabase.auth.refreshSession();
-   if(refreshError||!refreshed.session)throw new Error("Votre session CST a expiré. Reconnectez-vous.");
-   accessToken=refreshed.session.access_token;
-   result=await invoke(accessToken);
+  // A parallel tab/request may have rotated the refresh token; re-read the
+  // current session before attempting a single controlled refresh.
+  const {data:current}=await supabase.auth.getSession();
+  if(current.session?.access_token && current.session.access_token!==accessToken){
+   accessToken=current.session.access_token;
+  }else{
+   accessToken=await refreshAccessToken();
+  }
+  result=await invoke(accessToken);
  }
  if(result.error||result.data?.error)throw new Error(result.data?.error??(result.error as any)?.message??"Supervision indisponible.");
  return result.data as any;
@@ -87,7 +101,8 @@ export function CSTDashboard(){
    }catch(e){if(active)setError(e instanceof Error?e.message:"Impossible de charger la file de modération.")}
   };
   void verify();
-  const healthCheck=async()=>{try{const h=await health();if(active){setData(h);setLast(new Date().toLocaleTimeString("fr-FR"))}}catch(e){if(active)setError(e instanceof Error?e.message:"Supervision indisponible.")}};
+  let healthRequestInFlight=false;
+  const healthCheck=async()=>{if(healthRequestInFlight)return;healthRequestInFlight=true;try{const h=await health();if(active){setData(h);setLast(new Date().toLocaleTimeString("fr-FR"));setError(previous=>previous==="Votre session CST a expiré. Reconnectez-vous."||previous==="Impossible de vérifier la session CST. Reconnectez-vous."?"":previous)}}catch(e){if(active)setError(e instanceof Error?e.message:"Supervision indisponible.")}finally{healthRequestInFlight=false}};
   void healthCheck();
   const healthTimer=window.setInterval(()=>{if(active&&dashboardActive.current)void healthCheck()},5000);
   const queueTimer=window.setInterval(()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible")void refreshQueue().catch(e=>{if(active&&dashboardActive.current)setError(e instanceof Error?e.message:"Impossible d’actualiser la file de modération.")})},60000);
