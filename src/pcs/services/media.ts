@@ -1,6 +1,51 @@
 import { supabase } from "../lib/supabase";
 
 export const MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
+
+/**
+ * Compress citizen evidence locally so Free-tier Storage serves smaller files.
+ * Keep the original when the browser cannot decode/encode safely or the result
+ * would be larger. This never changes video files or moderation status.
+ */
+export async function compressCitizenPhoto(file: File): Promise<File> {
+  if (!file.type.startsWith("image/") || typeof createImageBitmap !== "function") {
+    return file;
+  }
+
+  let bitmap: ImageBitmap | null = null;
+  try {
+    bitmap = await createImageBitmap(file);
+    const maxDimension = 1600;
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    if (scale === 1 && file.type === "image/webp" && file.size <= 700 * 1024) {
+      return file;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext("2d");
+    if (!context) return file;
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, "image/webp", 0.78);
+    });
+    if (!blob || blob.size === 0 || blob.size >= file.size) return file;
+
+    const baseName = file.name.replace(/\.[^.]+$/, "") || "photo";
+    return new File([blob], `${baseName}.webp`, {
+      type: "image/webp",
+      lastModified: file.lastModified,
+    });
+  } catch {
+    // Compression is an optimization, never a reason to block a valid report.
+    return file;
+  } finally {
+    bitmap?.close();
+  }
+}
+
 // Limite applicative volontaire : 100 Mo par vidéo.
 export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
 
