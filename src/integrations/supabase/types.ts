@@ -1729,6 +1729,7 @@ export type Database = {
       }
       reports: {
         Row: {
+          archived_at: string | null
           category_id: string
           commune_id: string
           created_at: string
@@ -1748,6 +1749,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           category_id: string
           commune_id: string
           created_at?: string
@@ -1767,6 +1769,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           category_id?: string
           commune_id?: string
           created_at?: string
@@ -2101,6 +2104,7 @@ export type Database = {
           p_resolution_note?: string
         }
         Returns: {
+          archived_at: string | null
           category_id: string
           commune_id: string
           created_at: string
