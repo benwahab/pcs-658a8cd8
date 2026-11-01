@@ -2873,3 +2873,52 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .cstRefV2 .cstNavText,.cstTechToggle span:nth-child(2){white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .cstRefV2 .cstBrandLockup small{display:block;line-height:1.3}
 @media(max-width:1100px){.cstRefV2 .cstClock{display:none}}
+
+/* ===== Pages de connexion PCS — thème violet verre (référence officielle) ===== */
+body:has(.pcsLoginBg)>*:not(.pcsLoginBg){position:relative;z-index:1;background:transparent!important}
+body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!important}
+.pcsLoginBg{position:fixed;inset:0;z-index:0;background:#12052b center/cover no-repeat;pointer-events:none}
+.pcsLoginBg::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 40%,transparent,#0c021f99)}
+.authScreen.pcsLogin::before,.authScreen.pcsLogin::after,.pcsLoginPage::before,.pcsLoginPage::after{display:none!important}
+.pcsLoginPage{background:transparent!important;min-height:100vh;display:grid;place-items:center;padding:32px 16px}
+.authScreen.pcsLogin,.cstAuthCard.pcsLogin{position:relative;isolation:isolate;max-width:500px;margin:28px auto 40px;padding:34px 32px 26px!important;border-radius:34px!important;background:linear-gradient(160deg,#8b5cf666,#4c1d9580 50%,#5b21b680)!important;border:1.5px solid #d8c4ffa6!important;overflow:visible!important;transform:none!important;box-shadow:0 0 0 1px #ffffff14 inset,0 30px 80px -20px #0a0220e6,0 0 60px -10px #8b5cf666!important;backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);color:#fff!important}
+.pcsLogin :is(h1,h2,h3,strong,label,p,span,legend,dt,dd,small,li){color:#fff!important}
+.pcsLogin p,.pcsLogin small{color:#e7dcff!important}
+.pcsLogin .eyebrow{color:#cdb6ff!important;text-align:center;letter-spacing:.14em}
+.pcsLoginBrand{display:flex;flex-direction:column;align-items:center;text-align:center;margin:0 0 18px}
+.pcsLoginBrand img{width:min(220px,62%);height:auto;filter:drop-shadow(0 6px 18px #0006)}
+.pcsLoginBrand>strong{margin-top:10px;font-size:clamp(1.25rem,4.6vw,1.6rem);line-height:1.15;font-weight:800;letter-spacing:-.01em}
+.pcsLoginTagline{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px}
+.pcsLoginTagline::before,.pcsLoginTagline::after{content:"";flex:1;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#a874ff)}
+.pcsLoginTagline::after{transform:scaleX(-1)}
+.pcsLoginTagline em{font-size:.95rem;color:#f1e9ff;white-space:nowrap}
+.pcsLogin>h1,.pcsLogin h1{text-align:center;font-size:clamp(1.6rem,5vw,2.1rem)!important;font-weight:800;margin:14px 0 6px!important}
+.pcsLogin>p{text-align:center;margin:0 0 20px!important}
+.pcsLogin .card{background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;padding:0!important;margin:12px 0!important}
+.pcsLogin .card::before{display:none!important}
+.pcsLogin .form{display:grid;gap:16px}
+.pcsLogin label{font-size:.88rem;font-weight:600;display:grid;gap:7px}
+.pcsLogin :is(input:not([type=checkbox]):not([type=radio]),select,textarea){width:100%;min-height:54px;padding:0 18px!important;border-radius:14px!important;background:#1a0a4466!important;border:1.5px solid #e9ddff99!important;color:#fff!important;font-size:1rem;box-shadow:none!important;transition:border-color .2s,box-shadow .2s}
+.pcsLogin textarea{padding:14px 18px!important;min-height:100px}
+.pcsLogin select option{color:#1d1145;background:#fff}
+.pcsLogin :is(input,textarea)::placeholder{color:#d9cbf5b3}
+.pcsLogin :is(input,select,textarea):focus{outline:none;border-color:#c49bff!important;box-shadow:0 0 0 4px #8b5cf640!important}
+.pcsLogin input[type=checkbox]{accent-color:#8b5cf6;width:20px;height:20px}
+.pcsLogin :is(.passwordToggle,.cstPasswordToggle){background:transparent!important;border:0!important;color:#fff!important}
+.pcsLogin a:not(.button){color:#fff!important;text-decoration:underline;text-underline-offset:3px}
+.pcsLogin .button{min-height:52px;border-radius:14px!important;background:#ffffff12!important;border:1.5px solid #e9ddff66!important;color:#fff!important;backdrop-filter:none!important;font-weight:600}
+.pcsLogin .button:hover:not(:disabled){background:#ffffff22!important}
+.pcsLogin .button.primary,.pcsLogin button[type=submit]{min-height:58px;background:linear-gradient(180deg,#a26bff,#7c3aed 55%,#6a2ad8)!important;border:1px solid #c9a8ff99!important;font-size:1.15rem;font-weight:800;box-shadow:0 0 0 1px #ffffff1f inset,0 14px 30px -10px #7c3aedcc!important}
+.pcsLogin .button.primary:hover:not(:disabled){filter:brightness(1.08)}
+.pcsLogin :is(.error,.cstInfo,.cstSecurityNote){border-radius:12px}
+.pcsLogin .error{background:#ef44441f!important;border:1px solid #fca5a566!important;color:#ffe1e1!important;padding:10px 12px}
+.pcsLogin .cstSecurityNote,.pcsLogin .cstInfo{background:#ffffff12!important;border:1px solid #ffffff26!important;color:#fff!important}
+.pcsLogin .cstBrandMark{background:linear-gradient(135deg,#a26bff,#6a2ad8)!important;color:#fff!important}
+.pcsLogin .actions{display:grid!important;gap:10px}
+.pcsLoginFooter{display:grid;justify-items:center;gap:3px;text-align:center;margin-top:24px}
+.pcsLoginShield{display:flex;align-items:center;gap:14px;width:100%;margin-bottom:4px}
+.pcsLoginShield::before,.pcsLoginShield::after{content:"";flex:1;height:1px;background:#c4a8ff66}
+.pcsLoginShield svg{width:34px;height:34px;fill:none;stroke:#c9a8ff;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.pcsLoginFooter strong{font-size:1rem}
+.pcsLoginFooter em{font-size:.85rem;color:#e7dcff}
+@media(max-width:560px){.authScreen.pcsLogin,.cstAuthCard.pcsLogin{margin:14px 12px 28px;padding:28px 20px 22px!important;border-radius:28px!important}.pcsLoginTagline em{font-size:.82rem;white-space:normal}}

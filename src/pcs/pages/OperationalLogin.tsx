@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "@/pcs/router";
+import { LoginBrand, LoginFooter } from "../components/LoginBrand";
 import {
   getMyMairie,
   listAllCommunes,
@@ -210,7 +211,8 @@ export default function OperationalLogin() {
 
   if (mode === "agent" && !agent) {
     return (
-      <section className="narrow authScreen">
+      <section className="narrow authScreen pcsLogin">
+        <LoginBrand />
         <h1>Espace agent terrain</h1>
         <p>
           Entrez votre numéro de téléphone professionnel pour vérifier votre
@@ -243,12 +245,14 @@ export default function OperationalLogin() {
         <Link className="button" to="/">
           Retour
         </Link>
+        <LoginFooter />
       </section>
     );
   }
 
   return (
-    <section className="narrow authScreen">
+    <section className="narrow authScreen pcsLogin">
+      <LoginBrand />
       <h1>
         {signup
           ? "Créer le compte de la mairie"
@@ -478,6 +482,7 @@ export default function OperationalLogin() {
       )}
 
       {mode === "agent" && <AgentConnectionHelp />}
+      <LoginFooter />
     </section>
   );
 }
