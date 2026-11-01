@@ -2737,6 +2737,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 .cstRefV2 .cstNavChevron.isOpen{transform:rotate(90deg)}
 .cstRefV2 .cstNavSub{display:flex;flex-direction:column;gap:2px;margin:2px 0 6px 34px;border-left:1px solid #ffffff2a;padding-left:8px}
 .cstRefV2 .cstSidebar .cstNav .cstNavSub a{min-height:30px;padding:6px 8px;font-size:.72rem;color:#d9ccf7}
+.cstTechToggle+.cstTechToggle{margin-top:8px}
 .cstTechToggle{display:flex;align-items:center;gap:10px;width:100%;padding:10px;border:1px dashed #a78bfa66;border-radius:9px;background:#ffffff0d;color:#eee8fb;font:inherit;font-size:.78rem;cursor:pointer;text-align:left}
 .cstTechToggle span:nth-child(2){flex:1}
 .cstTechToggle b{font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:99px;background:#ffffff1f}
