@@ -2875,11 +2875,11 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 @media(max-width:1100px){.cstRefV2 .cstClock{display:none}}
 
 /* ===== Pages de connexion PCS — thème violet verre (référence officielle) ===== */
-.pcsLoginBg{position:fixed;inset:0;z-index:-3;background:#12052b center/cover no-repeat;pointer-events:none}
+.pcsLoginBg{position:fixed;inset:0;z-index:0;background:#12052b center/cover no-repeat;pointer-events:none}
 .pcsLoginBg::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 40%,transparent,#0c021f99)}
 .authScreen.pcsLogin::before,.authScreen.pcsLogin::after,.pcsLoginPage::before,.pcsLoginPage::after{display:none!important}
 .pcsLoginPage{background:transparent!important;min-height:100vh;display:grid;place-items:center;padding:32px 16px}
-.authScreen.pcsLogin,.cstAuthCard.pcsLogin{position:relative;isolation:isolate;max-width:500px;margin:28px auto 40px;padding:34px 32px 26px!important;border-radius:34px!important;background:linear-gradient(160deg,#6d3fd04d,#2a0f6b66 55%,#3b17866b)!important;border:1.5px solid #c4a8ff59!important;box-shadow:0 0 0 1px #ffffff14 inset,0 30px 80px -20px #0a0220e6,0 0 60px -10px #8b5cf666!important;backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);color:#fff!important}
+.authScreen.pcsLogin,.cstAuthCard.pcsLogin{position:relative;isolation:isolate;max-width:500px;margin:28px auto 40px;padding:34px 32px 26px!important;border-radius:34px!important;background:linear-gradient(160deg,#8b5cf666,#4c1d9580 50%,#5b21b680)!important;border:1.5px solid #d8c4ffa6!important;overflow:visible!important;transform:none!important;box-shadow:0 0 0 1px #ffffff14 inset,0 30px 80px -20px #0a0220e6,0 0 60px -10px #8b5cf666!important;backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);color:#fff!important}
 .pcsLogin :is(h1,h2,h3,strong,label,p,span,legend,dt,dd,small,li){color:#fff!important}
 .pcsLogin p,.pcsLogin small{color:#e7dcff!important}
 .pcsLogin .eyebrow{color:#cdb6ff!important;text-align:center;letter-spacing:.14em}

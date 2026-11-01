@@ -1,9 +1,11 @@
 // Purely visual header/footer shared by all PCS sign-in pages.
+import { createPortal } from "react-dom";
 import emblem from "@/assets/pcs-login-emblem.png.asset.json";
 import backdrop from "@/assets/pcs-login-bg.webp.asset.json";
 
 export function LoginBackdrop() {
-  return <div className="pcsLoginBg" aria-hidden="true" style={{ backgroundImage: `url(${backdrop.url})` }} />;
+  if (typeof document === "undefined") return null;
+  return createPortal(<div className="pcsLoginBg" aria-hidden="true" style={{ backgroundImage: `url(${backdrop.url})` }} />, document.body);
 }
 
 export function LoginBrand() {
