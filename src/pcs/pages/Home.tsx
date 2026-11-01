@@ -595,11 +595,14 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     setInteractionBusy(true);
     setInteractionMessage("");
     try {
-      const { data, error } = await supabase.rpc("toggle_public_report_confirmation", {
-        p_report_id: report.id!,
-        p_visitor_token: visitorToken,
+      const { data, error } = await supabase.functions.invoke("citizen-report-interactions", {
+        body: {
+          action: "confirmation",
+          report_id: report.id,
+          visitor_token: visitorToken,
+        },
       });
-      if (error) throw error;
+      if (error || data?.error) throw error ?? new Error(String(data.error));
       const result = data as { confirmed?: boolean; count?: number } | null;
       if (!result || typeof result.confirmed !== "boolean" || typeof result.count !== "number") {
         throw new Error("Réponse de confirmation invalide.");
@@ -629,13 +632,16 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     setInteractionBusy(true);
     setInteractionMessage("");
     try {
-      const { error } = await supabase.rpc("submit_public_report_comment", {
-        p_report_id: report.id!,
-        p_body: body,
-        p_display_name: null as unknown as string,
-        p_visitor_token: visitorToken,
+      const { data: submitData, error: submitError } = await supabase.functions.invoke("citizen-report-interactions", {
+        body: {
+          action: "comment",
+          report_id: report.id,
+          visitor_token: visitorToken,
+          body,
+          display_name: null,
+        },
       });
-      if (error) throw error;
+      if (submitError || submitData?.error) throw submitError ?? new Error(String(submitData.error));
       setCommentText("");
       const { data, error: commentsError } = await supabase.rpc("list_public_report_comments", {
         p_report_id: report.id!,
