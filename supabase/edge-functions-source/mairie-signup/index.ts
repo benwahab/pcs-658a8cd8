@@ -32,8 +32,11 @@ Deno.serve(async(req)=>{
     const {data:commune,error:ce}=await db.from("communes").select("id,name,region_id,regions(id,name)").eq("id",b.commune_id).eq("region_id",b.region_id).eq("is_active",true).single();
     if(ce||!commune) return json({error:"Commune/localité invalide pour cette région"},400);
     if(commune.regions?.name==="Niamey"&&commune.name!=="VILLE DE NIAMEY") return json({error:"Pour Niamey, la localité unique est Ville de Niamey."},400);
-    const {data:existing}=await db.from("mairies").select("id").eq("commune_id",b.commune_id).maybeSingle();
-    if(existing) return json({error:"Cette mairie/localité est déjà enregistrée ou fait déjà l’objet d’une demande."},409);
+    const {data:existing,error:existingError}=await db.from("mairies").select("id,account_user_id,approval_status").eq("commune_id",b.commune_id).maybeSingle();
+    if(existingError)return json({error:"Vérification de la localité impossible. Réessayez plus tard."},500);
+    if(existing?.account_user_id)return json({error:"Cette mairie/localité possède déjà un compte. Une nouvelle inscription n’est pas autorisée."},409);
+    const canReplace=!!existing&&existing.account_user_id===null&&["approved","pending"].includes(existing.approval_status);
+    if(existing&&!canReplace)return json({error:"Cette localité ne peut pas être réinscrite dans son état actuel. Contactez le CST."},409);
     const {data:u,error:ue}=await db.auth.admin.createUser({email,password:String(b.password),email_confirm:true,user_metadata:{full_name:name,role:"mairie",mairie_pending:true}});
     if(ue||!u.user) return json({error:ue?.message||"Création impossible"},400);
     const uid=u.user.id;
@@ -43,8 +46,23 @@ Deno.serve(async(req)=>{
     if(profileErr){await db.auth.admin.deleteUser(uid);return json({error:"Création du profil mairie impossible."},500)}
     const {error:urErr}=await db.from("user_roles").insert({user_id:uid,role_id:role.id});
     if(urErr){await db.auth.admin.deleteUser(uid);return json({error:"Attribution du rôle mairie impossible."},500)}
-    const {data:mairie,error:me}=await db.from("mairies").insert({name,region_id:b.region_id,commune_id:b.commune_id,account_user_id:uid,phone:phone||null,mayor_name:mayorName||null,latitude:b.latitude??null,longitude:b.longitude??null,location_label:locationLabel||null,is_active:false,approval_status:"pending"}).select("id,name,region_id,commune_id,is_active,approval_status").single();
-    if(me){await db.auth.admin.deleteUser(uid);return json({error:me.message.includes("mairies_name_key")||me.message.includes("mairies_commune_id_unique")?"Cette mairie/localité est déjà enregistrée.":"Création de la mairie impossible."},400)}
-    return json({mairie,status:"pending",message:"Demande reçue. Le compte sera activé après validation de l'habilitation de la mairie."},200);
+    let mairie:any=null;
+    let mairieError:any=null;
+    if(canReplace){
+      const result=await db.from("mairies").update({account_user_id:uid,phone:phone||null,mayor_name:mayorName||null,latitude:b.latitude??null,longitude:b.longitude??null,location_label:locationLabel||null,is_active:false,approval_status:"pending",updated_at:new Date().toISOString()}).eq("id",existing.id).is("account_user_id",null).in("approval_status",["approved","pending"]).select("id,name,region_id,commune_id,is_active,approval_status").maybeSingle();
+      mairie=result.data;
+      mairieError=result.error;
+      if(!mairie&&!mairieError)mairieError=new Error("La localité a été modifiée par une autre demande. Recommencez.");
+    }else{
+      const result=await db.from("mairies").insert({name,region_id:b.region_id,commune_id:b.commune_id,account_user_id:uid,phone:phone||null,mayor_name:mayorName||null,latitude:b.latitude??null,longitude:b.longitude??null,location_label:locationLabel||null,is_active:false,approval_status:"pending"}).select("id,name,region_id,commune_id,is_active,approval_status").single();
+      mairie=result.data;
+      mairieError=result.error;
+    }
+    if(mairieError||!mairie){
+      await db.from("user_roles").delete().eq("user_id",uid);
+      await db.auth.admin.deleteUser(uid);
+      return json({error:canReplace?"Impossible de rattacher le nouveau compte à la mairie existante. Aucun historique n’a été supprimé.":"Création de la mairie impossible."},canReplace?409:400);
+    }
+    return json({mairie,status:"pending",reused_existing_locality:canReplace,message:canReplace?"Demande de remplacement reçue. La mairie existante et toutes ses données sont conservées ; le nouveau compte sera activé après validation du CST.":"Demande reçue. Le compte sera activé après validation de l'habilitation de la mairie."},200);
   }catch(e){return json({error:e instanceof Error?e.message:"Erreur interne"},500)}
 });
