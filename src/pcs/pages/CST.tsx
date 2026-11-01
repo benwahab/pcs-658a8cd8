@@ -4,6 +4,7 @@ import {Link,useNavigate} from "@/pcs/router";
 import {supabase} from "@/pcs/lib/supabase";
 
 async function callCst(body:Record<string,unknown>){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-auth",{body});if(error)throw new Error(error.message||"Service CST indisponible.");if(data?.error)throw new Error(data.error);return data as any;}
+class SessionExpiredError extends Error{constructor(){super("Votre session CST a expiré. Reconnectez-vous.")}}
 async function health(){
  if(!supabase)throw new Error("Supabase non configuré.");
  const invoke=(accessToken:string)=>supabase!.functions.invoke("cst-health",{method:"GET",headers:{Authorization:`Bearer ${accessToken}`}});
@@ -32,6 +33,7 @@ async function health(){
    accessToken=await refreshAccessToken();
   }
   result=await invoke(accessToken);
+  if((result.error as any)?.context?.status===401){await supabase.auth.signOut({scope:"local"}).catch(()=>undefined);throw new SessionExpiredError();}
  }
  if(result.error||result.data?.error)throw new Error(result.data?.error??(result.error as any)?.message??"Supervision indisponible.");
  return result.data as any;
@@ -107,7 +109,7 @@ export function CSTDashboard(){
   };
   void verify();
   let healthRequestInFlight=false;
-  const healthCheck=async()=>{if(healthRequestInFlight)return;healthRequestInFlight=true;try{const h=await health();if(active){setData(h);setLast(new Date().toLocaleTimeString("fr-FR"));setError(previous=>previous==="Votre session CST a expiré. Reconnectez-vous."||previous==="Impossible de vérifier la session CST. Reconnectez-vous."?"":previous)}}catch(e){if(active)setError(e instanceof Error?e.message:"Supervision indisponible.")}finally{healthRequestInFlight=false}};
+  const healthCheck=async()=>{if(healthRequestInFlight)return;healthRequestInFlight=true;try{const h=await health();if(active){setData(h);setLast(new Date().toLocaleTimeString("fr-FR"));setError(previous=>previous==="Votre session CST a expiré. Reconnectez-vous."||previous==="Impossible de vérifier la session CST. Reconnectez-vous."?"":previous)}}catch(e){if(e instanceof SessionExpiredError){active=false;timersRef.current.forEach(t=>window.clearInterval(t));nav("/cst");return}if(active)setError(e instanceof Error?e.message:"Supervision indisponible.")}finally{healthRequestInFlight=false}};
   void healthCheck();
   const healthTimer=window.setInterval(()=>{if(active&&dashboardActive.current)void healthCheck()},5000);
   const queueTimer=window.setInterval(()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible")void refreshQueue().catch(e=>{if(active&&dashboardActive.current)setError(e instanceof Error?e.message:"Impossible d’actualiser la file de modération.")})},60000);
