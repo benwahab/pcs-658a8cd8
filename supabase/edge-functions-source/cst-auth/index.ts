@@ -24,9 +24,60 @@ async function requireCst(){
 }
 const body=await req.json().catch(()=>({})); const action=body.action;
  
- if(action==="list_moderators"||action==="create_moderator"||action==="set_moderator_active"){
+ if(action==="list_moderators"||action==="create_moderator"||action==="set_moderator_active"||action==="list_professional_accounts"||action==="delete_professional_account"){
   const cstUser=await requireCst();
   if(!cstUser)return json({error:"Accès CST refusé."},403);
+  if(action==="list_professional_accounts"){
+   const [mairieResult,orgResult]=await Promise.all([
+    admin.from("mairies").select("id,name,account_user_id,is_active,approval_status,phone,communes(name),regions(name)").eq("approval_status","approved").not("account_user_id","is",null).order("name"),
+    admin.from("organization_users").select("id,user_id,role,is_active,organization_id,unit_id,organizations!inner(id,name,code),organization_units(id,name,unit_type)").in("role",["admin","supervisor"]).eq("is_active",true)
+   ]);
+   if(mairieResult.error||orgResult.error)return json({error:"Impossible de charger les comptes professionnels."},500);
+   const mairieIds=(mairieResult.data??[]).map((m:any)=>m.account_user_id).filter(Boolean);
+   const orgRows=(orgResult.data??[]).filter((r:any)=>["NIGELEC","NDE"].includes(r.organizations?.code));
+   const userIds=[...new Set([...mairieIds,...orgRows.map((r:any)=>r.user_id)])];
+   const {data:authUsers,error:authUsersError}=userIds.length?await admin.auth.admin.listUsers({page:1,perPage:1000}):{data:{users:[]},error:null};
+   if(authUsersError)return json({error:"Impossible de lire les identités des comptes professionnels."},500);
+   const emailById=new Map((authUsers?.users??[]).map((u:any)=>[u.id,u.email??""]));
+   const accounts=[
+    ...(mairieResult.data??[]).map((m:any)=>({key:"mairie:"+m.id,type:"mairie",entity_id:m.id,user_id:m.account_user_id,name:m.name,structure:m.communes?.name??"Mairie",region:m.regions?.name??"",email:emailById.get(m.account_user_id)??"",phone:m.phone??"",is_active:m.is_active,approval_status:m.approval_status})),
+    ...orgRows.map((r:any)=>({key:"organization:"+r.id,type:r.organizations.code.toLowerCase(),entity_id:r.id,user_id:r.user_id,name:r.organizations.name,structure:r.organization_units?.name??"Unité",region:r.organization_units?.unit_type??"",email:emailById.get(r.user_id)??"",phone:"",is_active:r.is_active,approval_status:"approved"}))
+   ];
+   return json({accounts});
+  }
+  if(action==="delete_professional_account"){
+   const type=String(body.account_type??""),entityId=String(body.entity_id??""),userId=String(body.user_id??"");
+   if(!["mairie","nigelec","nde"].includes(type)||!/^([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/i.test(entityId)||!/^([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/i.test(userId))return json({error:"Compte professionnel invalide."},400);
+   if(type==="mairie"){
+    const {data:record,error}=await admin.from("mairies").select("id,account_user_id,approval_status").eq("id",entityId).maybeSingle();
+    if(error||!record||record.approval_status!=="approved"||record.account_user_id!==userId)return json({error:"Compte mairie approuvé introuvable."},404);
+   }else{
+    const {data:record,error}=await admin.from("organization_users").select("id,user_id,organization_id,organizations!inner(code)").eq("id",entityId).eq("user_id",userId).eq("is_active",true).maybeSingle();
+    if(error||!record||record.organizations?.code!==(type==="nigelec"?"NIGELEC":"NDE"))return json({error:"Compte NIGELEC/NDE actif introuvable."},404);
+   }
+   const [otherOrg,agent,cstAccount,moderator]=await Promise.all([
+    admin.from("organization_users").select("id", {count:"exact",head:true}).eq("user_id",userId).neq("id",type==="mairie"?"00000000-0000-0000-0000-000000000000":entityId),
+    admin.from("field_agents").select("id",{count:"exact",head:true}).eq("user_id",userId),
+    admin.from("cst_accounts").select("id",{count:"exact",head:true}).eq("user_id",userId),
+    admin.from("moderator_profiles").select("user_id",{count:"exact",head:true}).eq("user_id",userId)
+   ]);
+   if(otherOrg.error||agent.error||cstAccount.error||moderator.error)return json({error:"Vérification des accès associés impossible."},500);
+   if((otherOrg.count??0)>0||(agent.count??0)>0||(cstAccount.count??0)>0||(moderator.count??0)>0)return json({error:"Ce compte possède d’autres accès professionnels. Ils doivent être examinés avant sa suppression."},409);
+   const {data:userData,error:userError}=await admin.auth.admin.getUserById(userId);
+   if(userError||!userData.user)return json({error:"Identité Auth introuvable."},404);
+   if(type==="mairie"){
+    const {error}=await admin.from("mairies").update({account_user_id:null,is_active:false}).eq("id",entityId).eq("account_user_id",userId);
+    if(error)return json({error:"Impossible de détacher le compte de la mairie."},500);
+   }else{
+    const {error}=await admin.from("organization_users").delete().eq("id",entityId).eq("user_id",userId);
+    if(error)return json({error:"Impossible de retirer l’accès à l’organisation."},500);
+   }
+   const {error:rolesError}=await admin.from("user_roles").delete().eq("user_id",userId);
+   if(rolesError)return json({error:"Accès professionnel retiré, mais le nettoyage des rôles doit être repris manuellement."},500);
+   const {error:deleteError}=await admin.auth.admin.deleteUser(userId);
+   if(deleteError)return json({error:"Accès retiré, mais la suppression de l’identité Auth a échoué. Réessayez après vérification."},500);
+   return json({deleted:true});
+  }
   if(action==="list_moderators"){
    const {data,error}=await admin.from("moderator_profiles").select("user_id,email,full_name,region_id,is_active,created_at,updated_at,regions(id,name,code)").order("created_at",{ascending:false});
    if(error)return json({error:"Impossible de charger les modérateurs."},500);
