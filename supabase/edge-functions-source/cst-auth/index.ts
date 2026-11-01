@@ -66,7 +66,7 @@ const body=await req.json().catch(()=>({})); const action=body.action;
    const {data:userData,error:userError}=await admin.auth.admin.getUserById(userId);
    if(userError||!userData.user)return json({error:"Identité Auth introuvable."},404);
    if(type==="mairie"){
-    const {error}=await admin.from("mairies").update({account_user_id:null,is_active:false}).eq("id",entityId).eq("account_user_id",userId);
+    const {error}=await admin.from("mairies").update({account_user_id:null,is_active:false,approval_status:"pending",updated_at:new Date().toISOString()}).eq("id",entityId).eq("account_user_id",userId);
     if(error)return json({error:"Impossible de détacher le compte de la mairie."},500);
    }else{
     const {error}=await admin.from("organization_users").delete().eq("id",entityId).eq("user_id",userId);
