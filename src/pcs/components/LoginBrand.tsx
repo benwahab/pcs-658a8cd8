@@ -1,9 +1,15 @@
 // Purely visual header/footer shared by all PCS sign-in pages.
 import emblem from "@/assets/pcs-login-emblem.png.asset.json";
+import backdrop from "@/assets/pcs-login-bg.webp.asset.json";
+
+export function LoginBackdrop() {
+  return <div className="pcsLoginBg" aria-hidden="true" style={{ backgroundImage: `url(${backdrop.url})` }} />;
+}
 
 export function LoginBrand() {
   return (
     <div className="pcsLoginBrand">
+      <LoginBackdrop />
       <img src={emblem.url} alt="PCS" width={380} height={220} />
       <strong>Plateforme citoyenne<br />de signalement</strong>
       <span className="pcsLoginTagline"><em>Ensemble pour un Niger plus sûr</em></span>
