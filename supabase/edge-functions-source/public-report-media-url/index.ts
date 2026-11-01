@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
 
     const { data: report, error: reportError } = await admin
       .from("reports")
-      .select("id,is_public")
+      .select("id,is_public,archived_at")
       .eq("id", media.report_id)
       .maybeSingle();
 
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       return json({ error: "Unable to verify report." }, 500);
     }
 
-    if (!report?.is_public) return json({ error: "Media is not public." }, 403);
+    if (!report?.is_public || report.archived_at) return json({ error: "Media is not public." }, 403);
 
     const { data: signed, error: signError } = await admin.storage
       .from("report-media")
