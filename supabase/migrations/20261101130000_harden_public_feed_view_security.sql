@@ -11,16 +11,9 @@ revoke all privileges on table public.public_report_media from anon, authenticat
 grant select on table public.public_reports to anon, authenticated;
 grant select on table public.public_report_media to anon, authenticated;
 
--- Invoker views require the caller to hold SELECT on their underlying relations.
+-- Invoker views require SELECT on their underlying relation.
 -- The existing report_media RLS policies restrict anon to approved public media.
 grant select on table public.report_media to anon;
-
--- Prevent newly-created public-schema tables/views from inheriting broad API grants.
--- Future API exposure must be explicit and paired with appropriate RLS policies.
-alter default privileges for role postgres in schema public
-  revoke all privileges on tables from anon, authenticated;
-alter default privileges for role supabase_admin in schema public
-  revoke all privileges on tables from anon, authenticated;
 
 do $$
 begin
