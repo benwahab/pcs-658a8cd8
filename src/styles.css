@@ -2875,7 +2875,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 @media(max-width:1100px){.cstRefV2 .cstClock{display:none}}
 
 /* ===== Pages de connexion PCS — thème violet verre (référence officielle) ===== */
-.pcsLoginBg{position:fixed;inset:0;z-index:0;background:#12052b center/cover no-repeat;pointer-events:none}
+.pcsLoginBg{position:fixed;inset:0;z-index:-1;background:#12052b center/cover no-repeat;pointer-events:none}
 .pcsLoginBg::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 40%,transparent,#0c021f99)}
 .authScreen.pcsLogin::before,.authScreen.pcsLogin::after,.pcsLoginPage::before,.pcsLoginPage::after{display:none!important}
 .pcsLoginPage{background:transparent!important;min-height:100vh;display:grid;place-items:center;padding:32px 16px}
