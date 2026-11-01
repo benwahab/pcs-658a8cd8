@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "@/pcs/router";
+import { LoginBrand, LoginFooter } from "../components/LoginBrand";
 import { supabase } from "../lib/supabase";
 import { getMyOrganizationMembership } from "../services/organization";
 import PasswordField from "../components/PasswordField";
@@ -155,7 +156,8 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
   }
 
   return (
-    <section className={`narrow authScreen orgSpace ${space.theme}`}>
+    <section className={`narrow authScreen pcsLogin orgSpace ${space.theme}`}>
+      <LoginBrand />
       <p className="eyebrow">ESPACE {space.label}</p>
       <h1>
         {space.icon}{" "}
@@ -261,6 +263,7 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
       <Link className="button" to="/">
         Retour
       </Link>
+      <LoginFooter />
     </section>
   );
 }
