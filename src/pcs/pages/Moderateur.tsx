@@ -76,34 +76,4 @@ export default function Moderateur(){
    <section className="moderatorGuidance" id="moderator-guidance"><span>ⓘ</span><div><strong>Règle de publication</strong><p>Un média citoyen n'est visible publiquement qu'après validation. Les médias de résolution transmis par les agents terrain ne font pas partie de cette file régionale.</p></div></section>
   </main>
  </section>
-
- return <section className="narrow authScreen">
-  <div className="sectionHead">
-   <div><p className="eyebrow">ESPACE PROFESSIONNEL</p><h1>Modération régionale</h1><p>Région : <strong>{region||"—"}</strong></p></div>
-   <div><button className="button" onClick={load}>↻ Actualiser</button></div>
-  </div>
-  {error&&<div className="card error">{error}<div style={{marginTop:12}}><Link className="button" to="/connexion-operationnelle?mode=moderator">Se reconnecter</Link></div></div>}
-  <div className="card">
-   <strong>{items.length} vidéo(s) en attente</strong>
-   <p>Seules les vidéos de signalement citoyen de votre région apparaissent ici. Les vidéos de résolution des agents terrain restent hors de cette file.</p>
-  </div>
-  <div className="grid">
-   {items.map(v=><article className="card" key={v.id}>
-    <span className="badge">EN ATTENTE</span>
-    <h2>{v.report?.reference_code??"Signalement"}</h2>
-    <h3>{v.report?.title??"Vidéo de signalement"}</h3>
-    <p>{v.report?.location_label??"Localisation non renseignée"}</p>
-    <small>{v.created_at?new Date(v.created_at).toLocaleString("fr-FR"):"—"}</small>
-    {v.preview_url&&<video src={v.preview_url} controls playsInline preload="metadata" style={{width:"100%",marginTop:16,borderRadius:12}}/>}
-    {rejectingId===v.id?
-      <div className="form" style={{marginTop:16}}>
-       <label>Motif du rejet<textarea minLength={5} maxLength={500} value={reason} onChange={e=>setReason(e.target.value)} placeholder="Expliquez clairement le motif du rejet."/></label>
-       <div><button className="button" disabled={busy} onClick={()=>{setRejectingId("");setReason("")}}>Annuler</button>{" "}<button className="button" disabled={busy||reason.trim().length<5} onClick={()=>void reject(v.id)}>Confirmer le rejet</button></div>
-      </div>:
-      <div style={{marginTop:16}}><button className="button primary" disabled={busy} onClick={()=>void approve(v.id)}>✓ Approuver et publier</button>{" "}<button className="button" disabled={busy} onClick={()=>{setRejectingId(v.id);setReason("");setError("")}}>✕ Rejeter</button></div>}
-   </article>)}
-  </div>
-  {!items.length&&!error&&<div className="card"><h2>File vide</h2><p>Aucune vidéo de signalement n'attend actuellement votre validation.</p></div>}
-  <div style={{marginTop:20}}><button className="button" onClick={async()=>{await supabase?.auth.signOut();nav("/")}}>Déconnexion</button></div>
- </section>
 }
