@@ -261,7 +261,7 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
       </button>}
 
       <Link className="button" to="/">
-        Retour
+        Accueil
       </Link>
       <LoginFooter />
     </section>
