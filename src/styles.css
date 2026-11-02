@@ -3439,3 +3439,26 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
  .organizationDashboard *,.moderatorDashboard *,.mairieDashboard *,.agentFeed *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
  .organizationDashboard a:hover,.moderatorDashboard a:hover,.mairieDashboard a:hover{transform:none!important}
 }
+
+
+/* Transmission mairie -> NIGELEC / NDE : action prioritaire et lisible */
+.mairieDashboard .mairieTable{min-width:1010px}
+.mairieDashboard .mairieTable th:nth-child(5),
+.mairieDashboard .mairieTable td:nth-child(5){width:250px;min-width:250px}
+.mairieDashboard .mairieTable td:nth-child(5){vertical-align:top;padding-top:13px;padding-bottom:13px}
+.mairieDashboard .mairieTransmission{display:flex;flex-direction:column;align-items:stretch;gap:7px;width:100%;min-width:215px}
+.mairieDashboard .mairieTransmissionLabel{display:block;color:#766b91;font-size:.57rem;font-weight:850;letter-spacing:.095em;line-height:1.2}
+.mairieDashboard .mairieTransmissionSelect{display:block;width:100%;min-width:0;max-width:100%;height:39px;padding:0 30px 0 10px;border:1px solid #dcd4ed;border-radius:9px;background:#fff;color:#352052;font:inherit;font-size:.67rem;font-weight:600;box-shadow:0 1px 3px #28134f08}
+.mairieDashboard .mairieTransmissionSelect:focus{outline:0;border-color:#8153c4;box-shadow:0 0 0 3px #8153c41c}
+.mairieDashboard .mairieTransmissionSelect:disabled{background:#f4f3f7;color:#9992a8;cursor:not-allowed}
+.mairieDashboard .mairieTransmitButton{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:41px;padding:9px 10px;border:1px solid #51258f;border-radius:9px;background:linear-gradient(110deg,#7139bd 0%,#51218f 100%);color:#fff;font-size:.66rem;font-weight:800;line-height:1.25;letter-spacing:0;white-space:normal;text-align:center;box-shadow:0 4px 10px #51218f22}
+.mairieDashboard .mairieTransmitButton svg{flex:0 0 17px}
+.mairieDashboard .mairieTransmitButton:not(:disabled):hover{transform:translateY(-1px);background:linear-gradient(110deg,#8048cb 0%,#5b299e 100%);border-color:#6531a5;box-shadow:0 7px 16px #51218f30}
+.mairieDashboard .mairieTransmitButton:disabled{background:#eeebf3;border-color:#e4dfeb;color:#a29aac;box-shadow:none;cursor:not-allowed;opacity:1}
+.mairieDashboard .mairieTransmitButton:focus-visible{outline:3px solid #bda5e4;outline-offset:2px}
+@media(max-width:760px){
+ .mairieDashboard .mairieTable{min-width:1040px}
+ .mairieDashboard .mairieTable th:nth-child(5),.mairieDashboard .mairieTable td:nth-child(5){width:260px;min-width:260px}
+ .mairieDashboard .mairieTransmission{min-width:225px}
+ .mairieDashboard .mairieTransmitButton{min-height:44px;font-size:.68rem}
+}
