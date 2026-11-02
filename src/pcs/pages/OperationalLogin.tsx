@@ -243,7 +243,7 @@ export default function OperationalLogin() {
         <AgentConnectionHelp />
 
         <Link className="button" to="/">
-          Retour
+          Accueil
         </Link>
         <LoginFooter />
       </section>
