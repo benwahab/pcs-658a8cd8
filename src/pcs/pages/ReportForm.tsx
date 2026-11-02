@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 import { supabase } from "../lib/supabase";
+import { LoginBrand } from "../components/LoginBrand";
 import {
   listCategories,
   submitCitizenReport,
@@ -240,10 +241,13 @@ export default function ReportForm() {
 
   if (submitted) {
     return (
-      <section className="narrow authScreen reportScreen">
-        <div className="card reportSuccess">
-          Votre signalement a bien été envoyé. Merci pour votre contribution
-          citoyenne.
+      <section className="narrow authScreen reportScreen pcsLoginPage reportFormPage">
+        <div className="authScreen pcsLogin reportFormGlass">
+          <LoginBrand />
+          <div className="card reportSuccess">
+            Votre signalement a bien été envoyé. Merci pour votre contribution
+            citoyenne.
+          </div>
         </div>
       </section>
     );
@@ -251,16 +255,18 @@ export default function ReportForm() {
 
   return (
     <section
-      className="narrow authScreen reportScreen"
+      className="narrow authScreen reportScreen pcsLoginPage reportFormPage"
       data-pcs-tour="report-form"
     >
-      <h1>Faire un signalement</h1>
-      <p>
-        Vous pouvez signaler sans créer de compte. Le signalement est enregistré
-        sans identité de citoyen.
-      </p>
+      <div className="authScreen pcsLogin reportFormGlass">
+        <LoginBrand />
+        <h1>Faire un signalement</h1>
+        <p className="reportIntro">
+          Vous pouvez signaler sans créer de compte. Le signalement est enregistré
+          sans identité de citoyen.
+        </p>
 
-      <form className="card form" onSubmit={submit}>
+        <form className="card form" onSubmit={submit}>
         <label>
           Région du problème
           <select
@@ -506,7 +512,8 @@ export default function ReportForm() {
         >
           {saving ? "Envoi en cours…" : "Envoyer le signalement"}
         </button>
-      </form>
+        </form>
+      </div>
     </section>
   );
 }
