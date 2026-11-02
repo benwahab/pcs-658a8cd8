@@ -11,7 +11,7 @@ const HIDDEN_TEST_MEDIA_IDS = new Set([
 ]);
 import type { PublicReport } from "../types";
 import { statusLabels } from "../types";
-import { createReportMediaUrl } from "../services/media";
+import { createReportMediaUrl, createReportMediaUrls } from "../services/media";
 import BrandLogo from "../components/BrandLogo";
 import introArtAsset from "@/assets/pcs-hero.webp.asset.json";
 import { MediaCarousel } from "../components/MediaCarousel";
@@ -482,18 +482,20 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
         // A broken/expired URL for one attachment must not hide the other valid
         // photos or videos belonging to the same public report.
-        const settledUrls = await Promise.allSettled(
-          publicEvidence.map(async (item) => ({
+        const signedUrls = await createReportMediaUrls(
+          publicEvidence.map((item) => item.storage_path as string),
+        );
+        const urls = publicEvidence.flatMap((item) => {
+          const path = item.storage_path as string;
+          const url = signedUrls[path];
+          return url ? [{
             id: item.id as string,
-            storage_path: item.storage_path as string,
-            url: await createReportMediaUrl(item.storage_path as string),
+            storage_path: path,
+            url,
             media_role: item.media_role ?? "citizen_evidence",
             media_type: item.media_type ?? "image",
-          })),
-        );
-        const urls = settledUrls.flatMap((result) =>
-          result.status === "fulfilled" ? [result.value] : [],
-        );
+          }] : [];
+        });
 
         if (!cancelled) {
           setMedia(
