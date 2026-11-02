@@ -5,6 +5,7 @@ import { LoginBrand, LoginFooter } from "../components/LoginBrand";
 import { supabase } from "../lib/supabase";
 import { getMyOrganizationMembership } from "../services/organization";
 import PasswordField from "../components/PasswordField";
+import PasswordRecovery from "../components/PasswordRecovery";
 import { listRegions, listCommunes } from "../services/mairie";
 
 const ORG_SPACES = {
@@ -245,6 +246,10 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
               : "Se connecter"}
         </button>
       </form>
+
+      {!signup && expectedUnitType !== "agency" && (
+        <PasswordRecovery email={email} onEmailChange={setEmail} />
+      )}
 
       {expectedUnitType !== "agency" && <button
         className="button"
