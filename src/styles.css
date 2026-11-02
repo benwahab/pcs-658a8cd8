@@ -3479,3 +3479,36 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .cstAuthCard.pcsLogin>.button:not(.primary){width:100%}
 .cstAuthCard.pcsLogin>.button:last-of-type{margin-top:8px}
 .cstAuthCard.pcsLogin .pcsLoginFooter{margin-top:19px}
+
+
+/* Formulaire citoyen : reprend strictement le fond et le verre des connexions PCS */
+.reportFormPage{width:100%;max-width:none!important;min-height:100vh;align-items:start!important;padding:28px 16px 44px!important}
+.reportFormPage>.reportFormGlass{width:min(500px,100%);max-width:500px;margin:0 auto!important}
+.reportFormGlass .pcsLoginBrand{margin-bottom:18px}
+.reportFormGlass>h1{margin:12px 0 7px!important;text-align:center;color:#fff!important;font-size:clamp(1.55rem,4.8vw,2rem)!important}
+.reportFormGlass>.reportIntro{margin:0 0 18px!important;text-align:center;color:#e7dcff!important;font-size:.88rem;line-height:1.5}
+.reportFormGlass .form{gap:13px}
+.reportFormGlass .form label{color:#fff!important;font-size:.86rem;font-weight:650}
+.reportFormGlass .form :is(input,select,textarea){color:#fff!important;background:#1a0a4466!important;border:1.5px solid #e9ddff99!important;border-radius:14px!important;min-height:50px}
+.reportFormGlass .form :is(input,textarea)::placeholder{color:#d9cbf5b3!important}
+.reportFormGlass .form :is(input,select,textarea):focus{border-color:#c49bff!important;box-shadow:0 0 0 4px #8b5cf640!important}
+.reportFormGlass .form select option{color:#1d1145;background:#fff}
+.reportFormGlass .mediaPicker{margin:2px 0 0;padding:14px;border:1px solid #ffffff55;border-radius:16px;background:#ffffff12;box-shadow:0 1px 0 #ffffff20 inset;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.reportFormGlass .mediaPickBtn{width:100%;min-height:46px;border:1px solid #e9ddff88;border-radius:12px;background:#ffffff12;color:#fff;font-weight:700}
+.reportFormGlass .mediaPickBtn:hover:not(:disabled){background:#ffffff22;border-color:#e9ddffcc}
+.reportFormGlass .mediaChosen{color:#fff}
+.reportFormGlass .mediaChosen li{border-color:#ffffff30;color:#fff}
+.reportFormGlass .mediaChosen button{color:#fff;background:#ffffff18;border-color:#ffffff40}
+.reportFormGlass .muted{color:#e7dcff!important}
+.reportFormGlass .error{color:#ffe1e1!important;background:#ef444426!important;border:1px solid #fca5a566!important}
+.reportFormGlass .reportSuccess{padding:20px!important;color:#fff!important;background:#ffffff18!important;border:1px solid #ffffff55!important;border-radius:14px!important}
+.reportFormGlass .button.primary,.reportFormGlass button[type=submit]{width:100%;min-height:56px;border-radius:14px!important;background:linear-gradient(180deg,#a26bff,#7c3aed 55%,#6a2ad8)!important;border:1px solid #c9a8ff99!important;color:#fff!important;font-size:1rem;font-weight:800;box-shadow:0 0 0 1px #ffffff1f inset,0 14px 30px -10px #7c3aedcc!important}
+.reportFormGlass .button.primary:disabled,.reportFormGlass button[type=submit]:disabled{opacity:.65}
+.reportFormGlass .gpsNotice{color:#2d2450}
+.reportFormGlass .gpsNotice h2,.reportFormGlass .gpsNotice p{color:inherit}
+@media(max-width:560px){
+ .reportFormPage{padding:14px 12px 28px!important}
+ .reportFormPage>.reportFormGlass{padding:26px 19px 22px!important;border-radius:28px!important}
+ .reportFormGlass .pcsLoginBrand img{width:min(190px,60%)}
+ .reportFormGlass .form{gap:12px}
+}
