@@ -12,6 +12,7 @@ import {
 } from "../services/mairie";
 import { supabase } from "../lib/supabase";
 import PasswordField from "../components/PasswordField";
+import PasswordRecovery from "../components/PasswordRecovery";
 import AgentConnectionHelp from "../components/AgentConnectionHelp";
 
 type Mode = "mairie" | "agent" | "moderator";
@@ -448,6 +449,10 @@ export default function OperationalLogin() {
             {busy ? "Traitement…" : signup ? "Envoyer la demande" : "Se connecter"}
           </button>
         </form>
+      )}
+
+      {!signup && mode !== "agent" && (
+        <PasswordRecovery email={identifier} onEmailChange={setIdentifier} />
       )}
 
       {mode === "mairie" && (
