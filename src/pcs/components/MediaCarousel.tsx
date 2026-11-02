@@ -247,9 +247,9 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
             className={`citizenFeedMediaImage${imageReady ? " mediaImageReady" : " mediaImageLoading"}`}
             src={item.url}
             alt="Pièce jointe du signalement"
-            loading="lazy"
+            loading={safeIndex === 0 ? "eager" : "lazy"}
             decoding="async"
-            fetchPriority="low"
+            fetchPriority={safeIndex === 0 ? "high" : "auto"}
             onLoad={(event) => {
               const image = event.currentTarget;
               void image.decode().catch(() => undefined).finally(() => setImageReady(true));
