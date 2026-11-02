@@ -262,8 +262,7 @@ export default function ReportForm() {
         <LoginBrand />
         <h1>Faire un signalement</h1>
         <p className="reportIntro">
-          Vous pouvez signaler sans créer de compte. Le signalement est enregistré
-          sans identité de citoyen.
+          Vous pouvez signaler sans créer de compte.
         </p>
 
         <form className="card form" onSubmit={submit}>
