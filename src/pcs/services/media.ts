@@ -131,29 +131,34 @@ export async function validateCitizenVideo(file: File) {
   return { container };
 }
 
+export async function createReportMediaUrls(
+  paths: string[],
+  expiresIn = 3600,
+): Promise<Record<string, string>> {
+  if (!supabase) throw new Error("Supabase n’est pas configuré.");
+  const uniquePaths = [...new Set(paths.filter(Boolean))];
+  if (!uniquePaths.length) return {};
+
+  // One server round-trip for all approved media in a report; the private
+  // bucket and server-side moderation/publication checks remain unchanged.
+  const { data, error } = await supabase.functions.invoke("public-report-media-url", {
+    body: { paths: uniquePaths, expiresIn },
+  });
+  if (error) throw error;
+  if (!data?.signedUrls || typeof data.signedUrls !== "object") {
+    throw new Error("Le serveur n’a pas fourni les URL des médias.");
+  }
+  return data.signedUrls as Record<string, string>;
+}
+
 export async function createReportMediaUrl(
   path: string,
   expiresIn = 3600,
 ): Promise<string> {
-  if (!supabase) {
-    throw new Error("Supabase n’est pas configuré.");
-  }
-
-  // Public report media stays in a private bucket. Generate the signed URL
-  // server-side after checking that the media is approved and its report is public.
-  const { data, error } = await supabase.functions.invoke("public-report-media-url", {
-    body: { path, expiresIn },
-  });
-
-  if (error) {
-    throw error;
-  }
-
-  if (!data?.signedUrl || typeof data.signedUrl !== "string") {
-    throw new Error("Le serveur n’a pas fourni d’URL vidéo valide.");
-  }
-
-  return data.signedUrl;
+  const urls = await createReportMediaUrls([path], expiresIn);
+  const url = urls[path];
+  if (!url) throw new Error("Média introuvable, non approuvé ou non public.");
+  return url;
 }
 
 export async function uploadResolutionVideo(
