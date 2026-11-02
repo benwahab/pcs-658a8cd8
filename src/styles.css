@@ -3512,3 +3512,12 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
  .reportFormGlass .pcsLoginBrand img{width:min(190px,60%)}
  .reportFormGlass .form{gap:12px}
 }
+
+
+/* Shared secure password recovery panel */
+.pcsPasswordRecovery{width:100%;margin:12px 0 0;padding:18px;gap:12px}
+.pcsPasswordRecovery h2{margin:0;font-size:1rem}
+.pcsPasswordRecovery label{display:flex;flex-direction:column;gap:7px}
+.pcsPasswordRecovery input{width:100%;min-height:48px;border-radius:12px;padding:10px 13px}
+.pcsPasswordRecoveryLink{align-self:center;margin-top:6px;text-decoration:underline;text-underline-offset:3px}
+.pcsPasswordRecoveryMessage{margin:0;padding:12px;border-radius:12px;background:#16a34a18;color:inherit;line-height:1.5}
