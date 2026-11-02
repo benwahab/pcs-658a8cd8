@@ -2,6 +2,17 @@
 
 const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
+const regionKey = (name: string) => {
+  const compact = norm(name).replace(/[^a-z0-9]/g, "");
+  const withoutPrefix = compact.replace(/^(?:regionde|region|villede|ville|communauteurbaine)/, "");
+  const aliases: Record<string, string> = {
+    niameyville: "niamey",
+    capitale: "niamey",
+  };
+  const key = aliases[withoutPrefix] ?? withoutPrefix;
+  return REGIONS.some((region) => region.key === key) ? key : null;
+};
+
 // Region outlines projected from GADM 4.1 (Niger, level 1).
 const REGIONS: { key: string; label: string; d: string; cx: number; cy: number }[] = [
   { key: "agadez", label: "Agadez", d: "M117.3 110.7 L144.2 105.7 L149.5 101.0 L153.6 97.4 L155.9 95.3 L159.9 91.8 L164.6 87.7 L165.7 86.7 L169.4 83.6 L170.8 82.3 L173.2 80.1 L177.3 76.6 L177.9 76.2 L178.1 76.0 L180.1 74.4 L184.3 71.1 L187.1 69.4 L192.5 66.1 L193.8 65.3 L206.2 57.8 L208.1 56.7 L212.8 53.8 L236.8 39.4 L247.0 33.4 L247.7 33.0 L248.6 32.5 L250.7 31.3 L257.7 27.2 L258.4 26.7 L261.5 24.9 L274.9 17.1 L282.6 12.6 L296.1 5.0 L296.6 5.2 L298.5 5.6 L299.3 5.9 L299.6 5.9 L300.3 6.1 L300.5 6.1 L302.2 6.4 L305.8 7.2 L306.0 7.2 L307.3 7.5 L310.7 8.2 L311.0 8.3 L311.7 8.4 L311.9 8.5 L314.5 9.1 L314.9 9.1 L315.4 9.3 L315.5 9.4 L316.0 9.4 L321.4 10.5 L321.7 10.6 L321.9 10.7 L325.8 11.5 L326.1 11.5 L326.7 11.7 L327.1 11.7 L328.8 12.2 L330.4 12.5 L330.6 12.6 L331.0 12.6 L331.2 12.7 L331.3 12.8 L333.0 13.3 L334.5 14.0 L334.6 14.1 L336.8 15.3 L338.0 16.2 L338.3 16.5 L339.5 17.5 L339.6 17.6 L340.3 18.1 L342.9 20.3 L343.8 21.1 L343.9 21.2 L344.4 21.5 L345.9 22.8 L346.5 23.3 L347.3 24.1 L349.0 25.4 L349.1 25.5 L349.4 25.8 L349.6 25.9 L349.8 26.0 L350.2 26.4 L350.5 26.7 L355.1 24.7 L355.2 24.6 L356.0 24.3 L356.1 24.2 L356.9 23.9 L358.6 23.1 L358.7 23.0 L360.8 22.2 L360.9 22.1 L362.7 21.2 L363.0 21.1 L363.2 21.0 L365.8 19.9 L367.1 19.3 L367.2 19.3 L367.5 19.2 L367.6 19.2 L367.9 19.0 L368.0 18.9 L369.5 18.3 L369.8 18.1 L370.4 17.9 L370.4 18.0 L370.6 18.8 L370.6 18.9 L371.2 21.8 L371.2 21.9 L371.7 24.6 L373.3 32.6 L373.5 33.4 L373.5 33.7 L373.9 35.5 L374.0 36.5 L374.1 36.7 L374.2 37.3 L375.2 42.8 L375.2 43.1 L375.3 46.4 L375.2 48.0 L375.3 48.3 L375.3 54.1 L375.3 54.2 L375.3 54.5 L375.4 55.1 L377.6 56.6 L377.9 57.1 L381.7 62.3 L382.1 62.9 L382.1 63.0 L382.4 63.3 L382.8 63.9 L385.9 68.1 L385.7 68.3 L384.7 69.1 L384.3 69.4 L384.1 69.8 L383.9 70.2 L384.0 70.5 L384.2 71.0 L385.0 72.8 L385.7 73.5 L386.3 74.0 L387.6 75.1 L388.8 76.3 L391.8 80.5 L392.3 81.0 L393.2 81.7 L395.0 83.3 L391.1 89.8 L389.0 93.1 L388.9 93.7 L388.8 94.0 L388.9 94.3 L388.7 95.7 L388.5 97.2 L388.4 97.5 L388.3 97.7 L388.4 97.8 L388.2 99.4 L388.1 99.6 L388.1 99.8 L388.1 100.0 L388.0 100.4 L388.0 100.5 L387.9 101.3 L387.7 103.0 L387.7 103.2 L387.7 103.7 L387.5 104.7 L387.2 107.0 L387.1 107.3 L387.1 107.6 L386.7 111.0 L386.6 111.3 L386.6 111.8 L386.6 112.0 L386.5 112.5 L386.2 114.2 L386.2 114.7 L386.1 115.5 L386.0 115.7 L385.6 119.2 L385.5 119.5 L385.5 119.7 L385.3 121.5 L385.3 122.0 L385.2 122.2 L385.1 123.1 L385.0 125.4 L384.9 125.9 L385.0 126.0 L385.0 126.4 L384.5 135.8 L384.4 137.5 L384.2 141.2 L378.1 140.8 L356.8 141.0 L343.9 141.2 L339.7 141.2 L330.8 141.3 L328.2 141.3 L321.4 141.3 L316.2 144.0 L309.7 147.2 L304.9 149.6 L298.4 152.8 L296.4 153.6 L286.7 156.7 L279.0 160.4 L277.7 161.0 L275.0 162.3 L273.9 162.9 L271.9 164.0 L267.4 166.9 L255.4 174.8 L248.6 179.2 L243.2 182.7 L242.3 183.3 L241.7 183.8 L239.5 185.1 L237.9 186.3 L234.5 188.5 L231.4 190.7 L230.2 191.4 L226.7 192.6 L223.1 193.7 L219.8 195.4 L218.3 196.1 L216.8 196.9 L214.9 197.8 L211.0 199.8 L210.2 200.1 L209.6 200.5 L207.8 201.0 L206.4 201.3 L205.5 201.6 L204.8 201.6 L201.8 201.5 L201.2 201.6 L198.1 202.5 L197.5 202.6 L196.1 202.5 L195.9 202.5 L194.0 202.3 L191.6 201.9 L188.4 201.3 L188.1 201.2 L187.9 201.2 L187.0 201.4 L185.9 201.0 L185.8 201.0 L185.7 201.0 L184.0 204.1 L182.8 206.0 L182.1 207.2 L181.6 207.0 L179.7 206.2 L177.4 205.5 L173.9 204.3 L170.0 204.5 L166.6 204.5 L165.7 201.4 L164.7 198.1 L163.1 192.9 L163.1 192.6 L163.1 192.1 L163.4 191.4 L164.6 185.7 L162.9 184.9 L159.2 183.4 L158.6 183.0 L157.6 182.1 L157.3 181.6 L156.5 180.2 L155.1 176.7 L152.8 171.4 L152.6 171.1 L152.2 170.3 L151.6 169.2 L151.2 168.7 L149.8 167.1 L149.5 166.9 L149.2 166.6 L148.3 166.1 L147.6 165.5 L144.7 163.3 L140.5 160.2 L139.1 159.1 L137.5 158.1 L134.6 156.6 L131.8 155.2 L131.1 154.8 L129.6 154.1 L129.4 153.5 L128.5 151.7 L128.0 150.8 L127.5 149.8 L127.0 149.1 L126.5 148.5 L125.5 147.8 L123.0 146.5 L122.6 146.3 L121.8 145.8 L121.5 145.6 L121.4 143.8 L121.2 143.1 L121.1 143.0 L121.0 142.9 L119.8 142.9 L117.7 142.4 L117.6 141.1 L119.8 138.0 L119.8 135.0 L119.6 134.3 L119.0 133.1 L118.7 132.1 L118.6 131.9 L118.6 131.5 L118.5 131.1 L118.5 130.9 L118.4 130.8 L118.4 130.5 L118.5 130.2 L118.9 129.0 L119.5 128.4 L120.0 127.5 L120.4 127.1 L120.4 126.9 L120.4 126.8 L120.9 125.3 L121.1 124.4 L118.0 124.4 L115.1 124.4 L112.7 124.4 L105.5 124.5 L105.5 121.6 L105.5 121.2 L105.4 113.1 L107.7 112.6 L117.3 110.7Z", cx: 271, cy: 101 },
@@ -24,9 +35,16 @@ const LEVELS = [
 
 export function NigerRegionMap({ counts }: { counts: Record<string, number> }) {
   const byKey: Record<string, number> = {};
-  Object.entries(counts).forEach(([name, n]) => { const k = norm(name).replace(/\s+/g, ""); byKey[k] = (byKey[k] ?? 0) + n; });
-  const max = Math.max(0, ...Object.values(byKey));
-  const level = (n: number) => { if (!max || !n) return 4; const r = n / max; return r > 0.8 ? 0 : r > 0.55 ? 1 : r > 0.3 ? 2 : r > 0.1 ? 3 : 4; };
+  Object.entries(counts).forEach(([name, count]) => {
+    const key = regionKey(name);
+    if (key && Number.isFinite(count) && count > 0) byKey[key] = (byKey[key] ?? 0) + count;
+  });
+  const max = Math.max(0, ...REGIONS.map((region) => byKey[region.key] ?? 0));
+  const level = (n: number) => {
+    if (!max || !n) return 4;
+    const ratio = n / max;
+    return ratio > 0.8 ? 0 : ratio > 0.55 ? 1 : ratio > 0.3 ? 2 : ratio > 0.1 ? 3 : 4;
+  };
   return (
     <div className="cstMapWrap">
       <svg viewBox="0 0 400 301" className="cstNigerMap" role="img" aria-label="Carte du Niger par région">
@@ -35,15 +53,25 @@ export function NigerRegionMap({ counts }: { counts: Record<string, number> }) {
             <title>{`${r.label} : ${n} signalement(s)`}</title>
           </path>
         ); })}
-        {REGIONS.map((r) => { const n = byKey[r.key] ?? 0; const dark = level(n) <= 1; const small = r.key === "niamey";
-          const x = small ? r.cx - 18 : r.cx, y = small ? r.cy + 16 : r.cy;
+        {REGIONS.map((r) => {
+          const n = byKey[r.key] ?? 0;
+          const dark = level(n) <= 1;
+          if (r.key === "niamey") return (
+            <g key="niamey-label" className="cstMapLabel" pointerEvents="none">
+              <path d={`M ${r.cx + 2} ${r.cy - 1} L 63 239`} fill="none" stroke="#4b1a9b" strokeWidth="1.5" />
+              <circle cx={r.cx} cy={r.cy} r="3.2" fill="#4b1a9b" stroke="#fff" strokeWidth="1.4" />
+              <rect x="62" y="225" width="53" height="27" rx="6" fill="#fff" stroke="#8b65d5" strokeWidth="1" />
+              <text x="88.5" y="236" textAnchor="middle" fill="#281052" fontSize="8" fontWeight="700">Niamey</text>
+              <text x="88.5" y="246" textAnchor="middle" fill="#4b1a9b" fontSize="9" fontWeight="800">{n.toLocaleString("fr-FR")}</text>
+            </g>
+          );
           return (
-          <g key={r.key + "-l"} className="cstMapLabel" pointerEvents="none">
-            {small && <circle cx={r.cx} cy={r.cy} r={2.6} fill="#1d1145" />}
-            <text x={x} y={y - 2} textAnchor="middle" fill={dark && !small ? "#fff" : "#1d1145"} fontSize={small ? 8 : 10} fontWeight={600}>{r.label}</text>
-            <text x={x} y={y + 10} textAnchor="middle" fill={dark && !small ? "#fff" : "#1d1145"} fontSize={small ? 8 : 10} fontWeight={800}>{n.toLocaleString("fr-FR")}</text>
-          </g>
-        ); })}
+            <g key={r.key + "-l"} className="cstMapLabel" pointerEvents="none">
+              <text x={r.cx} y={r.cy - 2} textAnchor="middle" fill={dark ? "#fff" : "#1d1145"} fontSize="10" fontWeight="600">{r.label}</text>
+              <text x={r.cx} y={r.cy + 10} textAnchor="middle" fill={dark ? "#fff" : "#1d1145"} fontSize="10" fontWeight="800">{n.toLocaleString("fr-FR")}</text>
+            </g>
+          );
+        })}
       </svg>
       <ul className="cstMapLegend">{LEVELS.map((l) => <li key={l.label}><i style={{ background: l.color }} />{l.label}</li>)}</ul>
     </div>
