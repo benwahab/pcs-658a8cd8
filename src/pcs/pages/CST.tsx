@@ -39,7 +39,37 @@ async function health(){
  if(result.error||result.data?.error)throw new Error(result.data?.error??(result.error as any)?.message??"Supervision indisponible.");
  return result.data as any;
 }
-async function mediaModeration(body:Record<string,unknown>={action:"list"}){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-media-moderation",{body});if(error||data?.error)throw new Error(data?.error??"Service de modération indisponible.");return data as any;}
+async function mediaModeration(body:Record<string,unknown>={action:"list"}){
+ if(!supabase)throw new Error("Supabase non configuré.");
+ const getAccessToken=async(forceRefresh=false)=>{
+  const {data,error}=forceRefresh
+   ?await supabase!.auth.refreshSession()
+   :await supabase!.auth.getSession();
+  if(error||!data.session?.access_token)throw new SessionExpiredError();
+  if(!forceRefresh&&data.session.expires_at&&data.session.expires_at*1000<=Date.now()+60000){
+   const refreshed=await supabase!.auth.refreshSession();
+   if(refreshed.error||!refreshed.data.session?.access_token)throw new SessionExpiredError();
+   return refreshed.data.session.access_token;
+  }
+  return data.session.access_token;
+ };
+ let accessToken=await getAccessToken();
+ let result=await supabase.functions.invoke("cst-media-moderation",{body,headers:{Authorization:"Bearer "+accessToken}});
+ if((result.error as any)?.context?.status===401){
+  accessToken=await getAccessToken(true);
+  result=await supabase.functions.invoke("cst-media-moderation",{body,headers:{Authorization:"Bearer "+accessToken}});
+  if((result.error as any)?.context?.status===401){
+   await supabase.auth.signOut({scope:"local"}).catch(()=>undefined);
+   throw new SessionExpiredError();
+  }
+ }
+ if(result.error||result.data?.error){
+  const status=(result.error as any)?.context?.status;
+  if(status===503)throw new Error("Service de modération temporairement indisponible. Le tableau réessaiera automatiquement.");
+  throw new Error(result.data?.error??(result.error as any)?.message??"Service de modération indisponible.");
+ }
+ return result.data as any;
+}
 async function listVideoArchives(){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-video-archives",{body:{action:"list"}});if(error||data?.error)throw new Error(data?.error??"Impossible de charger les archives vidéo.");return data as any;}
 async function reportManagement(body:Record<string,unknown>){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-report-management",{body});if(error||data?.error)throw new Error(data?.error??"Gestion des signalements indisponible.");return data as any;}
 async function professionalAccounts(body:Record<string,unknown>){if(!supabase)throw new Error("Supabase non configuré.");const {data,error}=await supabase.functions.invoke("cst-auth",{body});if(error||data?.error)throw new Error(data?.error??"Gestion des comptes professionnels indisponible.");return data as any;}
@@ -112,7 +142,7 @@ export function CSTDashboard(){
   let healthRequestInFlight=false;
   const healthCheck=async()=>{if(healthRequestInFlight)return;healthRequestInFlight=true;try{const h=await health();if(active){setData(h);setLast(new Date().toLocaleTimeString("fr-FR"));setError(previous=>previous==="Votre session CST a expiré. Reconnectez-vous."||previous==="Impossible de vérifier la session CST. Reconnectez-vous."?"":previous)}}catch(e){if(e instanceof SessionExpiredError){active=false;timersRef.current.forEach(t=>window.clearInterval(t));nav("/cst");return}if(active)setError(e instanceof Error?e.message:"Supervision indisponible.")}finally{healthRequestInFlight=false}};
   void healthCheck();
-  const healthTimer=window.setInterval(()=>{if(active&&dashboardActive.current)void healthCheck()},5000);
+  const healthTimer=window.setInterval(()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible")void healthCheck()},30000);
   const queueTimer=window.setInterval(()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible")void refreshQueue().catch(e=>{if(active&&dashboardActive.current)setError(e instanceof Error?e.message:"Impossible d’actualiser la file de modération.")})},60000);
   const archiveTimer=window.setInterval(()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible"){setArchivesBusy(true);void listVideoArchives().then(v=>{if(active&&dashboardActive.current)setArchives(v.items??[])}).catch(e=>{if(active&&dashboardActive.current)setError(e instanceof Error?e.message:"Impossible de charger les archives.")}).finally(()=>{if(active&&dashboardActive.current)setArchivesBusy(false)})}},60000);
   const operationsTimer=window.setInterval(()=>{if(active&&dashboardActive.current&&document.visibilityState==="visible"){void operationalOverview().then(v=>{if(active&&dashboardActive.current)setOperations(v)}).catch(e=>{if(active&&dashboardActive.current)setError(e instanceof Error?e.message:"Impossible d’actualiser la supervision opérationnelle.")})}},60000);
