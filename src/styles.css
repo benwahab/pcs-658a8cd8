@@ -3462,3 +3462,20 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
  .mairieDashboard .mairieTransmission{min-width:225px}
  .mairieDashboard .mairieTransmitButton{min-height:44px;font-size:.68rem}
 }
+
+
+/* Connexion CST : même identité visuelle que les autres espaces PCS */
+.cstAuthPage.pcsLoginPage{min-height:100vh;align-content:center}
+.cstAuthCard.pcsLogin{width:min(500px,100%);max-width:500px;display:flex;flex-direction:column;gap:0}
+.cstAuthCard.pcsLogin .pcsLoginBrand{margin-bottom:18px}
+.cstAuthCard.pcsLogin .cstLead{max-width:390px;margin:0 auto 13px!important;text-align:center;font-size:.78rem!important;line-height:1.5!important;font-weight:450;color:#e7dcff!important}
+.cstAuthCard.pcsLogin .cstBrand,.cstAuthCard.pcsLogin .cstBrandMark{display:none!important}
+.cstAuthCard.pcsLogin .cstPasswordField{position:relative;width:100%;min-width:0}
+.cstAuthCard.pcsLogin .cstPasswordField input{width:100%;min-width:0;padding-right:54px!important}
+.cstAuthCard.pcsLogin .cstPasswordToggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:38px;height:38px;padding:8px;display:grid;place-items:center;border:0!important;border-radius:9px;background:transparent!important;color:#f4edff!important}
+.cstAuthCard.pcsLogin .cstPasswordToggle:hover{background:#ffffff18!important}
+.cstAuthCard.pcsLogin .cstPasswordToggle .cstEyeIcon{width:20px;height:20px;stroke:currentColor}
+.cstAuthCard.pcsLogin .cstPasswordToggle:focus-visible{outline:2px solid #c9a8ff!important;outline-offset:2px}
+.cstAuthCard.pcsLogin>.button:not(.primary){width:100%}
+.cstAuthCard.pcsLogin>.button:last-of-type{margin-top:8px}
+.cstAuthCard.pcsLogin .pcsLoginFooter{margin-top:19px}
