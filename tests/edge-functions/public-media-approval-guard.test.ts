@@ -23,6 +23,8 @@ describe("public media approval guards", () => {
     expect(mediaCarousel).toContain("Including activeIndex here would reset every swipe");
     expect(mediaCarousel).toContain("  }, [media]);");
     expect(mediaCarousel).not.toContain("  }, [media, activeIndex]);");
+    expect(mediaCarousel).toContain('loading={safeIndex === 0 ? "eager" : "lazy"}');
+    expect(mediaCarousel).toContain('fetchPriority={safeIndex === 0 ? "high" : "auto"}');
   });
 
   it("renews only a failed media URL through the approval-checking service", () => {
@@ -42,13 +44,15 @@ describe("public media approval guards", () => {
 
   it("uses time-limited public media links and renews them before the one-hour expiry", () => {
     expect(mediaService).toContain("expiresIn = 3600");
-    expect(mediaService).toContain('body: { path, expiresIn }');
+    expect(mediaService).toContain("createReportMediaUrls(");
+    expect(mediaService).toContain("body: { paths: uniquePaths, expiresIn }");
+    expect(mediaService).toContain("createReportMediaUrl(");
   });
 
   it("requires explicit approval before media enters public report details", () => {
     expect(detail).toContain('select("id,storage_path,media_role,media_type,moderation_status")');
     expect(detail).toContain('m.moderation_status==="approved"');
-    expect(detail).toContain("Promise.allSettled(approvedMedia.map");
-    expect(detail).toContain('result.status==="fulfilled"');
+    expect(detail).toContain("createReportMediaUrls(approvedMedia.map(m=>m.storage_path))");
+    expect(detail).toContain("signedUrls[m.storage_path]");
   });
 });
