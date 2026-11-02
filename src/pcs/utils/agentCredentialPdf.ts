@@ -77,7 +77,7 @@ function buildPdf(commands: string): Blob {
   pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
   for (const offset of offsets.slice(1)) pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
   pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-  return new Blob([new TextEncoder().encode(pdf)], { type: "application/pdf" });
+  return new Blob([pdf], { type: "application/pdf" });
 }
 
 export function downloadAgentCredentialPdf(
