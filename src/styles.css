@@ -3521,3 +3521,16 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .pcsPasswordRecovery input{width:100%;min-height:48px;border-radius:12px;padding:10px 13px}
 .pcsPasswordRecoveryLink{align-self:center;margin-top:6px;text-decoration:underline;text-underline-offset:3px}
 .pcsPasswordRecoveryMessage{margin:0;padding:12px;border-radius:12px;background:#16a34a18;color:inherit;line-height:1.5}
+
+
+/* Mairie controls for agent account ownership and password resets */
+.mairieDashboard .agentItemManage{gap:10px;flex-wrap:wrap}
+.mairieDashboard .agentPasswordAction{border:1px solid #d9e2f2;border-radius:8px;background:#f7f8fc;color:#51418a;padding:7px 10px;font:inherit;font-size:.68rem;font-weight:750;cursor:pointer;white-space:nowrap}
+.mairieDashboard .agentPasswordAction:hover{background:#efedfa;border-color:#c9c1e8}
+.mairieDashboard .agentResetPanel{margin-top:14px;padding:14px;border:1px solid #e2e7f5;border-radius:11px;background:#fafaff}
+.mairieDashboard .agentResetPanel>strong{display:block;font-size:.82rem;color:#292342}
+.mairieDashboard .agentResetPanel>p{margin:5px 0 12px;color:#77738a;font-size:.68rem;line-height:1.5}
+.mairieDashboard .agentResetFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:11px}
+.mairieDashboard .agentResetFields input{min-width:0;width:100%;box-sizing:border-box;border:1px solid #dfe3ed;border-radius:8px;padding:10px;font:inherit;font-size:.72rem;outline:0}
+.mairieDashboard .agentResetFields input:focus{border-color:#7563ad;box-shadow:0 0 0 3px #7563ad16}
+@media(max-width:760px){.mairieDashboard .agentResetFields{grid-template-columns:1fr}.mairieDashboard .agentItemManage{align-items:flex-start}.mairieDashboard .agentPasswordAction{margin-left:44px}}
