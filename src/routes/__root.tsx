@@ -157,7 +157,7 @@ function RootComponent() {
       navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
 
       void navigator.serviceWorker
-        .register("/sw.js?v=26", { updateViaCache: "none" })
+        .register("/sw.js?v=27", { updateViaCache: "none" })
         .then((registration) => registration.update())
         .catch((error) => {
           console.error("PCS service worker registration failed:", error);
