@@ -16,7 +16,7 @@ describe("mairie-reset-agent-password authorization", () => {
   it("extracts a Bearer access token without retaining its prefix", () => {
     expect(source).toContain('.replace(/^Bearer\\s+/i, "").trim()');
 
-    const token = "Bearer test-access-token".replace(/^Bearer\\s+/i, "").trim();
+    const token = "Bearer test-access-token".replace(/^Bearer\s+/i, "").trim();
     expect(token).toBe("test-access-token");
   });
 
