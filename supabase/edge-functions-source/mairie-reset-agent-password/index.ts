@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !serviceRoleKey) return json({ error: "Configuration du service indisponible." }, 500);
 
-    const token = req.headers.get("authorization")?.replace(/^Bearer\\s+/i, "").trim();
+    const token = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
     if (!token) return json({ error: "Session requise." }, 401);
 
     const admin = createClient(url, serviceRoleKey);
