@@ -13,6 +13,13 @@ describe("mairie-reset-agent-password authorization", () => {
     expect(source).toContain("admin.auth.getUser(token)");
   });
 
+  it("extracts a Bearer access token without retaining its prefix", () => {
+    expect(source).toContain('.replace(/^Bearer\\s+/i, "").trim()');
+
+    const token = "Bearer test-access-token".replace(/^Bearer\\s+/i, "").trim();
+    expect(token).toBe("test-access-token");
+  });
+
   it("only accepts an active, approved mairie account", () => {
     expect(source).toContain('.eq("account_user_id", user.id)');
     expect(source).toContain('.eq("is_active", true)');
