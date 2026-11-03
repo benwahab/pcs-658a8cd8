@@ -8,7 +8,7 @@ async function cacheShell(){
 
 async function networkFirst(request){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),5000);
+  const timer=setTimeout(()=>controller.abort(),2000);
   const cache=await caches.open(CACHE_NAME);
   const cacheKey=request.url;
   try{
@@ -18,18 +18,25 @@ async function networkFirst(request){
   }catch{
     const cached=await cache.match(cacheKey);
     if(cached)return cached;
-    const url=new URL(request.url);
-    if(request.mode==="navigate" && url.pathname==="/" && url.search===""){
+    if(request.mode==="navigate"){
       const home=await cache.match(new URL("/",self.location.origin).href);
       if(home)return home;
     }
-    return new Response(
-      request.mode==="navigate"
-        ? "<!doctype html><html lang=\"fr\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>PCS hors connexion</title><body><main><h1>PCS</h1><p>Connexion indisponible. Reconnectez-vous pour consulter les pages et envoyer un signalement.</p></main></body></html>"
-        : "Ressource temporairement indisponible.",
-      {status:503,headers:{"Content-Type":request.mode==="navigate"?"text/html; charset=utf-8":"text/plain; charset=utf-8","Cache-Control":"no-store"}}
-    );
+    return new Response(request.mode==="navigate"?"<!doctype html><html lang=\"fr\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>PCS hors connexion</title><body><main><h1>PCS</h1><p>Connexion indisponible. Reconnectez-vous pour consulter les pages et envoyer un signalement.</p></main></body></html>":"Ressource temporairement indisponible.",{status:503,headers:{"Content-Type":request.mode==="navigate"?"text/html; charset=utf-8":"text/plain; charset=utf-8","Cache-Control":"no-store"}});
   }finally{clearTimeout(timer);}
+}
+
+async function cacheFirstBuildAsset(request){
+  const cache=await caches.open(CACHE_NAME);
+  const cached=await cache.match(request);
+  if(cached)return cached;
+  try{
+    const response=await fetch(request);
+    if(response.ok && response.type!=="opaque")await cache.put(request,response.clone());
+    return response;
+  }catch{
+    return new Response("Ressource PCS non disponible hors connexion.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8","Cache-Control":"no-store"}});
+  }
 }
 
 async function staleWhileRevalidate(request){
@@ -50,11 +57,19 @@ self.addEventListener("install",(event)=>{
 });
 
 self.addEventListener("activate",(event)=>{
-  event.waitUntil(
-    caches.keys()
-      .then((keys)=>Promise.all(keys.filter((key)=>key.startsWith("pcs-shell-")&&key!==CACHE_NAME).map((key)=>caches.delete(key))))
-      .then(()=>self.clients.claim())
-  );
+  event.waitUntil(caches.keys().then(async(keys)=>{
+    const current=await caches.open(CACHE_NAME);
+    for(const key of keys.filter((name)=>name.startsWith("pcs-shell-")&&name!==CACHE_NAME)){
+      const previous=await caches.open(key);
+      for(const request of await previous.keys()){
+        if(!await current.match(request)){
+          const response=await previous.match(request);
+          if(response)await current.put(request,response);
+        }
+      }
+      await caches.delete(key);
+    }
+  }).then(()=>self.clients.claim()));
 });
 
 self.addEventListener("fetch",(event)=>{
@@ -62,18 +77,18 @@ self.addEventListener("fetch",(event)=>{
   if(request.method!=="GET")return;
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
-  // Do not cache API, authentication, or other application data endpoints.
+  // Never cache API, authentication, or other application data endpoints.
   if(url.pathname.startsWith("/api/")||url.pathname.startsWith("/auth/"))return;
-
   if(request.mode==="navigate"){
     event.respondWith(networkFirst(request));
     return;
   }
-
-  // Never cache executable code: mixing old JS chunks with a newer HTML shell can
-  // break dynamic imports after a deployment. Let the browser fetch code directly.
-  if(request.destination==="script"||request.destination==="style")return;
-
+  // Vite build assets use content-hashed filenames and are immutable by URL.
+  const isHashedBuildAsset=url.pathname.startsWith("/assets/")&&/-[A-Za-z0-9_-]{8,}\.(js|css)$/.test(url.pathname);
+  if(isHashedBuildAsset&&(request.destination==="script"||request.destination==="style")){
+    event.respondWith(cacheFirstBuildAsset(request));
+    return;
+  }
   const isStatic=request.destination==="image"||request.destination==="font"||request.destination==="manifest";
   if(isStatic)event.respondWith(staleWhileRevalidate(request));
 });
