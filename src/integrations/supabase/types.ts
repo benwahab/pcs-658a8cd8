@@ -2244,15 +2244,6 @@ export type Database = {
         Args: { p_report_id: string; p_visitor_token: string }
         Returns: Json
       }
-      match_citizen_gps_commune: {
-        Args: { p_latitude: number; p_longitude: number }
-        Returns: {
-          commune_id: string
-          commune_name: string
-          region_id: string
-          region_name: string
-        }[]
-      }
       has_role: { Args: { required_role: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       list_mairie_transmission_targets: {
@@ -2334,6 +2325,15 @@ export type Database = {
           p_report_id: string
         }
         Returns: string
+      }
+      match_citizen_gps_commune: {
+        Args: { p_latitude: number; p_longitude: number }
+        Returns: {
+          commune_id: string
+          commune_name: string
+          region_id: string
+          region_name: string
+        }[]
       }
       organization_accept_transfer: {
         Args: { p_note?: string; p_transfer_id: string }
