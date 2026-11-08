@@ -16,6 +16,9 @@ export function Shell({ children }: { children: ReactNode }) {
   const isMairie = location.pathname === "/mairie";
   // Keep the global PCS header on the CST login/recovery screen; hide it only inside the authenticated CST workspace.
   const isCstDashboard = location.pathname.startsWith("/cst/");
+  const isAgentLogin =
+    location.pathname === "/connexion-operationnelle" &&
+    new URLSearchParams(location.search).get("mode") === "agent";
   const isPhoneClient =
     typeof navigator !== "undefined" &&
     (((navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile === true) ||
@@ -123,7 +126,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </nav>
 
         {<details
-          className={"feedAccess feedAccessHeader" + (location.pathname === "/signaler" ? " feedAccessHeaderCompact" : "")}
+          className={"feedAccess feedAccessHeader" + (location.pathname === "/signaler" ? " feedAccessHeaderCompact" : "") + (isAgentLogin ? " feedAccessHeaderHomeCompact" : "")}
           data-pcs-tour="professional-access"
           onToggle={(event) => {
             const menu = event.currentTarget;
