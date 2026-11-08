@@ -60,6 +60,7 @@ interface CitizenReportInput {
   location_label?: string | null;
   latitude: number;
   longitude: number;
+  gps_accuracy_m: number;
   photos: File[];
   video?: File | null;
 }
@@ -84,6 +85,7 @@ export async function submitCitizenReport(
   body.append("title", input.title);
   body.append("latitude", String(input.latitude));
   body.append("longitude", String(input.longitude));
+  body.append("gps_accuracy_m", String(input.gps_accuracy_m));
 
   if (input.location_label) {
     body.append("location_label", input.location_label);
@@ -106,8 +108,10 @@ export async function submitCitizenReport(
     throw new Error("L’envoi du signalement a échoué. Vérifiez votre connexion et réessayez.");
   }
   if (data?.error) {
-    // Ne pas exposer au citoyen les messages techniques potentiellement en anglais.
-    throw new Error("Le signalement n’a pas pu être enregistré. Vérifiez les informations et les médias, puis réessayez.");
+    const message = typeof data.error === "string" ? data.error : "";
+    throw new Error(message && /^[A-Za-zÀ-ÿ]/.test(message)
+      ? message
+      : "Le signalement n’a pas pu être enregistré. Vérifiez les informations et les médias, puis réessayez.");
   }
   if (!data || data.success !== true || typeof data.reference_code !== "string") {
     throw new Error("Le serveur a renvoyé une réponse inattendue. Votre signalement n’est pas confirmé.");
