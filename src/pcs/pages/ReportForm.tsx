@@ -51,9 +51,8 @@ export default function ReportForm() {
   const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    null,
-  );
+  const [coords, setCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+  const [gpsCommune, setGpsCommune] = useState<{ id: string; name: string; region_id: string; region_name: string } | null>(null);
 
   const [files, setFiles] = useState<File[]>([]);
   const [video, setVideo] = useState<File | null>(null);
@@ -129,25 +128,66 @@ export default function ReportForm() {
   }, [region, allCommunes]);
 
   function locate() {
-    navigator.geolocation?.getCurrentPosition(
-      (position) => {
-        setCoords({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+    if (!navigator.geolocation) {
+      setError("La géolocalisation n’est pas disponible sur cet appareil.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const accuracy = position.coords.accuracy;
+        if (!Number.isFinite(accuracy) || accuracy > 100) {
+          setCoords(null);
+          setGpsCommune(null);
+          setError("La précision GPS est insuffisante (plus de 100 mètres). Placez-vous près du problème et réessayez.");
+          return;
+        }
+        if (!supabase) {
+          setError("Supabase n’est pas configuré.");
+          return;
+        }
+
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        const { data, error: gpsError } = await supabase.rpc("match_citizen_gps_commune", {
+          p_latitude: latitude,
+          p_longitude: longitude,
         });
-        setLocation((value) => value || "Position GPS enregistrée");
+        if (gpsError) {
+          setCoords(null);
+          setGpsCommune(null);
+          setError("Impossible de vérifier la localité avec le GPS. Réessayez dans un instant.");
+          return;
+        }
+
+        const matches = Array.isArray(data) ? data : [];
+        if (matches.length !== 1) {
+          setCoords(null);
+          setGpsCommune(null);
+          setError(matches.length > 1
+            ? "Votre position est trop proche d’une limite entre plusieurs localités. Déplacez-vous légèrement à l’intérieur de la localité et réessayez."
+            : "Votre position GPS ne se trouve dans aucune localité reconnue. Vérifiez votre GPS et réessayez.");
+          return;
+        }
+
+        const match = matches[0] as { commune_id: string; commune_name: string; region_id: string; region_name: string };
+        setCoords({ lat: latitude, lng: longitude, accuracy });
+        setGpsCommune({
+          id: match.commune_id,
+          name: match.commune_name,
+          region_id: match.region_id,
+          region_name: match.region_name,
+        });
+        setLocation((value) => value || "Position GPS vérifiée");
         setGpsNoticeOpen(false);
+        setError("");
       },
       () => {
-        setError(
-          "La position GPS est nécessaire pour envoyer le signalement. Autorisez la localisation puis réessayez.",
-        );
+        setCoords(null);
+        setGpsCommune(null);
+        setError("La position GPS est nécessaire pour envoyer le signalement. Autorisez la localisation puis réessayez.");
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000,
-      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
     );
   }
 
@@ -200,9 +240,14 @@ export default function ReportForm() {
       return;
     }
 
-    if (!coords) {
+    if (!coords || !gpsCommune) {
+      setError("Prenez une position GPS précise pour vérifier la localité du problème.");
+      return;
+    }
+
+    if (gpsCommune.id !== commune || gpsCommune.region_id !== region) {
       setError(
-        "La position GPS est obligatoire pour vérifier qu’un problème n’a pas déjà été signalé à proximité.",
+        "Votre GPS vous situe à " + gpsCommune.name + " (" + gpsCommune.region_name + "), et non dans la localité choisie. Corrigez votre choix ou reprenez la position GPS à proximité du problème.",
       );
       return;
     }
@@ -246,6 +291,7 @@ export default function ReportForm() {
         location_label: location.trim() || null,
         latitude: coords.lat,
         longitude: coords.lng,
+        gps_accuracy_m: coords.accuracy,
         photos: files,
         video,
       });
@@ -429,9 +475,10 @@ export default function ReportForm() {
             </div>
           </div>
         )}
-        {coords && (
+        {coords && gpsCommune && (
           <p className="muted">
-            GPS : {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+            Position vérifiée : {gpsCommune.name}, région de {gpsCommune.region_name}
+            {" · "}précision {Math.round(coords.accuracy)} m
           </p>
         )}
 
