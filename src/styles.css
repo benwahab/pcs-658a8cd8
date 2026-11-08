@@ -1007,16 +1007,12 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   display:block!important;
 }
 /* Prevent partially decoded images/first video frames from flashing into the feed. */
-.citizenFeedMediaImage.mediaImageLoading,
-.citizenSlideTrack .mediaCarouselItem video.feedVideoLoading{
-  opacity:0!important;
-}
-.citizenFeedMediaImage.mediaImageReady,
-.citizenSlideTrack .mediaCarouselItem video.feedVideoReady{
-  opacity:1!important;
-  transition:opacity .12s ease-out;
-}
-.mediaCarouselItem:has(.mediaImageLoading){background:#030605!important}
+.citizenFeedMediaImage.mediaImageLoading{opacity:.35!important}
+.citizenFeedMediaImage.mediaImageReady{opacity:1!important;transition:opacity .25s ease-out}
+.mediaCarouselItem:has(.mediaImageLoading)::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,#ffffff00 30%,#ffffff1f 50%,#ffffff00 70%);background-size:200% 100%;animation:pcsShimmer 1.2s linear infinite;z-index:1}
+@keyframes pcsShimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.feedVideoSpinner{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:3px solid #ffffff33;border-top-color:#a855f7;animation:pcsSpin .8s linear infinite;z-index:3;pointer-events:none}
+@keyframes pcsSpin{to{transform:rotate(360deg)}}
 .citizenSlideTrack .mediaCarouselItem img,
 .citizenSlideTrack .mediaCarouselItem video{
   display:block!important;

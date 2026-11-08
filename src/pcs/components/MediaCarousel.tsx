@@ -12,7 +12,8 @@ let activeFeedVideo: HTMLVideoElement | null = null;
 function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string; onError?: (failedUrl: string) => void }) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
-  const [frameReady, setFrameReady] = useState(false);
+  const [buffering, setBuffering] = useState(false);
+  const [paused, setPaused] = useState(true);
   const [autoplayAllowed, setAutoplayAllowed] = useState(true);
   const [slowNetwork, setSlowNetwork] = useState(false);
 
@@ -159,22 +160,29 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
     <div className="feedVideoFrame">
       <video
         ref={ref}
-        className={frameReady ? "feedVideoReady" : "feedVideoLoading"}
-        onLoadedData={() => setFrameReady(true)}
-        onPlaying={() => setFrameReady(true)}
+        onWaiting={() => setBuffering(true)}
+        onStalled={() => setBuffering(true)}
+        onPlaying={() => { setBuffering(false); setPaused(false); }}
+        onCanPlay={() => setBuffering(false)}
+        onPause={() => { setPaused(true); setBuffering(false); }}
         onError={() => onError?.(src)}
         src={src}
         poster={poster}
-        autoPlay
         playsInline
         muted
         loop={!slowNetwork}
-        preload={active ? (slowNetwork && !autoplayAllowed ? "metadata" : "auto") : "none"}
+        preload={active ? (slowNetwork && !autoplayAllowed ? "metadata" : "auto") : "metadata"}
         controls
         aria-label="Vidéo du signalement"
         controlsList="noremoteplayback"
         disablePictureInPicture
       />
+      {buffering && <span className="feedVideoSpinner" aria-hidden="true" />}
+      {paused && !buffering && !autoplayAllowed && (
+        <button type="button" className="videoPlayFallback" aria-label="Lire la vidéo" onClick={() => { void ref.current?.play().catch(() => undefined); }}>
+          <span>▶</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -194,6 +202,16 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
   // Each newly selected image needs its own decode/readiness state.
   useEffect(() => {
     setImageReady(false);
+  }, [activeIndex, media]);
+
+  // Warm the browser cache for the next photo so swiping feels instant.
+  useEffect(() => {
+    const next = media[activeIndex + 1];
+    if (next && !next.media_type?.startsWith("video") && next.media_role !== "resolution_video") {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = next.url;
+    }
   }, [activeIndex, media]);
 
   if (!media.length) return null;

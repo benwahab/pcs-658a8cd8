@@ -15,7 +15,7 @@ export async function compressCitizenPhoto(file: File): Promise<File> {
   let bitmap: ImageBitmap | null = null;
   try {
     bitmap = await createImageBitmap(file);
-    const maxDimension = 1600;
+    const maxDimension = 1280;
     const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
     if (scale === 1 && file.type === "image/webp" && file.size <= 700 * 1024) {
       return file;
@@ -29,7 +29,7 @@ export async function compressCitizenPhoto(file: File): Promise<File> {
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
 
     const blob = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob(resolve, "image/webp", 0.78);
+      canvas.toBlob(resolve, "image/webp", 0.74);
     });
     if (!blob || blob.size === 0 || blob.size >= file.size) return file;
 
@@ -139,22 +139,49 @@ export async function createReportMediaUrls(
   const uniquePaths = [...new Set(paths.filter(Boolean))];
   if (!uniquePaths.length) return {};
 
+  // Reuse still-valid signed URLs so revisited reports display instantly and
+  // the browser can serve the same file from its HTTP cache.
+  const now = Date.now();
+  const result: Record<string, string> = {};
+  const missing: string[] = [];
+  for (const path of uniquePaths) {
+    const cached = signedUrlCache.get(path);
+    if (cached && cached.expiresAt > now) result[path] = cached.url;
+    else missing.push(path);
+  }
+  if (!missing.length) return result;
+
   // One server round-trip for all approved media in a report; the private
   // bucket and server-side moderation/publication checks remain unchanged.
   const { data, error } = await supabase.functions.invoke("public-report-media-url", {
-    body: { paths: uniquePaths, expiresIn },
+    body: { paths: missing, expiresIn },
   });
   if (error) throw error;
   if (!data?.signedUrls || typeof data.signedUrls !== "object") {
     throw new Error("Le serveur n’a pas fourni les URL des médias.");
   }
-  return data.signedUrls as Record<string, string>;
+  const fresh = data.signedUrls as Record<string, string>;
+  const expiresAt = now + Math.max(0, expiresIn - 300) * 1000;
+  for (const [path, url] of Object.entries(fresh)) {
+    if (url) signedUrlCache.set(path, { url, expiresAt });
+    result[path] = url;
+  }
+  return result;
+}
+
+const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
+
+/** Drop a cached URL (e.g. after a load failure) so the next call renews it. */
+export function forgetReportMediaUrl(path: string) {
+  signedUrlCache.delete(path);
 }
 
 export async function createReportMediaUrl(
   path: string,
   expiresIn = 3600,
 ): Promise<string> {
+  // Called to renew a failed URL: never return the cached (failed) one.
+  forgetReportMediaUrl(path);
   const urls = await createReportMediaUrls([path], expiresIn);
   const url = urls[path];
   if (!url) throw new Error("Média introuvable, non approuvé ou non public.");
