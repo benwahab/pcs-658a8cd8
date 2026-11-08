@@ -193,7 +193,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </nav>
 
         {authChecked && !email ? <details
-          className="feedAccess feedAccessHeader"
+          className={"feedAccess feedAccessHeader" + (location.pathname === "/signaler" ? " feedAccessHeaderCompact" : "")}
           data-pcs-tour="professional-access"
           onToggle={(event) => {
             const menu = event.currentTarget;
@@ -211,9 +211,9 @@ export function Shell({ children }: { children: ReactNode }) {
           onInput={refreshProfessionalMenuTimer}
           onChange={refreshProfessionalMenuTimer}
         >
-          <summary>
+          <summary aria-label="Espace professionnel" title="Espace professionnel">
             <span className="feedAccessIcon">◈</span>
-            <span>Espace professionnel</span>
+            <span className="feedAccessLabel">Espace professionnel</span>
             <span className="feedAccessChevron">▾</span>
           </summary>
           <div onPointerDown={refreshProfessionalMenuTimer} onInput={refreshProfessionalMenuTimer} onChange={refreshProfessionalMenuTimer}>
