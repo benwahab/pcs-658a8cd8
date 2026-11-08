@@ -159,9 +159,23 @@ Deno.serve(async(req)=>{
     const title=String(form.get("title")??"").trim();
     const locationLabel=String(form.get("location_label")??"").trim()||null;
     const latitude=Number(form.get("latitude")),longitude=Number(form.get("longitude"));
-    if(!categoryId||!regionId||!communeId||title.length<5||title.length>120||(locationLabel!==null&&locationLabel.length>250)||!Number.isFinite(latitude)||!Number.isFinite(longitude)||latitude < -90||latitude > 90||longitude < -180||longitude > 180)return json({error:"Informations du signalement invalides."},400);
+    const gpsAccuracyM=Number(form.get("gps_accuracy_m"));
+    if(!categoryId||!regionId||!communeId||title.length<5||title.length>120||(locationLabel!==null&&locationLabel.length>250)||!Number.isFinite(latitude)||!Number.isFinite(longitude)||latitude < -90||latitude > 90||longitude < -180||longitude > 180||!Number.isFinite(gpsAccuracyM)||gpsAccuracyM<=0||gpsAccuracyM>100)return json({error:"Position GPS invalide ou trop imprécise. Reprenez votre position à proximité du problème (précision maximale : 100 mètres)."},400);
     const {data:category}=await admin.from("categories").select("id").eq("id",categoryId).eq("is_active",true).maybeSingle();if(!category)return json({error:"Catégorie invalide."},400);
     const {data:commune}=await admin.from("communes").select("id,region_id,is_active").eq("id",communeId).eq("region_id",regionId).eq("is_active",true).maybeSingle();if(!commune)return json({error:"Localité invalide pour cette région."},400);
+    const {data:gpsMatches,error:gpsMatchError}=await admin.rpc("match_citizen_gps_commune",{p_latitude:latitude,p_longitude:longitude});
+    if(gpsMatchError){
+      console.error("citizen-report-submit GPS territory check",gpsMatchError);
+      return json({error:"Impossible de vérifier la localité avec le GPS. Réessayez."},503);
+    }
+    const matches=Array.isArray(gpsMatches)?gpsMatches:[];
+    if(matches.length!==1)return json({error:matches.length>1
+      ?"La position GPS est trop proche d’une limite entre plusieurs localités. Reprenez votre position un peu plus à l’intérieur de la localité."
+      :"La position GPS ne correspond à aucune localité reconnue. Vérifiez votre position et réessayez."},400);
+    const gpsCommune=matches[0] as {commune_id:string;commune_name:string;region_id:string;region_name:string};
+    if(gpsCommune.commune_id!==communeId||gpsCommune.region_id!==regionId){
+      return json({error:"Votre GPS vous situe à "+gpsCommune.commune_name+" (région de "+gpsCommune.region_name+"), et non dans la localité choisie. Corrigez votre choix ou reprenez le GPS à proximité du problème."},400);
+    }
     const photoFiles=form.getAll("photos").filter((v):v is File=>v instanceof File);
     const videoValue=form.get("video");const videoFile=videoValue instanceof File?videoValue:null;
     if(photoFiles.length>MAX_PHOTOS)return json({error:"Maximum 5 photos par signalement."},400);
