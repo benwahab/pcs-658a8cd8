@@ -3597,3 +3597,30 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
     height: 20px;
   }
 }
+
+
+/* Harmoniser l'apparence de l'icône compacte sur l'accueil et la connexion Agent terrain
+   avec celle déjà utilisée sur le formulaire de signalement. */
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact summary,
+.feedAccessHeaderHomeCompact.feedAccessHeaderCompact summary {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  box-sizing: border-box;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  gap: 0;
+}
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact .feedAccessIcon,
+.feedAccessHeaderHomeCompact.feedAccessHeaderCompact .feedAccessIcon {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 1.2rem;
+}
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact summary > span:not(.feedAccessIcon),
+.feedAccessHeaderHomeCompact.feedAccessHeaderCompact summary > span:not(.feedAccessIcon) {
+  display: none;
+}
