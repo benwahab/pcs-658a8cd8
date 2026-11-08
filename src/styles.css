@@ -277,9 +277,9 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   padding:24px;
   border:1px solid #ffffffd9;
   border-radius:20px;
-  background:linear-gradient(145deg,#fffffffa 0%,#f7f5fffa 100%);
-  box-shadow:0 24px 70px #00000045,0 0 0 1px #3e2e6814;
-  color:#241b36;
+  background:#000;
+  box-shadow:0 24px 70px #00000075,0 0 0 1px #ffffff20;
+  color:#fff;
 }
 .gpsNoticeIcon{
   width:46px;
@@ -288,12 +288,13 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   place-items:center;
   margin-bottom:12px;
   border-radius:14px;
-  background:#3e2e6814;
+  background:#ffffff20;
+  color:#fff;
   font-size:1.45rem;
 }
 .gpsNotice h2{
   margin:0 0 12px;
-  color:#3e2e68;
+  color:#fff;
   font-size:1.35rem;
 }
 .gpsNotice p{
@@ -3504,8 +3505,8 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .reportFormGlass .reportSuccess{padding:20px!important;color:#fff!important;background:#ffffff18!important;border:1px solid #ffffff55!important;border-radius:14px!important}
 .reportFormGlass .button.primary,.reportFormGlass button[type=submit]{width:100%;min-height:56px;border-radius:14px!important;background:linear-gradient(180deg,#a26bff,#7c3aed 55%,#6a2ad8)!important;border:1px solid #c9a8ff99!important;color:#fff!important;font-size:1rem;font-weight:800;box-shadow:0 0 0 1px #ffffff1f inset,0 14px 30px -10px #7c3aedcc!important}
 .reportFormGlass .button.primary:disabled,.reportFormGlass button[type=submit]:disabled{opacity:.65}
-.reportFormGlass .gpsNotice{color:#2d2450}
-.reportFormGlass .gpsNotice h2,.reportFormGlass .gpsNotice p{color:inherit}
+.reportFormGlass .gpsNotice{background:#000!important;color:#fff!important}
+.reportFormGlass .gpsNotice h2,.reportFormGlass .gpsNotice p{color:#fff!important}
 @media(max-width:560px){
  .reportFormPage{padding:14px 12px 28px!important}
  .reportFormPage>.reportFormGlass{padding:26px 19px 22px!important;border-radius:28px!important}
