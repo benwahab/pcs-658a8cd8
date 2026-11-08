@@ -126,7 +126,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </nav>
 
         {<details
-          className={"feedAccess feedAccessHeader" + (location.pathname === "/signaler" ? " feedAccessHeaderCompact" : "") + (isAgentLogin ? " feedAccessHeaderHomeCompact" : "")}
+          className={"feedAccess feedAccessHeader" + (location.pathname === "/signaler" || location.pathname === "/" || isAgentLogin ? " feedAccessHeaderCompact" : "") + (isAgentLogin ? " feedAccessHeaderHomeCompact" : "")}
           data-pcs-tour="professional-access"
           onToggle={(event) => {
             const menu = event.currentTarget;
