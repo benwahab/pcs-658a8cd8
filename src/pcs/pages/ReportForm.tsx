@@ -76,15 +76,47 @@ export default function ReportForm() {
   }, []);
 
   useEffect(() => {
-    Promise.all([listCategories(), listRegions(), listAllCommunes()])
-      .then(([categoryList, regionList, communeList]) => {
-        setCategories(categoryList);
-        setRegions(regionList);
-        setAllCommunes(communeList);
-      })
-      .catch(() => {
-        setError("Impossible de charger les catégories, régions et localités. Vérifiez votre connexion puis réessayez.");
-      });
+    let active = true;
+
+    // Charger chaque liste indépendamment : l'échec d'une requête ne doit
+    // pas empêcher l'affichage des régions ou des localités déjà récupérées.
+    void Promise.allSettled([
+      listCategories(),
+      listRegions(),
+      listAllCommunes(),
+    ]).then(([categoryResult, regionResult, communeResult]) => {
+      if (!active) return;
+
+      const failedLists: string[] = [];
+
+      if (categoryResult.status === "fulfilled") {
+        setCategories(categoryResult.value);
+      } else {
+        failedLists.push("catégories");
+      }
+
+      if (regionResult.status === "fulfilled") {
+        setRegions(regionResult.value);
+      } else {
+        failedLists.push("régions");
+      }
+
+      if (communeResult.status === "fulfilled") {
+        setAllCommunes(communeResult.value);
+      } else {
+        failedLists.push("localités");
+      }
+
+      if (failedLists.length) {
+        setError(
+          `Impossible de charger les ${failedLists.join(", ")}. Vérifiez votre connexion puis réessayez.`,
+        );
+      }
+    });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
