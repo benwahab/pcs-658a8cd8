@@ -144,7 +144,7 @@ export function Shell({ children }: { children: ReactNode }) {
           onInput={refreshProfessionalMenuTimer}
           onChange={refreshProfessionalMenuTimer}
         >
-          <summary aria-label="Espace professionnel" title="Espace professionnel">
+          <summary aria-label="Espace professionnel" title={location.pathname === "/" ? undefined : "Espace professionnel"}>
             <span className="feedAccessIcon">◈</span>
             <span className="feedAccessLabel">Espace professionnel</span>
             <span className="feedAccessChevron">▾</span>
