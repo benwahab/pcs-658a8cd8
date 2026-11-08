@@ -3541,3 +3541,59 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .feedAccessHeaderCompact summary{width:42px;height:42px;min-width:42px;box-sizing:border-box;justify-content:center;padding:0;border-radius:50%;gap:0}
 .feedAccessHeaderCompact .feedAccessLabel,.feedAccessHeaderCompact .feedAccessChevron{display:none}
 .feedAccessHeaderCompact .feedAccessIcon{width:100%;height:100%;border-radius:50%;background:transparent;font-size:1.2rem}
+
+
+/* Sur la connexion Agent terrain, reproduire exactement l'icône compacte de l'accueil. */
+.feedAccessHeaderHomeCompact {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 102;
+  margin-left: 0;
+}
+.feedAccessHeaderHomeCompact summary {
+  white-space: nowrap;
+  width: 38px;
+  height: 38px;
+  box-sizing: border-box;
+  justify-content: center;
+  padding: 6px;
+  gap: 7px;
+  font-size: .8rem;
+  overflow: hidden;
+}
+.feedAccessHeaderHomeCompact summary > span:not(.feedAccessIcon) {
+  display: none;
+}
+.feedAccessHeaderHomeCompact[open] summary {
+  width: auto;
+  justify-content: flex-start;
+  padding: 8px 12px 8px 9px;
+}
+.feedAccessHeaderHomeCompact[open] summary > span:not(.feedAccessIcon) {
+  display: inline;
+}
+.feedAccessHeaderHomeCompact > div {
+  z-index: 103;
+}
+@media (max-width: 600px) {
+  .feedAccessHeaderHomeCompact {
+    top: 7px;
+    right: 10px;
+  }
+  .feedAccessHeaderHomeCompact summary {
+    width: 34px;
+    height: 34px;
+    padding: 5px;
+    gap: 5px;
+  }
+  .feedAccessHeaderHomeCompact[open] summary {
+    width: min(250px, calc(100vw - 20px));
+    padding: 7px 8px;
+    font-size: .72rem;
+  }
+  .feedAccessHeaderHomeCompact .feedAccessIcon {
+    width: 20px;
+    height: 20px;
+  }
+}
