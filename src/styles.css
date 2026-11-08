@@ -3637,16 +3637,16 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
   padding: 0;
   border-radius: 50%;
   gap: 0;
-  background: linear-gradient(135deg,#e8a317,#2f9e5b);
-  box-shadow: 0 6px 20px #00000055,0 0 0 1px #ffffff40 inset;
+  background: linear-gradient(135deg,#4E3A7F,#3E2E68);
+  box-shadow: 0 6px 20px #3E2E6855,0 0 0 1px #FFFFFF40 inset;
   transform: none;
   filter: none;
   overflow: hidden;
 }
 .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact summary:hover,
 .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact[open] summary:hover {
-  background: linear-gradient(135deg,#e8a317,#2f9e5b);
-  box-shadow: 0 12px 30px #00000066,0 0 0 1px #ffffff70 inset;
+  background: linear-gradient(135deg,#4E3A7F,#3E2E68);
+  box-shadow: 0 12px 30px #3E2E6866,0 0 0 1px #FFFFFF70 inset;
   transform: translateY(-2px);
   filter: saturate(1.08);
 }
