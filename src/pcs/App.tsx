@@ -146,8 +146,12 @@ export function Shell({ children }: { children: ReactNode }) {
         >
           <summary aria-label="Espace professionnel" title={location.pathname === "/" ? undefined : "Espace professionnel"}>
             <span className="feedAccessIcon">◈</span>
-            <span className="feedAccessLabel">Espace professionnel</span>
-            <span className="feedAccessChevron">▾</span>
+            {location.pathname !== "/" && (
+              <>
+                <span className="feedAccessLabel">Espace professionnel</span>
+                <span className="feedAccessChevron">▾</span>
+              </>
+            )}
           </summary>
           <div onPointerDown={refreshProfessionalMenuTimer} onInput={refreshProfessionalMenuTimer} onChange={refreshProfessionalMenuTimer}>
             {isPhoneClient ? (
