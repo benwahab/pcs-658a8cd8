@@ -63,8 +63,10 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
       ([entry]) => setActive(Boolean(entry?.isIntersecting)),
       {
         root: feedRoot ?? null,
-        rootMargin: slowNetwork ? "40px 0px" : "180px 0px",
-        threshold: slowNetwork ? 0.45 : 0.2,
+        // Only the video actually on screen may download, so it gets the
+        // full bandwidth instead of sharing it with neighbouring reports.
+        rootMargin: "0px",
+        threshold: 0.6,
       },
     );
 
@@ -161,7 +163,6 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
       <video
         ref={ref}
         onWaiting={() => setBuffering(true)}
-        onStalled={() => setBuffering(true)}
         onPlaying={() => { setBuffering(false); setPaused(false); }}
         onCanPlay={() => setBuffering(false)}
         onPause={() => { setPaused(true); setBuffering(false); }}
@@ -171,7 +172,7 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
         playsInline
         muted
         loop={!slowNetwork}
-        preload={active ? (slowNetwork && !autoplayAllowed ? "metadata" : "auto") : "metadata"}
+        preload={active ? (slowNetwork && !autoplayAllowed ? "metadata" : "auto") : "none"}
         controls
         aria-label="Vidéo du signalement"
         controlsList="noremoteplayback"
