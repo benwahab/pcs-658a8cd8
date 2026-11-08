@@ -3657,3 +3657,8 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact summary > span:not(.feedAccessIcon) {
   display: none;
 }
+
+/* PCS — affichage direct des images : aucun fondu ni voile sombre progressif. */
+.citizenFeedMediaImage.mediaImageLoading,.citizenFeedMediaImage.mediaImageReady{opacity:1!important;transition:none!important}
+.mediaCarouselItem:has(.mediaImageLoading)::after{content:none!important;animation:none!important}
+.citizenSlideIntro.introFirstVisit .introArt,.citizenSlideIntro.introFirstVisit .introScrim{animation:none!important;opacity:1!important;transform:none!important}
