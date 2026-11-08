@@ -127,7 +127,6 @@ export function Shell({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
       setEmail(session?.user?.email ?? null);
-      setAuthChecked(true);
     });
 
     return () => {
