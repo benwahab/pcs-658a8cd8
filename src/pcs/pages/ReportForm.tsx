@@ -119,13 +119,16 @@ export default function ReportForm() {
   }, []);
 
   useEffect(() => {
-    setCommune("");
-    setCommunes(
-      region
-        ? allCommunes.filter((item) => item.region_id === region)
-        : [],
+    const regionCommunes = region
+      ? allCommunes.filter((item) => item.region_id === region)
+      : [];
+    setCommunes(regionCommunes);
+    setCommune(
+      gpsCommune && gpsCommune.region_id === region
+        ? gpsCommune.id
+        : "",
     );
-  }, [region, allCommunes]);
+  }, [region, allCommunes, gpsCommune]);
 
   function locate() {
     if (!navigator.geolocation) {
@@ -178,6 +181,7 @@ export default function ReportForm() {
           region_id: match.region_id,
           region_name: match.region_name,
         });
+        setRegion(match.region_id);
         setLocation((value) => value || "Position GPS vérifiée");
         setGpsNoticeOpen(false);
         setError("");
