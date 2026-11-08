@@ -9,8 +9,6 @@ import BrandLogo from "./components/BrandLogo";
 
 export function Shell({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [feedHeaderHidden, setFeedHeaderHidden] = useState(false);
   // Professional access: collapsed by default and auto-collapses 5 seconds after opening.
   const professionalMenuTimer = useRef<number | undefined>(undefined);
   const navigate = useNavigate();
@@ -22,71 +20,6 @@ export function Shell({ children }: { children: ReactNode }) {
     typeof navigator !== "undefined" &&
     (((navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile === true) ||
       /Android.*Mobile|iPhone|iPod/i.test(navigator.userAgent));
-
-  useEffect(() => {
-    if (location.pathname !== "/") {
-      setFeedHeaderHidden(false);
-      return;
-    }
-
-    let lastScrollTop = 0;
-    let activeScrollTarget: HTMLElement | null = null;
-
-    const getScrollTop = (target?: EventTarget | null) => {
-      const element = target instanceof HTMLElement ? target : null;
-      const feed = document.querySelector<HTMLElement>(".citizenFeed");
-      const main = document.querySelector<HTMLElement>("main");
-      return Math.max(
-        0,
-        element?.scrollTop ?? 0,
-        feed?.scrollTop ?? 0,
-        main?.scrollTop ?? 0,
-        window.scrollY,
-        document.documentElement.scrollTop,
-      );
-    };
-
-    const onAnyScroll = (event: Event) => {
-      const target = event.target instanceof HTMLElement ? event.target : null;
-      const current = getScrollTop(target);
-      if (target && target.scrollHeight > target.clientHeight + 2) {
-        activeScrollTarget = target;
-      }
-      const position = activeScrollTarget?.scrollTop ?? current;
-      if (position <= 8 && current <= 8) {
-        setFeedHeaderHidden(false);
-      } else if (position > lastScrollTop + 3 || current > lastScrollTop + 3) {
-        setFeedHeaderHidden(true);
-      } else if (position < lastScrollTop - 3 || current < lastScrollTop - 3) {
-        setFeedHeaderHidden(false);
-      }
-      lastScrollTop = Math.max(position, current);
-    };
-
-    const initialize = () => {
-      activeScrollTarget = document.querySelector<HTMLElement>(".citizenFeed");
-      lastScrollTop = getScrollTop(activeScrollTarget);
-      setFeedHeaderHidden(lastScrollTop > 8);
-    };
-    const frame = requestAnimationFrame(initialize);
-    document.addEventListener("scroll", onAnyScroll, { passive: true, capture: true });
-    window.addEventListener("scroll", onAnyScroll, { passive: true });
-
-    const observer = new MutationObserver(() => {
-      if (!activeScrollTarget) {
-        activeScrollTarget = document.querySelector<HTMLElement>(".citizenFeed");
-        if (activeScrollTarget) lastScrollTop = activeScrollTarget.scrollTop;
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      cancelAnimationFrame(frame);
-      document.removeEventListener("scroll", onAnyScroll, true);
-      window.removeEventListener("scroll", onAnyScroll);
-      observer.disconnect();
-    };
-  }, [location.pathname]);
 
   // Keep the professional menu collapsed consistently whenever the user changes page.
   useEffect(() => {
@@ -101,7 +34,6 @@ export function Shell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!supabase) {
-      setAuthChecked(true);
       return;
     }
 
@@ -114,12 +46,10 @@ export function Shell({ children }: { children: ReactNode }) {
       .then(({ data, error }) => {
         if (!active) return;
         setEmail(error ? null : data.user?.email ?? null);
-        setAuthChecked(true);
       })
       .catch(() => {
         if (!active) return;
         setEmail(null);
-        setAuthChecked(true);
       });
 
     const {
@@ -173,7 +103,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app">
-      {!isCstDashboard && <header className={"feedImmersiveHeader" + (feedHeaderHidden ? " is-hidden" : "")}>
+      {!isCstDashboard && <header className="feedImmersiveHeader">
         <Link className="brand" to="/">
           <BrandLogo className="brandLogo" />
         </Link>
@@ -192,7 +122,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </Link>
         </nav>
 
-        {authChecked && !email ? <details
+        {<details
           className={"feedAccess feedAccessHeader" + (location.pathname === "/signaler" ? " feedAccessHeaderCompact" : "")}
           data-pcs-tour="professional-access"
           onToggle={(event) => {
@@ -242,7 +172,7 @@ export function Shell({ children }: { children: ReactNode }) {
               </>
             )}
           </div>
-        </details> : null}
+        </details>}
 
         {email && (
           <span className="session" data-pcs-tour="account">
