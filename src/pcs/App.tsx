@@ -154,7 +154,7 @@ export function Shell({ children }: { children: ReactNode }) {
             )}
           </summary>
           <div onPointerDown={refreshProfessionalMenuTimer} onInput={refreshProfessionalMenuTimer} onChange={refreshProfessionalMenuTimer}>
-            {isPhoneClient ? (
+            {location.pathname === "/" || isPhoneClient ? (
               <Link to="/connexion-operationnelle?mode=agent" onClick={closeProfessionalMenu}>👷 Agent terrain</Link>
             ) : (
               <>
