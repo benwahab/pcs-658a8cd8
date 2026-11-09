@@ -15,6 +15,7 @@ import {
 import {
   MAX_VIDEO_SIZE_BYTES,
   compressCitizenPhoto,
+  compressCitizenVideo,
   validateCitizenVideo,
 } from "../services/media";
 
@@ -56,6 +57,7 @@ export default function ReportForm() {
 
   const [files, setFiles] = useState<File[]>([]);
   const [video, setVideo] = useState<File | null>(null);
+  const [videoProgress, setVideoProgress] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -544,16 +546,25 @@ export default function ReportForm() {
                   if (selected.size <= 0 || selected.size > MAX_VIDEO_SIZE_BYTES) throw new Error("La vidéo doit être lisible et ne pas dépasser 100 Mo.");
                   if (!selected.type.startsWith("video/")) throw new Error("Le fichier sélectionné n’est pas une vidéo valide.");
                   const snapshot = await snapshotSelectedFile(selected);
-                  setVideo(snapshot);
+                  setVideoProgress(0);
+                  const optimized = await compressCitizenVideo(snapshot, (ratio) => setVideoProgress(ratio));
+                  setVideo(optimized);
                   setError("");
                 } catch (videoError) {
                   setError(videoError instanceof Error ? videoError.message : "Impossible de lire la vidéo. Sélectionnez-la à nouveau.");
                 } finally {
+                  setVideoProgress(null);
                   input.value = "";
                 }
               })();
             }}
           />
+
+          {videoProgress !== null && (
+            <p className="videoOptimizing" role="status">
+              Optimisation de la vidéo… {Math.round(videoProgress * 100)} %
+            </p>
+          )}
 
           {(files.length > 0 || video) && (
             <ul className="mediaChosen">

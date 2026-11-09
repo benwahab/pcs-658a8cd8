@@ -46,6 +46,52 @@ export async function compressCitizenPhoto(file: File): Promise<File> {
   }
 }
 
+const VIDEO_COMPRESS_THRESHOLD_BYTES = 8 * 1024 * 1024;
+const VIDEO_MAX_LONG_SIDE = 1280;
+
+/**
+ * Re-encode heavy citizen videos on the phone (720p H.264 MP4, ~2 Mbit/s)
+ * before upload. Light files, unsupported browsers or any failure keep the
+ * original file untouched. No duration limit is applied.
+ */
+export async function compressCitizenVideo(
+  file: File,
+  onProgress?: (ratio: number) => void,
+): Promise<File> {
+  if (file.size <= VIDEO_COMPRESS_THRESHOLD_BYTES || typeof VideoEncoder === "undefined") return file;
+  try {
+    const mb = await import("mediabunny");
+    if (!(await mb.canEncodeVideo("avc"))) return file;
+    const input = new mb.Input({ source: new mb.BlobSource(file), formats: mb.ALL_FORMATS });
+    const track = await input.getPrimaryVideoTrack();
+    if (!track) return file;
+    const w = track.displayWidth;
+    const h = track.displayHeight;
+    const scale = Math.min(1, VIDEO_MAX_LONG_SIDE / Math.max(w, h));
+    const target = new mb.BufferTarget();
+    const output = new mb.Output({ format: new mb.Mp4OutputFormat({ fastStart: "in-memory" }), target });
+    const conversion = await mb.Conversion.init({
+      input,
+      output,
+      video: {
+        ...(w >= h ? { width: Math.round((w * scale) / 2) * 2 } : { height: Math.round((h * scale) / 2) * 2 }),
+        codec: "avc",
+        bitrate: 2_000_000,
+      },
+      audio: { codec: "aac", bitrate: 96_000 },
+    });
+    if (!conversion.isValid) return file;
+    conversion.onProgress = (p) => onProgress?.(p);
+    await conversion.execute();
+    const buffer = target.buffer;
+    if (!buffer || buffer.byteLength >= file.size) return file;
+    const name = file.name.replace(/\.[^.]+$/, "") + ".mp4";
+    return new File([buffer], name, { type: "video/mp4", lastModified: Date.now() });
+  } catch {
+    return file;
+  }
+}
+
 // Limite applicative volontaire : 100 Mo par vidéo.
 export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
 
