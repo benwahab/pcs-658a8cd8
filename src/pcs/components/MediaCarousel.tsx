@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { PhotoLightbox } from "./PhotoLightbox";
 
 type MediaItem = {
   id: string;
@@ -191,6 +192,7 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
 export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onMediaError?: (mediaId: string, failedUrl: string) => void }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [imageReady, setImageReady] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const swipeHandled = useRef(false);
 
@@ -227,6 +229,10 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
       !candidate.media_type?.startsWith("video") &&
       candidate.media_role !== "resolution_video",
   )?.url;
+
+  const photos = media
+    .filter((m) => !m.media_type?.startsWith("video") && m.media_role !== "resolution_video")
+    .map((m) => m.url);
 
   const changeSlide = (direction: -1 | 1) => {
     setActiveIndex((current) =>
@@ -268,6 +274,11 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
             alt="Pièce jointe du signalement"
             loading={safeIndex === 0 ? "eager" : "lazy"}
             decoding="async"
+            onClick={() => {
+              const at = photos.indexOf(item.url);
+              setLightboxIndex(at < 0 ? 0 : at);
+            }}
+            style={{ cursor: "zoom-in" }}
             fetchPriority={safeIndex === 0 ? "high" : "auto"}
             onLoad={(event) => {
               const image = event.currentTarget;
@@ -280,6 +291,9 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
           />
         )}
       </div>
+      {lightboxIndex !== null && (
+        <PhotoLightbox photos={photos} startIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+      )}
       {media.length > 1 && (
         <>
           <span className="mediaCount" aria-live="polite">
