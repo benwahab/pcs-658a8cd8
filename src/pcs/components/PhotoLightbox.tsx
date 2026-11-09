@@ -53,7 +53,7 @@ export function PhotoLightbox({ photos, startIndex, onClose }: { photos: string[
         maxScale={4}
         doubleClick={{ mode: "toggle", step: 1.5 }}
         panning={{ disabled: !zoomed }}
-        onTransformed={(_, s) => setZoomed(s.scale > 1.02)}
+        onTransform={(_, s) => setZoomed(s.scale > 1.02)}
       >
         <TransformComponent wrapperClass="photoLightboxStage" contentClass="photoLightboxContent">
           <img src={photos[index]} alt={`Photo ${index + 1} du signalement`} draggable={false} />
