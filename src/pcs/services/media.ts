@@ -46,7 +46,9 @@ export async function compressCitizenPhoto(file: File): Promise<File> {
   }
 }
 
-const VIDEO_COMPRESS_THRESHOLD_BYTES = 8 * 1024 * 1024;
+// Phone cameras record at 10–20 Mbit/s, far above mobile streaming capacity:
+// re-encode anything above 2 MB so playback never outruns the network.
+const VIDEO_COMPRESS_THRESHOLD_BYTES = 2 * 1024 * 1024;
 const VIDEO_MAX_LONG_SIDE = 1280;
 
 /**
