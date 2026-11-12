@@ -145,14 +145,21 @@ export function Shell({ children }: { children: ReactNode }) {
     });
   }
 
-  function refreshProfessionalMenuTimer() {
+  function pauseProfessionalMenuTimer() {
     if (professionalMenuTimer.current !== undefined) {
       window.clearTimeout(professionalMenuTimer.current);
       professionalMenuTimer.current = undefined;
     }
+  }
+
+  function refreshProfessionalMenuTimer() {
+    pauseProfessionalMenuTimer();
 
     const menu = document.querySelector<HTMLDetailsElement>("details.feedAccessHeader");
     if (!menu?.open) return;
+
+    // On desktop, keep the menu open while the pointer is anywhere over it.
+    if (!isPhoneClient && menu.matches(":hover")) return;
 
     professionalMenuTimer.current = window.setTimeout(() => {
       menu.open = false;
@@ -203,6 +210,12 @@ export function Shell({ children }: { children: ReactNode }) {
             if (menu.open) {
               refreshProfessionalMenuTimer();
             }
+          }}
+          onPointerEnter={() => {
+            if (!isPhoneClient) pauseProfessionalMenuTimer();
+          }}
+          onPointerLeave={() => {
+            if (!isPhoneClient) refreshProfessionalMenuTimer();
           }}
           onPointerDown={(event) => {
             if (event.currentTarget.open) refreshProfessionalMenuTimer();
