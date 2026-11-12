@@ -1485,10 +1485,13 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   min-width: 0;
 }
 .feedAccessSubmenu > summary {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
   min-height: 48px;
   padding: 11px 13px;
   border: 1px solid transparent;
@@ -1496,15 +1499,32 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   color: #f2f7f5;
   cursor: pointer;
   list-style: none;
+  text-align: left;
+  text-decoration: none;
   font-size: .78rem;
   font-weight: 750;
+  letter-spacing: .01em;
+  transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, color .2s ease;
 }
 .feedAccessSubmenu > summary::-webkit-details-marker { display: none; }
+.feedAccessSubmenu > summary > span {
+  margin-left: auto;
+  opacity: .75;
+  transition: transform .2s ease, opacity .2s ease;
+}
+.feedAccessSubmenu[open] > summary > span { transform: rotate(90deg); opacity: 1; }
 .feedAccessSubmenu > summary:hover,
 .feedAccessSubmenu[open] > summary {
+  transform: translateX(4px);
   background: linear-gradient(90deg, #ffffff12, #2f9e5b25);
   border-color: #ffffff22;
+  box-shadow: 0 7px 18px #00000026;
   color: #fff;
+}
+.feedAccessSubmenu > summary:focus-visible {
+  outline: 2px solid #7ee0b6;
+  outline-offset: -2px;
+  background: #ffffff12;
 }
 .feedAccessSubmenu > div {
   position: static;
