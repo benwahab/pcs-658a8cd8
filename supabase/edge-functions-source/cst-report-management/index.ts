@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     if (body?.action === "list") {
       const { data, error } = await admin.from("reports")
-        .select("id,reference_code,title,status,priority,location_label,created_at,archived_at,is_public,report_media(id,media_type,media_role,moderation_status,file_size,created_at)")
+        .select("id,reference_code,title,status,priority,location_label,region_id,regions(name),created_at,archived_at,is_public,report_media(id,media_type,media_role,moderation_status,file_size,created_at)")
         .order("created_at", { ascending: false }).limit(500);
       if (error) throw error;
       return json({ items: data ?? [] });
