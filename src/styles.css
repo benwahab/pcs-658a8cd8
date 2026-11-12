@@ -3554,9 +3554,9 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 
 
 /* Sur le formulaire de signalement, l'accès professionnel reste une icône compacte dans le coin. */
-.feedAccessHeaderCompact summary{width:42px;height:42px;min-width:42px;box-sizing:border-box;justify-content:center;padding:0;border-radius:50%;gap:0}
-.feedAccessHeaderCompact .feedAccessLabel,.feedAccessHeaderCompact .feedAccessChevron{display:none}
-.feedAccessHeaderCompact .feedAccessIcon{width:100%;height:100%;border-radius:50%;background:transparent;font-size:1.2rem}
+.feedAccessHeaderCompact > summary{width:42px;height:42px;min-width:42px;box-sizing:border-box;justify-content:center;padding:0;border-radius:50%;gap:0}
+.feedAccessHeaderCompact > summary > .feedAccessLabel,.feedAccessHeaderCompact > summary > .feedAccessChevron{display:none}
+.feedAccessHeaderCompact > summary > .feedAccessIcon{width:100%;height:100%;border-radius:50%;background:transparent;font-size:1.2rem}
 
 
 /* Sur la connexion Agent terrain, reproduire exactement l'icône compacte de l'accueil. */
@@ -3567,7 +3567,7 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
   z-index: 102;
   margin-left: 0;
 }
-.feedAccessHeaderHomeCompact summary {
+.feedAccessHeaderHomeCompact > summary {
   white-space: nowrap;
   width: 38px;
   height: 38px;
@@ -3578,15 +3578,15 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
   font-size: .8rem;
   overflow: hidden;
 }
-.feedAccessHeaderHomeCompact summary > span:not(.feedAccessIcon) {
+.feedAccessHeaderHomeCompact > summary > span:not(.feedAccessIcon) {
   display: none;
 }
-.feedAccessHeaderHomeCompact[open] summary {
+.feedAccessHeaderHomeCompact[open] > summary {
   width: auto;
   justify-content: flex-start;
   padding: 8px 12px 8px 9px;
 }
-.feedAccessHeaderHomeCompact[open] summary > span:not(.feedAccessIcon) {
+.feedAccessHeaderHomeCompact[open] > summary > span:not(.feedAccessIcon) {
   display: inline;
 }
 .feedAccessHeaderHomeCompact > div {
@@ -3597,18 +3597,18 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
     top: 7px;
     right: 10px;
   }
-  .feedAccessHeaderHomeCompact summary {
+  .feedAccessHeaderHomeCompact > summary {
     width: 34px;
     height: 34px;
     padding: 5px;
     gap: 5px;
   }
-  .feedAccessHeaderHomeCompact[open] summary {
+  .feedAccessHeaderHomeCompact[open] > summary {
     width: min(250px, calc(100vw - 20px));
     padding: 7px 8px;
     font-size: .72rem;
   }
-  .feedAccessHeaderHomeCompact .feedAccessIcon {
+  .feedAccessHeaderHomeCompact > summary > .feedAccessIcon {
     width: 20px;
     height: 20px;
   }
@@ -3617,8 +3617,7 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 
 /* Harmoniser l'apparence de l'icône compacte sur l'accueil et la connexion Agent terrain
    avec celle déjà utilisée sur le formulaire de signalement. */
-.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact summary,
-.feedAccessHeaderHomeCompact.feedAccessHeaderCompact summary {
+.feedAccessHeaderHomeCompact.feedAccessHeaderCompact > summary {
   width: 42px;
   height: 42px;
   min-width: 42px;
@@ -3628,23 +3627,21 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
   border-radius: 50%;
   gap: 0;
 }
-.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact .feedAccessIcon,
-.feedAccessHeaderHomeCompact.feedAccessHeaderCompact .feedAccessIcon {
+.feedAccessHeaderHomeCompact.feedAccessHeaderCompact > summary > .feedAccessIcon {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   background: transparent;
   font-size: 1.2rem;
 }
-.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact summary > span:not(.feedAccessIcon),
-.feedAccessHeaderHomeCompact.feedAccessHeaderCompact summary > span:not(.feedAccessIcon) {
+.feedAccessHeaderHomeCompact.feedAccessHeaderCompact > summary > span:not(.feedAccessIcon) {
   display: none;
 }
 
 /* Accueil PCS : reprendre exactement le style compact du formulaire.
    Seul le positionnement dans l'en-tête reste spécifique à l'accueil. */
-.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact summary,
-.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact[open] summary {
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact > summary,
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact[open] > summary {
   width: 42px;
   min-width: 42px;
   height: 42px;
@@ -3659,14 +3656,14 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
   filter: none;
   overflow: hidden;
 }
-.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact summary:hover,
-.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact[open] summary:hover {
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact > summary:hover,
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact[open] > summary:hover {
   background: linear-gradient(135deg,#4E3A7F,#3E2E68);
   box-shadow: 0 12px 30px #3E2E6866,0 0 0 1px #FFFFFF70 inset;
   transform: translateY(-2px);
   filter: saturate(1.08);
 }
-.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact .feedAccessIcon {
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact > summary > .feedAccessIcon {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -3674,7 +3671,7 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
   background: transparent;
   font-size: 1.2rem;
 }
-.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact summary > span:not(.feedAccessIcon) {
+.app:has(.citizenFeed) > header.feedImmersiveHeader .feedAccessHeaderCompact > summary > span:not(.feedAccessIcon) {
   display: none;
 }
 
