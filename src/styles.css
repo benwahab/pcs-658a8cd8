@@ -3739,3 +3739,18 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .photoLightboxNav.isPrev{left:10px}.photoLightboxNav.isNext{right:10px}
 .photoLightboxCount{position:absolute;z-index:2;top:max(24px,env(safe-area-inset-top));left:18px;color:#fff;font-weight:700;font-size:14px}
 .videoOptimizing{margin:.5rem 0;font-size:.9rem;font-weight:600;color:var(--pcs-green,#1f8a4c)}
+
+
+/* CST — registre des signalements compact, sans aperçu ni détail des médias. */
+.cstRefV2 #report-management .cstReportFilters{display:grid;grid-template-columns:minmax(180px,1fr) minmax(150px,220px) auto;gap:9px;margin-bottom:12px}
+.cstRefV2 #report-management .cstReportList{display:grid;gap:7px}
+.cstRefV2 #report-management .cstReportRow{display:grid;grid-template-columns:minmax(180px,1.1fr) minmax(0,2fr) auto;align-items:center;gap:12px;padding:9px 11px;border:1px solid #e8e5f2;border-radius:10px;background:#fff;min-width:0}
+.cstRefV2 #report-management .cstReportIdentity{display:grid;gap:3px;min-width:0}
+.cstRefV2 #report-management .cstReportIdentity strong{font-size:.76rem;color:#291650}
+.cstRefV2 #report-management .cstReportIdentity span,.cstRefV2 #report-management .cstReportDetails span{font-size:.69rem;color:#625879;overflow-wrap:anywhere}
+.cstRefV2 #report-management .cstReportDetails{display:flex;align-items:center;gap:8px 13px;flex-wrap:wrap;min-width:0}
+.cstRefV2 #report-management .cstReportDetails .cstQueueBadge,.cstRefV2 #report-management .cstReportDetails .cstPendingBadge{padding:3px 7px;font-size:.58rem}
+.cstRefV2 #report-management .cstReportActions{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.cstRefV2 #report-management .cstReportActions .button{min-height:32px;padding:5px 9px;font-size:.65rem}
+@media(max-width:900px){.cstRefV2 #report-management .cstReportRow{grid-template-columns:minmax(0,1fr) auto}.cstRefV2 #report-management .cstReportDetails{grid-column:1/-1;grid-row:2}.cstRefV2 #report-management .cstReportActions{grid-column:2;grid-row:1}}
+@media(max-width:560px){.cstRefV2 #report-management .cstReportFilters{grid-template-columns:1fr 1fr}.cstRefV2 #report-management .cstReportFilters input{grid-column:1/-1}.cstRefV2 #report-management .cstReportActions .button{padding:5px 7px;font-size:.6rem}}
