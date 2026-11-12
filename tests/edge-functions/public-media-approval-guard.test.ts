@@ -45,7 +45,7 @@ describe("public media approval guards", () => {
   it("uses time-limited public media links and renews them before the one-hour expiry", () => {
     expect(mediaService).toContain("expiresIn = 3600");
     expect(mediaService).toContain("createReportMediaUrls(");
-    expect(mediaService).toContain("body: { paths: uniquePaths, expiresIn }");
+    expect(mediaService).toContain("body: { paths: missing, expiresIn }");
     expect(mediaService).toContain("createReportMediaUrl(");
   });
 
