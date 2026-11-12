@@ -220,7 +220,7 @@ export function Shell({ children }: { children: ReactNode }) {
             )}
           </summary>
           <div onPointerDown={refreshProfessionalMenuTimer} onInput={refreshProfessionalMenuTimer} onChange={refreshProfessionalMenuTimer}>
-            {location.pathname === "/" || isPhoneClient ? (
+            {isPhoneClient ? (
               <Link to="/connexion-operationnelle?mode=agent" onClick={closeProfessionalMenu}>👷 Agent terrain</Link>
             ) : (
               <>
