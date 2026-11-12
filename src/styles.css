@@ -2853,6 +2853,54 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
 @media(max-width:1100px){.cstRefV2 .cstRefRow3{grid-template-columns:1fr 1fr}.cstRefV2 .cstRefRow3 .cstTrendPanel{grid-column:1/-1}.cstRefV2 .cstSpacesGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.cstRefLayout{grid-template-columns:1fr!important}}
 @media(max-width:760px){.cstRefV2 .cstRefRow3,.cstRefV2 .cstRefRow2{grid-template-columns:1fr}.cstRefV2 .cstSpacesGrid{grid-template-columns:1fr}.cstRefV2 .cstUtilityBar{margin:0 -12px;padding:9px 12px}.cstRefV2 .cstNavSub{margin-left:8px}.cstTechToggle{width:auto}.cstRefV2 .cstHelpCard .button{margin-left:0}}
 
+/* CST — file de modération : cartes pleine largeur et aperçu média équilibré. */
+.cstRefV2 .cstModerationCard .cstVideoQueue{
+  grid-template-columns:minmax(0,1fr);
+  gap:16px;
+}
+.cstRefV2 .cstModerationCard .cstVideoReview{
+  grid-template-columns:minmax(260px,.9fr) minmax(0,1.1fr);
+  align-items:stretch;
+  gap:22px;
+  padding:18px;
+}
+.cstRefV2 .cstModerationCard .cstVideoPreview{
+  min-width:0;
+  min-height:280px;
+  max-height:440px;
+  background:#211638;
+}
+.cstRefV2 .cstModerationCard .cstVideoPreview img,
+.cstRefV2 .cstModerationCard .cstVideoPreview video{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:280px;
+  max-height:440px;
+  object-fit:contain;
+  background:#211638;
+}
+.cstRefV2 .cstModerationCard .cstVideoMeta{min-width:0}
+.cstRefV2 .cstModerationCard .cstVideoTitle{align-items:flex-start;flex-wrap:wrap}
+.cstRefV2 .cstModerationCard .cstVideoTitle>div{min-width:0;flex:1 1 220px}
+.cstRefV2 .cstModerationCard .cstVideoTitle h3,
+.cstRefV2 .cstModerationCard .cstVideoTitle p,
+.cstRefV2 .cstModerationCard .cstMediaFacts dd{
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+.cstRefV2 .cstModerationCard .cstMediaFacts{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:800px){
+  .cstRefV2 .cstModerationCard .cstVideoReview{grid-template-columns:minmax(0,1fr)}
+  .cstRefV2 .cstModerationCard .cstVideoPreview,
+  .cstRefV2 .cstModerationCard .cstVideoPreview img,
+  .cstRefV2 .cstModerationCard .cstVideoPreview video{min-height:220px;max-height:380px}
+}
+@media(max-width:520px){
+  .cstRefV2 .cstModerationCard .cstVideoReview{padding:12px}
+  .cstRefV2 .cstModerationCard .cstMediaFacts{grid-template-columns:minmax(0,1fr)}
+}
+
 /* CST dashboard — finition : alignements et débordements */
 .cstRefV2 .cstWorkspace>*,.cstRefV2 .cstRefRow3>*,.cstRefV2 .cstRefRow2>*,.cstRefV2 .cstKpiGrid>*,.cstRefV2 .cstSpacesGrid>*,.cstRefV2 .cstRefLayout>*{min-width:0}
 .cstRefV2 .cstWorkspace{overflow-x:hidden}
