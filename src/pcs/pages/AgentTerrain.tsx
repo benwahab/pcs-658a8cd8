@@ -36,6 +36,7 @@ export default function AgentTerrain() {
   const previewRef = useRef<HTMLVideoElement | null>(null),
     previewUrlRef = useRef("");
   const [busy, setBusy] = useState(false);
+  const [videoProgress, setVideoProgress] = useState<number | null>(null);
   const [index, setIndex] = useState(0);
 
   async function logout() {
@@ -303,6 +304,8 @@ export default function AgentTerrain() {
             payload.latitude,
             payload.longitude,
             payload.accuracy,
+            undefined,
+            (ratio) => setVideoProgress(ratio),
           );
           setVideoId(null);
           setVideo(null);
@@ -327,6 +330,7 @@ export default function AgentTerrain() {
             setError(e instanceof Error ? e.message : "Validation impossible");
           }
         } finally {
+          setVideoProgress(null);
           setBusy(false);
         }
       },
@@ -558,7 +562,11 @@ export default function AgentTerrain() {
                           disabled={!video || busy}
                           onClick={() => resolve(m)}
                         >
-                          {busy ? "Envoi…" : "Envoyer la vidéo de résolution"}
+                          {busy
+                            ? videoProgress !== null && videoProgress < 1
+                              ? `Optimisation de la vidéo… ${Math.round(videoProgress * 100)} %`
+                              : "Envoi…"
+                            : "Envoyer la vidéo de résolution"}
                         </button>
                         <button
                           type="button"

@@ -435,6 +435,14 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     // important on mobile/PWA where the feed can scroll inside the app shell
     // instead of the browser viewport.
     const feedRoot = slide.closest<HTMLElement>(".citizenFeed");
+    // A slide is about one screen tall, so a fixed 700px margin only started
+    // loading the next report once the user began to scroll. Look ahead about
+    // 1.5 screens: the next report's media is ready before it is swiped to,
+    // while the report after it still waits.
+    const lookAheadPx = Math.max(
+      700,
+      Math.round((feedRoot?.clientHeight ?? window.innerHeight) * 1.5),
+    );
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
@@ -442,7 +450,7 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
           observer.disconnect();
         }
       },
-      { root: feedRoot ?? null, rootMargin: "700px 0px", threshold: 0 },
+      { root: feedRoot ?? null, rootMargin: `${lookAheadPx}px 0px`, threshold: 0 },
     );
 
     observer.observe(slide);

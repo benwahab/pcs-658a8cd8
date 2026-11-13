@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import { uploadResolutionVideo } from "./media";
+import { compressCitizenVideo, uploadResolutionVideo } from "./media";
 
 export type MairieTransmissionTarget = {
   organization_id: string;
@@ -172,6 +172,7 @@ export async function resolveMissionWithVideo(
   longitude: number,
   accuracyM: number | null,
   note?: string,
+  onCompressProgress?: (ratio: number) => void,
 ) {
   if (!supabase) throw new Error("Supabase non configuré.");
   const {
@@ -197,7 +198,18 @@ export async function resolveMissionWithVideo(
   if (reportError) throw reportError;
   if (!report) throw new Error("Signalement introuvable.");
   if (report.status === "resolved") return true;
-  const mediaId = await uploadResolutionVideo(reportId, video, latitude, longitude, accuracyM);
+  // Re-encode heavy field videos (720p H.264 MP4) so the upload is faster and
+  // the public feed can play them smoothly. Light files, unsupported browsers
+  // and any failure keep the original file; GPS data is passed separately and
+  // is not read from the video file.
+  const optimizedVideo = await compressCitizenVideo(video, onCompressProgress);
+  const mediaId = await uploadResolutionVideo(
+    reportId,
+    optimizedVideo,
+    latitude,
+    longitude,
+    accuracyM,
+  );
   const { data, error } = await supabase.rpc("agent_resolve_report", {
     p_report_id: reportId,
     p_media_id: mediaId,

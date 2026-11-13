@@ -58,4 +58,13 @@ describe("public media approval guards", () => {
     expect(detail).toContain("createReportMediaUrls(approvedMedia.map(m=>m.storage_path))");
     expect(detail).toContain("signedUrls[m.storage_path]");
   });
+
+  it("prepares the next report's media about 1.5 screens ahead of the swipe", () => {
+    expect(home).toContain("const lookAheadPx = Math.max(");
+    expect(home).toContain("* 1.5");
+    expect(home).toContain("rootMargin: `${lookAheadPx}px 0px`");
+    expect(home).not.toContain('rootMargin: "700px 0px"');
+    // The approval check still runs before any media is shown.
+    expect(home).toContain('item.moderation_status === "approved"');
+  });
 });
