@@ -29,18 +29,27 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => null);
     const rawPaths = Array.isArray(body?.paths) ? body.paths : [body?.path];
-    const paths = [...new Set(rawPaths.filter((value: unknown): value is string =>
-      typeof value === "string" && value.trim().length > 0
-    ).map((value: string) => value.trim()))];
+    const paths = [
+      ...new Set(
+        rawPaths
+          .filter(
+            (value: unknown): value is string =>
+              typeof value === "string" && value.trim().length > 0,
+          )
+          .map((value: string) => value.trim()),
+      ),
+    ];
 
     const expiresIn =
       Number.isInteger(body?.expiresIn) && body.expiresIn >= 60 && body.expiresIn <= 3600
         ? body.expiresIn
         : 3600;
 
-    if (!paths.length || paths.length > 20 || paths.some((path) =>
-      path.startsWith("/") || path.includes("..") || path.length > 1024
-    )) {
+    if (
+      !paths.length ||
+      paths.length > 20 ||
+      paths.some((path) => path.startsWith("/") || path.includes("..") || path.length > 1024)
+    ) {
       return json({ error: "Invalid media paths." }, 400);
     }
 
@@ -68,23 +77,29 @@ Deno.serve(async (req) => {
     }
 
     const publicReportIds = new Set(
-      (reports ?? []).filter((report) => report.is_public && !report.archived_at).map((report) => report.id),
+      (reports ?? [])
+        .filter((report) => report.is_public && !report.archived_at)
+        .map((report) => report.id),
     );
     const eligibleByPath = new Map(
-      eligible.filter((media) => publicReportIds.has(media.report_id)).map((media) => [media.storage_path, media]),
+      eligible
+        .filter((media) => publicReportIds.has(media.report_id))
+        .map((media) => [media.storage_path, media]),
     );
 
-    const signedEntries = await Promise.all(paths.map(async (path) => {
-      if (!eligibleByPath.has(path)) return [path, null] as const;
-      const { data: signed, error: signError } = await admin.storage
-        .from("report-media")
-        .createSignedUrl(path, expiresIn);
-      if (signError || !signed?.signedUrl) {
-        console.error("[public-report-media-url] signed URL creation failed", signError);
-        return [path, null] as const;
-      }
-      return [path, signed.signedUrl] as const;
-    }));
+    const signedEntries = await Promise.all(
+      paths.map(async (path) => {
+        if (!eligibleByPath.has(path)) return [path, null] as const;
+        const { data: signed, error: signError } = await admin.storage
+          .from("report-media")
+          .createSignedUrl(path, expiresIn);
+        if (signError || !signed?.signedUrl) {
+          console.error("[public-report-media-url] signed URL creation failed", signError);
+          return [path, null] as const;
+        }
+        return [path, signed.signedUrl] as const;
+      }),
+    );
 
     const signedUrls = Object.fromEntries(signedEntries.filter((entry) => entry[1] !== null));
     if (Array.isArray(body?.paths)) return json({ signedUrls, expiresIn });

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { expectCode } from "../support/code";
 
 const source = readFileSync(
   resolve(process.cwd(), "supabase/edge-functions-source/mairie-create-agent/index.ts"),
@@ -25,18 +26,18 @@ describe("mairie-create-agent phone validation", () => {
 
 describe("mairie-create-agent authorization and identity invariants", () => {
   it("only allows active, approved mairie accounts to create agents", () => {
-    expect(source).toContain('.eq("is_active", true)');
-    expect(source).toContain('.eq("approval_status", "approved")');
+    expectCode(source).toContain('.eq("is_active", true)');
+    expectCode(source).toContain('.eq("approval_status", "approved")');
   });
 
   it("stores the normalized Niger phone used by agent login", () => {
-    expect(source).toContain("phone_normalized: phone");
-    expect(source).toContain('.eq("phone_normalized", phone)');
+    expectCode(source).toContain("phone_normalized: phone");
+    expectCode(source).toContain('.eq("phone_normalized", phone)');
   });
 
   it("removes an inherited citizen role before completing agent provisioning", () => {
-    expect(source).toContain('.eq("code", "citizen")');
-    expect(source).toContain(".delete()");
-    expect(source).toContain("inherited citizen role cleanup failed");
+    expectCode(source).toContain('.eq("code", "citizen")');
+    expectCode(source).toContain(".delete()");
+    expectCode(source).toContain("inherited citizen role cleanup failed");
   });
 });

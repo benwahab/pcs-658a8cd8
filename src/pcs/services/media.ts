@@ -60,7 +60,8 @@ export async function compressCitizenVideo(
   file: File,
   onProgress?: (ratio: number) => void,
 ): Promise<File> {
-  if (file.size <= VIDEO_COMPRESS_THRESHOLD_BYTES || typeof VideoEncoder === "undefined") return file;
+  if (file.size <= VIDEO_COMPRESS_THRESHOLD_BYTES || typeof VideoEncoder === "undefined")
+    return file;
   try {
     const mb = await import("mediabunny");
     if (!(await mb.canEncodeVideo("avc"))) return file;
@@ -71,12 +72,17 @@ export async function compressCitizenVideo(
     const h = track.displayHeight;
     const scale = Math.min(1, VIDEO_MAX_LONG_SIDE / Math.max(w, h));
     const target = new mb.BufferTarget();
-    const output = new mb.Output({ format: new mb.Mp4OutputFormat({ fastStart: "in-memory" }), target });
+    const output = new mb.Output({
+      format: new mb.Mp4OutputFormat({ fastStart: "in-memory" }),
+      target,
+    });
     const conversion = await mb.Conversion.init({
       input,
       output,
       video: {
-        ...(w >= h ? { width: Math.round((w * scale) / 2) * 2 } : { height: Math.round((h * scale) / 2) * 2 }),
+        ...(w >= h
+          ? { width: Math.round((w * scale) / 2) * 2 }
+          : { height: Math.round((h * scale) / 2) * 2 }),
         codec: "avc",
         bitrate: 2_000_000,
       },
@@ -98,11 +104,7 @@ export async function compressCitizenVideo(
 export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
 
 const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp"];
-const ALLOWED_VIDEOS = [
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-] as const;
+const ALLOWED_VIDEOS = ["video/mp4", "video/webm", "video/quicktime"] as const;
 
 const VIDEO_EXTENSIONS: Record<string, string[]> = {
   "video/mp4": ["mp4", "m4v"],
@@ -110,9 +112,7 @@ const VIDEO_EXTENSIONS: Record<string, string[]> = {
   "video/quicktime": ["mov", "qt"],
 };
 
-async function detectVideoContainer(
-  file: File,
-): Promise<"mp4" | "webm" | null> {
+async function detectVideoContainer(file: File): Promise<"mp4" | "webm" | null> {
   const bytes = new Uint8Array(await file.slice(0, 32).arrayBuffer());
 
   if (
@@ -154,26 +154,20 @@ export async function validateCitizenVideo(file: File) {
   const allowedExtensions = VIDEO_EXTENSIONS[file.type] ?? [];
 
   if (!allowedExtensions.includes(extension)) {
-    throw new Error(
-      "L’extension de la vidéo ne correspond pas à son type MIME.",
-    );
+    throw new Error("L’extension de la vidéo ne correspond pas à son type MIME.");
   }
 
   const container = await detectVideoContainer(file);
 
   if (!container) {
-    throw new Error(
-      "Le fichier vidéo n’est pas reconnu comme un conteneur MP4/WebM valide.",
-    );
+    throw new Error("Le fichier vidéo n’est pas reconnu comme un conteneur MP4/WebM valide.");
   }
 
   if (
     (file.type === "video/webm" && container !== "webm") ||
     (file.type !== "video/webm" && container !== "mp4")
   ) {
-    throw new Error(
-      "Le contenu réel de la vidéo ne correspond pas à son type déclaré.",
-    );
+    throw new Error("Le contenu réel de la vidéo ne correspond pas à son type déclaré.");
   }
 
   return { container };
@@ -224,10 +218,7 @@ export function forgetReportMediaUrl(path: string) {
   signedUrlCache.delete(path);
 }
 
-export async function createReportMediaUrl(
-  path: string,
-  expiresIn = 3600,
-): Promise<string> {
+export async function createReportMediaUrl(path: string, expiresIn = 3600): Promise<string> {
   // Called to renew a failed URL: never return the cached (failed) one.
   forgetReportMediaUrl(path);
   const urls = await createReportMediaUrls([path], expiresIn);
@@ -262,20 +253,24 @@ export async function uploadResolutionVideo(
     throw new Error("La précision GPS doit être de 20 mètres ou moins.");
   }
 
-  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+  if (
+    !Number.isFinite(latitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    !Number.isFinite(longitude) ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
     throw new Error("Coordonnées GPS invalides.");
   }
 
   const extension = file.name.split(".").pop()?.toLowerCase() || "mp4";
-  const path =
-    reportId + "/resolution-" + crypto.randomUUID() + "." + extension;
+  const path = reportId + "/resolution-" + crypto.randomUUID() + "." + extension;
 
-  const { error } = await supabase.storage
-    .from("report-media")
-    .upload(path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
+  const { error } = await supabase.storage.from("report-media").upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  });
 
   if (error) throw error;
 

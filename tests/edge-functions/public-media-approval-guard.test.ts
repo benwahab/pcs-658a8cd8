@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { expectCode } from "../support/code";
 
 const readSource = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
@@ -11,60 +12,64 @@ describe("public media approval guards", () => {
   const mediaCarousel = readSource("src/pcs/components/MediaCarousel.tsx");
 
   it("requires explicit approval before media enters the public home feed", () => {
-    expect(home).toContain('item.moderation_status === "approved"');
-    expect(home).toContain("<MediaCarousel media={media} onMediaError={refreshFailedMediaUrl} />");
-    expect(home).toContain("// Clear the previous slide's media before loading this report.");
-    expect(home).toContain("setMedia([]);\n    let cancelled = false;");
-    expect(home).not.toContain("mediaCarouselPlaceholder");
+    expectCode(home).toContain('item.moderation_status === "approved"');
+    expectCode(home).toContain(
+      "<MediaCarousel media={media} onMediaError={refreshFailedMediaUrl} />",
+    );
+    expectCode(home).toContain("// Clear the previous slide's media before loading this report.");
+    expectCode(home).toContain("setMedia([]);\n    let cancelled = false;");
+    expectCode(home).not.toContain("mediaCarouselPlaceholder");
   });
 
   it("preserves horizontal media navigation instead of resetting each swipe", () => {
-    expect(mediaCarousel).toContain("Including activeIndex here would reset every swipe");
-    expect(mediaCarousel).toContain("  }, [media]);");
-    expect(mediaCarousel).not.toContain("  }, [media, activeIndex]);");
-    expect(mediaCarousel).toContain('loading={safeIndex === 0 ? "eager" : "lazy"}');
-    expect(mediaCarousel).toContain('fetchPriority={safeIndex === 0 ? "high" : "auto"}');
+    expectCode(mediaCarousel).toContain("Including activeIndex here would reset every swipe");
+    expectCode(mediaCarousel).toContain("  }, [media]);");
+    expectCode(mediaCarousel).not.toContain("  }, [media, activeIndex]);");
+    expectCode(mediaCarousel).toContain('loading={safeIndex === 0 ? "eager" : "lazy"}');
+    expectCode(mediaCarousel).toContain('fetchPriority={safeIndex === 0 ? "high" : "auto"}');
   });
 
   it("renews only a failed media URL through the approval-checking service", () => {
-    expect(home).toContain(
+    expectCode(home).toContain(
       "const refreshFailedMediaUrl = async (mediaId: string, failedUrl: string) =>",
     );
-    expect(home).toContain("current.url !== failedUrl");
-    expect(home).toContain("mediaUrlRefreshInFlight.current.has(mediaId)");
-    expect(home).toContain("createReportMediaUrl(current.storage_path)");
-    expect(mediaCarousel).toContain("onError={() => onError?.(src)}");
-    expect(mediaCarousel).toContain("onMediaError?.(item.id, failedUrl)");
+    expectCode(home).toContain("current.url !== failedUrl");
+    expectCode(home).toContain("mediaUrlRefreshInFlight.current.has(mediaId)");
+    expectCode(home).toContain("createReportMediaUrl(current.storage_path)");
+    expectCode(mediaCarousel).toContain("onError={() => onError?.(src)}");
+    expectCode(mediaCarousel).toContain("onMediaError?.(item.id, failedUrl)");
   });
 
   it("avoids autoplay and eager video buffering on 3G connections", () => {
-    expect(mediaCarousel).toContain('effectiveType !== "3g"');
-    expect(mediaCarousel).toContain(
+    expectCode(mediaCarousel).toContain('effectiveType !== "3g"');
+    expectCode(mediaCarousel).toContain(
       'video.preload = slowNetwork && !autoplayAllowed ? "metadata" : "auto";',
     );
-    expect(mediaCarousel).toContain('video.preload = "auto";');
+    expectCode(mediaCarousel).toContain('video.preload = "auto";');
   });
 
   it("uses time-limited public media links and renews them before the one-hour expiry", () => {
-    expect(mediaService).toContain("expiresIn = 3600");
-    expect(mediaService).toContain("createReportMediaUrls(");
-    expect(mediaService).toContain("body: { paths: missing, expiresIn }");
-    expect(mediaService).toContain("createReportMediaUrl(");
+    expectCode(mediaService).toContain("expiresIn = 3600");
+    expectCode(mediaService).toContain("createReportMediaUrls(");
+    expectCode(mediaService).toContain("body: { paths: missing, expiresIn }");
+    expectCode(mediaService).toContain("createReportMediaUrl(");
   });
 
   it("requires explicit approval before media enters public report details", () => {
-    expect(detail).toContain('select("id,storage_path,media_role,media_type,moderation_status")');
-    expect(detail).toContain('m.moderation_status==="approved"');
-    expect(detail).toContain("createReportMediaUrls(approvedMedia.map(m=>m.storage_path))");
-    expect(detail).toContain("signedUrls[m.storage_path]");
+    expectCode(detail).toContain(
+      'select("id,storage_path,media_role,media_type,moderation_status")',
+    );
+    expectCode(detail).toContain('m.moderation_status==="approved"');
+    expectCode(detail).toContain("createReportMediaUrls(approvedMedia.map(m=>m.storage_path))");
+    expectCode(detail).toContain("signedUrls[m.storage_path]");
   });
 
   it("prepares the next report's media about 1.5 screens ahead of the swipe", () => {
-    expect(home).toContain("const lookAheadPx = Math.max(");
-    expect(home).toContain("* 1.5");
-    expect(home).toContain("rootMargin: `${lookAheadPx}px 0px`");
-    expect(home).not.toContain('rootMargin: "700px 0px"');
+    expectCode(home).toContain("const lookAheadPx = Math.max(");
+    expectCode(home).toContain("* 1.5");
+    expectCode(home).toContain("rootMargin: `${lookAheadPx}px 0px`");
+    expectCode(home).not.toContain('rootMargin: "700px 0px"');
     // The approval check still runs before any media is shown.
-    expect(home).toContain('item.moderation_status === "approved"');
+    expectCode(home).toContain('item.moderation_status === "approved"');
   });
 });

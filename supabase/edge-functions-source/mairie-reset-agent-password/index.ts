@@ -5,7 +5,7 @@ const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Vary": "Origin",
+  Vary: "Origin",
 };
 
 const json = (body: unknown, status = 200) =>
@@ -21,13 +21,20 @@ Deno.serve(async (req: Request) => {
   try {
     const url = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!url || !serviceRoleKey) return json({ error: "Configuration du service indisponible." }, 500);
+    if (!url || !serviceRoleKey)
+      return json({ error: "Configuration du service indisponible." }, 500);
 
-    const token = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
+    const token = req.headers
+      .get("authorization")
+      ?.replace(/^Bearer\s+/i, "")
+      .trim();
     if (!token) return json({ error: "Session requise." }, 401);
 
     const admin = createClient(url, serviceRoleKey);
-    const { data: { user }, error: authError } = await admin.auth.getUser(token);
+    const {
+      data: { user },
+      error: authError,
+    } = await admin.auth.getUser(token);
     if (authError || !user) return json({ error: "Session invalide." }, 401);
 
     const { data: mairie, error: mairieError } = await admin
@@ -52,7 +59,8 @@ Deno.serve(async (req: Request) => {
 
     const agentId = typeof body.agent_id === "string" ? body.agent_id.trim() : "";
     const password = typeof body.password === "string" ? body.password : "";
-    if (!agentId || !password) return json({ error: "Agent et nouveau mot de passe obligatoires." }, 400);
+    if (!agentId || !password)
+      return json({ error: "Agent et nouveau mot de passe obligatoires." }, 400);
     if (password.length < 8 || password.length > 128) {
       return json({ error: "Le mot de passe doit contenir entre 8 et 128 caractères." }, 400);
     }
@@ -69,7 +77,9 @@ Deno.serve(async (req: Request) => {
     }
     if (!agent) return json({ error: "Cet agent n'appartient pas à votre mairie." }, 404);
 
-    const { error: updateError } = await admin.auth.admin.updateUserById(agent.user_id, { password });
+    const { error: updateError } = await admin.auth.admin.updateUserById(agent.user_id, {
+      password,
+    });
     if (updateError) {
       console.error("mairie-reset-agent-password: password update failed", updateError.message);
       return json({ error: "La réinitialisation du mot de passe a échoué." }, 500);
@@ -77,7 +87,10 @@ Deno.serve(async (req: Request) => {
 
     return json({ success: true });
   } catch (error) {
-    console.error("mairie-reset-agent-password: unexpected error", error instanceof Error ? error.message : error);
+    console.error(
+      "mairie-reset-agent-password: unexpected error",
+      error instanceof Error ? error.message : error,
+    );
     return json({ error: "Une erreur interne est survenue." }, 500);
   }
 });

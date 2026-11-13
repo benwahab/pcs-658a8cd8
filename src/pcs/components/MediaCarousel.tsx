@@ -10,7 +10,15 @@ type MediaItem = {
 
 let activeFeedVideo: HTMLVideoElement | null = null;
 
-function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string; onError?: (failedUrl: string) => void }) {
+function LazyFeedVideo({
+  src,
+  poster,
+  onError,
+}: {
+  src: string;
+  poster?: string;
+  onError?: (failedUrl: string) => void;
+}) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
   const [buffering, setBuffering] = useState(false);
@@ -32,10 +40,7 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
     // 3G uses a conservative mode to avoid pulling large videos too early.
     // 4G/5G/Wi-Fi are treated as normal, while still loading only the active item.
     const slowNetwork =
-      saveData ||
-      effectiveType === "slow-2g" ||
-      effectiveType === "2g" ||
-      effectiveType === "3g";
+      saveData || effectiveType === "slow-2g" || effectiveType === "2g" || effectiveType === "3g";
 
     // Avoid automatic playback and full-file preloading on 3G as well.
     // Citizens can still start playback manually; on that explicit action,
@@ -99,10 +104,9 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
       stopOtherFeedVideos();
       activeFeedVideo = video;
 
-      void video.play()
-        .catch(() => {
-          // Native video controls remain available when autoplay is refused.
-        });
+      void video.play().catch(() => {
+        // Native video controls remain available when autoplay is refused.
+      });
     };
 
     const onReady = () => {
@@ -164,9 +168,15 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
       <video
         ref={ref}
         onWaiting={() => setBuffering(true)}
-        onPlaying={() => { setBuffering(false); setPaused(false); }}
+        onPlaying={() => {
+          setBuffering(false);
+          setPaused(false);
+        }}
         onCanPlay={() => setBuffering(false)}
-        onPause={() => { setPaused(true); setBuffering(false); }}
+        onPause={() => {
+          setPaused(true);
+          setBuffering(false);
+        }}
         onError={() => onError?.(src)}
         src={src}
         poster={poster}
@@ -181,7 +191,14 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
       />
       {buffering && <span className="feedVideoSpinner" aria-hidden="true" />}
       {paused && !buffering && !autoplayAllowed && (
-        <button type="button" className="videoPlayFallback" aria-label="Lire la vidéo" onClick={() => { void ref.current?.play().catch(() => undefined); }}>
+        <button
+          type="button"
+          className="videoPlayFallback"
+          aria-label="Lire la vidéo"
+          onClick={() => {
+            void ref.current?.play().catch(() => undefined);
+          }}
+        >
           <span>▶</span>
         </button>
       )}
@@ -189,7 +206,13 @@ function LazyFeedVideo({ src, poster, onError }: { src: string; poster?: string;
   );
 }
 
-export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onMediaError?: (mediaId: string, failedUrl: string) => void }) {
+export function MediaCarousel({
+  media,
+  onMediaError,
+}: {
+  media: MediaItem[];
+  onMediaError?: (mediaId: string, failedUrl: string) => void;
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [imageReady, setImageReady] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -221,13 +244,10 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
 
   const safeIndex = Math.min(activeIndex, media.length - 1);
   const item = media[safeIndex];
-  const isVideo =
-    item.media_type?.startsWith("video") ||
-    item.media_role === "resolution_video";
+  const isVideo = item.media_type?.startsWith("video") || item.media_role === "resolution_video";
   const poster = media.find(
     (candidate) =>
-      !candidate.media_type?.startsWith("video") &&
-      candidate.media_role !== "resolution_video",
+      !candidate.media_type?.startsWith("video") && candidate.media_role !== "resolution_video",
   )?.url;
 
   const photos = media
@@ -235,9 +255,7 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
     .map((m) => m.url);
 
   const changeSlide = (direction: -1 | 1) => {
-    setActiveIndex((current) =>
-      Math.max(0, Math.min(media.length - 1, current + direction)),
-    );
+    setActiveIndex((current) => Math.max(0, Math.min(media.length - 1, current + direction)));
   };
 
   return (
@@ -266,7 +284,11 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
     >
       <div className="mediaCarouselItem" key={item.id}>
         {isVideo ? (
-          <LazyFeedVideo src={item.url} poster={poster} onError={(failedUrl) => onMediaError?.(item.id, failedUrl)} />
+          <LazyFeedVideo
+            src={item.url}
+            poster={poster}
+            onError={(failedUrl) => onMediaError?.(item.id, failedUrl)}
+          />
         ) : (
           <img
             className={`citizenFeedMediaImage${imageReady ? " mediaImageReady" : " mediaImageLoading"}`}
@@ -282,7 +304,10 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
             fetchPriority={safeIndex === 0 ? "high" : "auto"}
             onLoad={(event) => {
               const image = event.currentTarget;
-              void image.decode().catch(() => undefined).finally(() => setImageReady(true));
+              void image
+                .decode()
+                .catch(() => undefined)
+                .finally(() => setImageReady(true));
             }}
             onError={() => {
               setImageReady(true);
@@ -292,7 +317,11 @@ export function MediaCarousel({ media, onMediaError }: { media: MediaItem[]; onM
         )}
       </div>
       {lightboxIndex !== null && (
-        <PhotoLightbox photos={photos} startIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
+        <PhotoLightbox
+          photos={photos}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
       )}
       {media.length > 1 && (
         <>

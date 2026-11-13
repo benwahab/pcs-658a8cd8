@@ -100,14 +100,12 @@ export async function assignReport(
       .eq("id", existing[0].id);
     if (error) throw error;
   }
-  const { error } = await supabase
-    .from("report_assignments")
-    .insert({
-      report_id: reportId,
-      department_id: departmentId,
-      agent_id: agentId ?? null,
-      assigned_by: user.id,
-    });
+  const { error } = await supabase.from("report_assignments").insert({
+    report_id: reportId,
+    department_id: departmentId,
+    agent_id: agentId ?? null,
+    assigned_by: user.id,
+  });
   if (error) throw error;
   const { error: updateError } = await supabase
     .from("reports")

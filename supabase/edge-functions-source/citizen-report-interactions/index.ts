@@ -3,7 +3,8 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-api-version",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-api-version",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const json = (body: unknown, status = 200) =>
@@ -13,8 +14,10 @@ const json = (body: unknown, status = 200) =>
   });
 
 function isUuid(value: unknown): value is string {
-  return typeof value === "string" &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  );
 }
 
 async function hashRateKey(value: string, pepper: string): Promise<string> {
@@ -41,7 +44,10 @@ async function consumeRateLimit(
     p_window_seconds: windowSeconds,
   });
   if (error || typeof data !== "boolean") {
-    console.error("citizen-report-interactions rate limiter unavailable", error?.message ?? "invalid result");
+    console.error(
+      "citizen-report-interactions rate limiter unavailable",
+      error?.message ?? "invalid result",
+    );
     throw new Error("Rate limiter unavailable");
   }
   return data;
@@ -53,7 +59,8 @@ Deno.serve(async (req: Request) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!supabaseUrl || !serviceKey) return json({ error: "Service temporairement indisponible." }, 503);
+  if (!supabaseUrl || !serviceKey)
+    return json({ error: "Service temporairement indisponible." }, 503);
 
   // Supabase's API gateway is Cloudflare-backed. Do not trust a caller-supplied
   // X-Forwarded-For value for security decisions; use the gateway IP header only.
@@ -85,9 +92,12 @@ Deno.serve(async (req: Request) => {
     if (action === "comment") {
       const visitorToken = payload.visitor_token;
       const body = typeof payload.body === "string" ? payload.body.trim() : "";
-      const displayName = payload.display_name === null || payload.display_name === undefined
-        ? null
-        : typeof payload.display_name === "string" ? payload.display_name.trim() : "";
+      const displayName =
+        payload.display_name === null || payload.display_name === undefined
+          ? null
+          : typeof payload.display_name === "string"
+            ? payload.display_name.trim()
+            : "";
       if (!isUuid(visitorToken)) return json({ error: "Identifiant citoyen invalide." }, 400);
       if (body.length < 2 || body.length > 1000) {
         return json({ error: "Le commentaire doit contenir entre 2 et 1 000 caractères." }, 400);
@@ -98,9 +108,17 @@ Deno.serve(async (req: Request) => {
 
       // 20 comments/hour per IP, in addition to the existing 5/hour browser-token limit.
       const allowed = await consumeRateLimit(
-        admin, serviceKey, `citizen-comment|${clientIp}`, 20, 3600,
+        admin,
+        serviceKey,
+        `citizen-comment|${clientIp}`,
+        20,
+        3600,
       );
-      if (!allowed) return json({ error: "Trop de commentaires depuis cette connexion. Réessayez plus tard." }, 429);
+      if (!allowed)
+        return json(
+          { error: "Trop de commentaires depuis cette connexion. Réessayez plus tard." },
+          429,
+        );
 
       const { data, error } = await admin.rpc("submit_public_report_comment", {
         p_report_id: reportId,
@@ -109,7 +127,11 @@ Deno.serve(async (req: Request) => {
         p_visitor_token: visitorToken,
       });
       if (error) {
-        if (error.code === "P0001") return json({ error: "La limite de commentaires est atteinte. Réessayez plus tard." }, 429);
+        if (error.code === "P0001")
+          return json(
+            { error: "La limite de commentaires est atteinte. Réessayez plus tard." },
+            429,
+          );
         if (error.code === "P0002") return json({ error: "Signalement public introuvable." }, 404);
         if (error.code === "22023") return json({ error: "Commentaire invalide." }, 400);
         console.error("citizen-report-interactions comment RPC", error);
@@ -124,13 +146,26 @@ Deno.serve(async (req: Request) => {
 
       // Global and per-report limits stop token rotation and rapid counter manipulation.
       const globalAllowed = await consumeRateLimit(
-        admin, serviceKey, `citizen-confirmation|${clientIp}`, 120, 3600,
+        admin,
+        serviceKey,
+        `citizen-confirmation|${clientIp}`,
+        120,
+        3600,
       );
-      if (!globalAllowed) return json({ error: "Trop de confirmations depuis cette connexion. Réessayez plus tard." }, 429);
+      if (!globalAllowed)
+        return json(
+          { error: "Trop de confirmations depuis cette connexion. Réessayez plus tard." },
+          429,
+        );
       const reportAllowed = await consumeRateLimit(
-        admin, serviceKey, `citizen-confirmation|${clientIp}|${reportId}`, 10, 3600,
+        admin,
+        serviceKey,
+        `citizen-confirmation|${clientIp}|${reportId}`,
+        10,
+        3600,
       );
-      if (!reportAllowed) return json({ error: "Trop de changements sur ce signalement. Réessayez plus tard." }, 429);
+      if (!reportAllowed)
+        return json({ error: "Trop de changements sur ce signalement. Réessayez plus tard." }, 429);
 
       const { data, error } = await admin.rpc("toggle_public_report_confirmation", {
         p_report_id: reportId,

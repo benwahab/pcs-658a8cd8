@@ -3,9 +3,10 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-retry-count, x-pcs-trace-id, traceparent, tracestate, baggage",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-retry-count, x-pcs-trace-id, traceparent, tracestate, baggage",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Vary": "Origin",
+  Vary: "Origin",
 };
 
 const json = (body: unknown, status = 200) =>
@@ -14,7 +15,13 @@ const json = (body: unknown, status = 200) =>
     headers: { ...cors, "Content-Type": "application/json; charset=utf-8" },
   });
 
-const normalizePhone = (v: string) => { const cleaned = v.replace(/[^0-9+]/g, "").trim(); const digits = cleaned.replace(/\D/g, ""); if (digits.length === 8) return "+227" + digits; if (digits.length === 11 && digits.startsWith("227")) return "+" + digits; return cleaned; };
+const normalizePhone = (v: string) => {
+  const cleaned = v.replace(/[^0-9+]/g, "").trim();
+  const digits = cleaned.replace(/\D/g, "");
+  if (digits.length === 8) return "+227" + digits;
+  if (digits.length === 11 && digits.startsWith("227")) return "+" + digits;
+  return cleaned;
+};
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -32,11 +39,17 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Configuration du service indisponible." }, 500);
     }
 
-    const token = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
+    const token = req.headers
+      .get("authorization")
+      ?.replace(/^Bearer\s+/i, "")
+      .trim();
     if (!token) return json({ error: "Session requise" }, 401);
 
     const db = createClient(url, key);
-    const { data: { user }, error: userError } = await db.auth.getUser(token);
+    const {
+      data: { user },
+      error: userError,
+    } = await db.auth.getUser(token);
     if (userError || !user) return json({ error: "Session invalide" }, 401);
 
     const { data: mairie, error: mairieError } = await db
@@ -85,7 +98,13 @@ Deno.serve(async (req: Request) => {
     if (!firstName || !lastName || !matricule || !qualification || !phone) {
       return json({ error: "Vérifiez les champs obligatoires." }, 400);
     }
-    if (firstName.length > 100 || lastName.length > 100 || matricule.length > 80 || qualification.length > 120 || phone.length > 30) {
+    if (
+      firstName.length > 100 ||
+      lastName.length > 100 ||
+      matricule.length > 80 ||
+      qualification.length > 120 ||
+      phone.length > 30
+    ) {
       return json({ error: "Un ou plusieurs champs dépassent la longueur autorisée." }, 400);
     }
 
@@ -99,7 +118,8 @@ Deno.serve(async (req: Request) => {
       console.error("mairie-create-agent: phone check failed", phoneError.message);
       return json({ error: "Impossible de vérifier le numéro de téléphone." }, 500);
     }
-    if (phoneDup) return json({ error: "Ce numéro de téléphone est déjà utilisé par un agent actif." }, 409);
+    if (phoneDup)
+      return json({ error: "Ce numéro de téléphone est déjà utilisé par un agent actif." }, 409);
 
     const { data: dup, error: matriculeError } = await db
       .from("field_agents")
@@ -185,7 +205,10 @@ Deno.serve(async (req: Request) => {
         .eq("role_id", citizenRole.id);
       if (citizenRoleError) {
         await rollbackUser();
-        console.error("mairie-create-agent: inherited citizen role cleanup failed", citizenRoleError.message);
+        console.error(
+          "mairie-create-agent: inherited citizen role cleanup failed",
+          citizenRoleError.message,
+        );
         return json({ error: "Finalisation des permissions agent impossible." }, 400);
       }
     }

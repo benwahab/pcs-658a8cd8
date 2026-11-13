@@ -6,3 +6,6 @@ pnpm-lock.yaml
 package-lock.json
 bun.lock
 routeTree.gen.ts
+
+# Service worker volontairement compact (cf. tests/pwa/service-worker.test.ts)
+public/sw.js

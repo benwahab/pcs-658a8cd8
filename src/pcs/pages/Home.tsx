@@ -15,16 +15,45 @@ import { createReportMediaUrl, createReportMediaUrls } from "../services/media";
 import BrandLogo from "../components/BrandLogo";
 import introArtAsset from "@/assets/pcs-hero.webp.asset.json";
 import { MediaCarousel } from "../components/MediaCarousel";
-import { AlertCircle, CheckCircle2, Flag, Home as HomeIcon, MessageCircle, Share2 } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Flag,
+  Home as HomeIcon,
+  MessageCircle,
+  Share2,
+} from "lucide-react";
 
-async function sharePublicReport(report: PublicReport, onFallbackMessage: (message: string) => void): Promise<boolean> {
+async function sharePublicReport(
+  report: PublicReport,
+  onFallbackMessage: (message: string) => void,
+): Promise<boolean> {
   if (!report.id) return false;
-  const url = new URL(`/signalement/${encodeURIComponent(report.id)}`, window.location.origin).toString();
-  const shareData = { title: report.title ? `${report.title} — PCS` : "Signalement citoyen — PCS", text: "Consultez ce signalement citoyen sur PCS.", url };
+  const url = new URL(
+    `/signalement/${encodeURIComponent(report.id)}`,
+    window.location.origin,
+  ).toString();
+  const shareData = {
+    title: report.title ? `${report.title} — PCS` : "Signalement citoyen — PCS",
+    text: "Consultez ce signalement citoyen sur PCS.",
+    url,
+  };
   try {
-    if (typeof navigator.share === "function" && (!navigator.canShare || navigator.canShare(shareData))) { await navigator.share(shareData); return true; }
-    if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(url); onFallbackMessage("Lien du signalement copié."); return true; }
-  } catch (error) { if (error instanceof DOMException && error.name === "AbortError") return false; }
+    if (
+      typeof navigator.share === "function" &&
+      (!navigator.canShare || navigator.canShare(shareData))
+    ) {
+      await navigator.share(shareData);
+      return true;
+    }
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      onFallbackMessage("Lien du signalement copié.");
+      return true;
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") return false;
+  }
   onFallbackMessage(`Lien du signalement : ${url}`);
   return false;
 }
@@ -54,15 +83,19 @@ export default function Home() {
         if (active) {
           // Exclude the two empty test-video publications from the home feed entirely.
           // Keep the underlying reports and the separate photo on the 30 September report intact.
-          const hiddenTestReportRefs = new Set([
-            "PCS-20261002-7A2D729F",
-            "PCS-20261001-F32BB56F",
-          ]);
-          setReports(nextReports.filter((report) => !hiddenTestReportRefs.has(report.reference_code ?? "")));
+          const hiddenTestReportRefs = new Set(["PCS-20261002-7A2D729F", "PCS-20261001-F32BB56F"]);
+          setReports(
+            nextReports.filter((report) => !hiddenTestReportRefs.has(report.reference_code ?? "")),
+          );
           setError("");
         }
       } catch (error) {
-        if (active) setError(error instanceof Error ? error.message : "Impossible de charger les signalements publics.");
+        if (active)
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Impossible de charger les signalements publics.",
+          );
       } finally {
         inFlight = false;
         if (active) setLoading(false);
@@ -215,7 +248,9 @@ export default function Home() {
     // discoverability hint from ever appearing on phones. A real swipe still
     // produces touchmove/scroll and cancels the hint.
     const cancelEvents = ["touchmove", "wheel"] as const;
-    cancelEvents.forEach((eventName) => feed.addEventListener(eventName, cancelScrollHint, { passive: true }));
+    cancelEvents.forEach((eventName) =>
+      feed.addEventListener(eventName, cancelScrollHint, { passive: true }),
+    );
     return () => {
       window.removeEventListener("pcs-home-reset", resetHomePosition);
       feed.removeEventListener("scroll", onScroll);
@@ -281,11 +316,11 @@ export default function Home() {
         <div className="feedTabs">
           <span className="active">Tous les signalements</span>
         </div>
-
-
       </div>
 
-      <article className={`citizenSlide citizenSlideIntro${introFirstVisit ? " introFirstVisit" : ""}`}>
+      <article
+        className={`citizenSlide citizenSlideIntro${introFirstVisit ? " introFirstVisit" : ""}`}
+      >
         <div
           className="introArt"
           aria-hidden="true"
@@ -293,15 +328,24 @@ export default function Home() {
         />
         <div className="introScrim" aria-hidden="true" />
         <div className="slideContent">
-          <p className="eyebrow feedEyebrow" style={{ color: "#FFFFFF", WebkitTextFillColor: "#FFFFFF", textShadow: "0 2px 5px rgba(0,0,0,.72)" }}>PLATEFORME CITOYENNE</p>
+          <p
+            className="eyebrow feedEyebrow"
+            style={{
+              color: "#FFFFFF",
+              WebkitTextFillColor: "#FFFFFF",
+              textShadow: "0 2px 5px rgba(0,0,0,.72)",
+            }}
+          >
+            PLATEFORME CITOYENNE
+          </p>
           <h1>
             Les problèmes publics,
             <br />
             <strong>visibles et suivis.</strong>
           </h1>
           <p>
-            Parcourez les signalements publiés dans tout le Niger, suivez leur
-            évolution et consultez les résolutions.
+            Parcourez les signalements publiés dans tout le Niger, suivez leur évolution et
+            consultez les résolutions.
           </p>
           <div className="feedActions">
             <Link
@@ -309,7 +353,12 @@ export default function Home() {
               data-pcs-tour="create-report"
               to="/signaler"
               onClick={() => {
-                try { window.sessionStorage.setItem("pcs-report-return-v1", JSON.stringify({ type: "home" })); } catch {}
+                try {
+                  window.sessionStorage.setItem(
+                    "pcs-report-return-v1",
+                    JSON.stringify({ type: "home" }),
+                  );
+                } catch {}
               }}
             >
               ＋ Signaler un problème
@@ -318,10 +367,7 @@ export default function Home() {
         </div>
       </article>
 
-      <div
-        className={`citizenSwipeHint${showSwipeHint ? " isVisible" : ""}`}
-        aria-hidden="true"
-      >
+      <div className={`citizenSwipeHint${showSwipeHint ? " isVisible" : ""}`} aria-hidden="true">
         <span className="citizenSwipeHintIcon">
           <span className="citizenSwipeHintDot" />
           <span className="citizenSwipeHintArrow">↑</span>
@@ -349,9 +395,7 @@ export default function Home() {
         <article className="citizenSlide">
           <div className="slideContent">
             <h2>Aucun signalement public pour le moment.</h2>
-            <p>
-              Les signalements publiés apparaîtront ici au fur et à mesure.
-            </p>
+            <p>Les signalements publiés apparaîtront ici au fur et à mesure.</p>
           </div>
         </article>
       )}
@@ -371,7 +415,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   const [mediaRefresh, setMediaRefresh] = useState(0);
   const [visitorToken, setVisitorToken] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
-  const [publicComments, setPublicComments] = useState<{ id: string; display_name: string | null; body: string; created_at: string }[]>([]);
+  const [publicComments, setPublicComments] = useState<
+    { id: string; display_name: string | null; body: string; created_at: string }[]
+  >([]);
   const [confirmationCount, setConfirmationCount] = useState(0);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
@@ -384,16 +430,23 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
 
   const refreshFailedMediaUrl = async (mediaId: string, failedUrl: string) => {
     const current = media.find((item) => item.id === mediaId);
-    if (!current?.storage_path || current.url !== failedUrl || mediaUrlRefreshInFlight.current.has(mediaId)) return;
+    if (
+      !current?.storage_path ||
+      current.url !== failedUrl ||
+      mediaUrlRefreshInFlight.current.has(mediaId)
+    )
+      return;
 
     mediaUrlRefreshInFlight.current.add(mediaId);
     try {
       // Renew only the failed attachment. The server rechecks public visibility
       // and approval before issuing a fresh short-lived URL.
       const signedUrl = await createReportMediaUrl(current.storage_path);
-      setMedia((items) => items.map((item) =>
-        item.id === mediaId && item.url === failedUrl ? { ...item, url: signedUrl } : item
-      ));
+      setMedia((items) =>
+        items.map((item) =>
+          item.id === mediaId && item.url === failedUrl ? { ...item, url: signedUrl } : item,
+        ),
+      );
     } catch {
       // Keep the rest of the report's media available if renewal fails.
     } finally {
@@ -496,13 +549,17 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         const urls = publicEvidence.flatMap((item) => {
           const path = item.storage_path as string;
           const url = signedUrls[path];
-          return url ? [{
-            id: item.id as string,
-            storage_path: path,
-            url,
-            media_role: item.media_role ?? "citizen_evidence",
-            media_type: item.media_type ?? "image",
-          }] : [];
+          return url
+            ? [
+                {
+                  id: item.id as string,
+                  storage_path: path,
+                  url,
+                  media_role: item.media_role ?? "citizen_evidence",
+                  media_type: item.media_type ?? "image",
+                },
+              ]
+            : [];
         });
 
         if (!cancelled) {
@@ -512,7 +569,8 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
               // resolution video at the end of the same horizontal carousel.
               const aIsResolution = a.media_role === "resolution_video";
               const bIsResolution = b.media_role === "resolution_video";
-              if (aIsResolution !== bIsResolution) return Number(aIsResolution) - Number(bIsResolution);
+              if (aIsResolution !== bIsResolution)
+                return Number(aIsResolution) - Number(bIsResolution);
               const aIsVideo = a.media_type.startsWith("video");
               const bIsVideo = b.media_type.startsWith("video");
               return Number(bIsVideo) - Number(aIsVideo);
@@ -529,12 +587,14 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     };
   }, [mediaReady, mediaRefresh, report.id]);
 
-
   useEffect(() => {
     if (!report.id) return;
     try {
-      const storedShareCount = Number(window.localStorage.getItem(`pcs-share-count:${report.id}`) ?? "0");
-      if (Number.isFinite(storedShareCount) && storedShareCount >= 0) setShareCount(storedShareCount);
+      const storedShareCount = Number(
+        window.localStorage.getItem(`pcs-share-count:${report.id}`) ?? "0",
+      );
+      if (Number.isFinite(storedShareCount) && storedShareCount >= 0)
+        setShareCount(storedShareCount);
     } catch {
       // Local storage can be unavailable in restricted browsers; keep the counter at zero.
     }
@@ -560,10 +620,15 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
         window.localStorage.setItem(storageKey, token);
       }
     } catch {
-      try { token = createToken(); } catch { token = ""; }
+      try {
+        token = createToken();
+      } catch {
+        token = "";
+      }
     }
     setVisitorToken(token || null);
-    if (!token) setInteractionMessage("Activez un navigateur sécurisé pour confirmer ce signalement.");
+    if (!token)
+      setInteractionMessage("Activez un navigateur sécurisé pour confirmer ce signalement.");
   }, [report.id]);
 
   useEffect(() => {
@@ -576,30 +641,48 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     if (!supabase || !report.id || !visitorToken) return;
     let cancelled = false;
     void (async () => {
-      const { data: reaction, error: reactionError } = await supabase.rpc("get_public_report_confirmation", {
-        p_report_id: report.id!,
-        p_visitor_token: visitorToken!,
-      });
+      const { data: reaction, error: reactionError } = await supabase.rpc(
+        "get_public_report_confirmation",
+        {
+          p_report_id: report.id!,
+          p_visitor_token: visitorToken!,
+        },
+      );
       if (reactionError) throw reactionError;
       if (!cancelled && reaction && typeof reaction === "object") {
         const result = reaction as { confirmed?: boolean; count?: number };
         setConfirmed(Boolean(result.confirmed));
         setConfirmationCount(Number(result.count ?? 0));
       }
-      const { data: comments, error: commentsError } = await supabase.rpc("list_public_report_comments", {
-        p_report_id: report.id!,
-      });
+      const { data: comments, error: commentsError } = await supabase.rpc(
+        "list_public_report_comments",
+        {
+          p_report_id: report.id!,
+        },
+      );
       if (commentsError) throw commentsError;
-      if (!cancelled) setPublicComments((comments ?? []) as { id: string; display_name: string | null; body: string; created_at: string }[]);
+      if (!cancelled)
+        setPublicComments(
+          (comments ?? []) as {
+            id: string;
+            display_name: string | null;
+            body: string;
+            created_at: string;
+          }[],
+        );
     })().catch(() => {
       if (!cancelled) setInteractionMessage("Les interactions sont temporairement indisponibles.");
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [report.id, visitorToken]);
 
   const toggleConfirmation = async () => {
     if (!supabase || !report.id || !visitorToken) {
-      setInteractionMessage("Impossible de créer votre identifiant citoyen. Rechargez la page puis réessayez.");
+      setInteractionMessage(
+        "Impossible de créer votre identifiant citoyen. Rechargez la page puis réessayez.",
+      );
       return;
     }
     setInteractionBusy(true);
@@ -619,10 +702,14 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
       }
       setConfirmed(result.confirmed);
       setConfirmationCount(result.count);
-      setInteractionMessage(result.confirmed ? "Confirmation enregistrée." : "Confirmation retirée.");
+      setInteractionMessage(
+        result.confirmed ? "Confirmation enregistrée." : "Confirmation retirée.",
+      );
     } catch (cause) {
       console.error("[PCS] Confirmation du signalement impossible", cause);
-      setInteractionMessage("Impossible d’enregistrer votre confirmation. Vérifiez votre connexion puis réessayez.");
+      setInteractionMessage(
+        "Impossible d’enregistrer votre confirmation. Vérifiez votre connexion puis réessayez.",
+      );
     } finally {
       setInteractionBusy(false);
     }
@@ -631,7 +718,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
   const submitPublicComment = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!supabase || !report.id || !visitorToken) {
-      setInteractionMessage("Impossible de créer votre identifiant citoyen. Rechargez la page puis réessayez.");
+      setInteractionMessage(
+        "Impossible de créer votre identifiant citoyen. Rechargez la page puis réessayez.",
+      );
       return;
     }
     const body = commentText.trim();
@@ -642,22 +731,33 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
     setInteractionBusy(true);
     setInteractionMessage("");
     try {
-      const { data: submitData, error: submitError } = await supabase.functions.invoke("citizen-report-interactions", {
-        body: {
-          action: "comment",
-          report_id: report.id,
-          visitor_token: visitorToken,
-          body,
-          display_name: null,
+      const { data: submitData, error: submitError } = await supabase.functions.invoke(
+        "citizen-report-interactions",
+        {
+          body: {
+            action: "comment",
+            report_id: report.id,
+            visitor_token: visitorToken,
+            body,
+            display_name: null,
+          },
         },
-      });
-      if (submitError || submitData?.error) throw submitError ?? new Error(String(submitData.error));
+      );
+      if (submitError || submitData?.error)
+        throw submitError ?? new Error(String(submitData.error));
       setCommentText("");
       const { data, error: commentsError } = await supabase.rpc("list_public_report_comments", {
         p_report_id: report.id!,
       });
       if (commentsError) throw commentsError;
-      setPublicComments((data ?? []) as { id: string; display_name: string | null; body: string; created_at: string }[]);
+      setPublicComments(
+        (data ?? []) as {
+          id: string;
+          display_name: string | null;
+          body: string;
+          created_at: string;
+        }[],
+      );
       setCommentsOpen(true);
       setInteractionMessage("Votre commentaire a été publié.");
     } catch {
@@ -708,14 +808,18 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                   confirmed ? "feedPrimary" : "feedSecondary",
                   "feedConfirmButton",
                   confirmationPulse ? "isPulsing" : "",
-                ].filter(Boolean).join(" ")}
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 onPointerDown={() => setConfirmationPulse(true)}
                 onClick={toggleConfirmation}
                 disabled={interactionBusy}
                 aria-pressed={confirmed}
                 aria-label={confirmed ? "Retirer ma confirmation" : "Confirmer ce signalement"}
               >
-                <span className="feedConfirmIcon" aria-hidden="true">👍</span>
+                <span className="feedConfirmIcon" aria-hidden="true">
+                  👍
+                </span>
                 <small>{confirmationCount}</small>
               </button>
               <button
@@ -736,7 +840,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                   if (!shared) return;
                   setShareCount((count) => {
                     const next = count + 1;
-                    try { window.localStorage.setItem(`pcs-share-count:${report.id}`, String(next)); } catch {}
+                    try {
+                      window.localStorage.setItem(`pcs-share-count:${report.id}`, String(next));
+                    } catch {}
                     return next;
                   });
                 }}
@@ -745,28 +851,45 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 <Share2 aria-hidden="true" strokeWidth={2.2} />
                 <small>{shareCount}</small>
               </button>
-              <Link className="feedSecondary feedRailLink feedRailHome" to="/" aria-label="Accueil" onClick={(event) => {
-                // The feed is already on the home route, so navigating to "/"
-                // alone does not move the scroll container back to its first slide.
-                event.preventDefault();
-                const feed = document.querySelector<HTMLElement>(".citizenFeed");
-                const intro = feed?.querySelector<HTMLElement>(".citizenSlideIntro");
-                // Reset the home feed through its public event; header and hint state
-                // belong to Home and are not in scope inside an individual report slide.
-                window.dispatchEvent(new Event("pcs-home-reset"));
-                setCommentsOpen(false);
-                feed?.scrollTo({ top: 0, left: 0, behavior: "auto" });
-                document.querySelector<HTMLElement>("main")?.scrollTo({ top: 0, left: 0, behavior: "auto" });
-                window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-                intro?.scrollIntoView({ block: "start", behavior: "auto" });
-                feed?.scrollTo({ top: 0, left: 0, behavior: "auto" });
-              }}>
+              <Link
+                className="feedSecondary feedRailLink feedRailHome"
+                to="/"
+                aria-label="Accueil"
+                onClick={(event) => {
+                  // The feed is already on the home route, so navigating to "/"
+                  // alone does not move the scroll container back to its first slide.
+                  event.preventDefault();
+                  const feed = document.querySelector<HTMLElement>(".citizenFeed");
+                  const intro = feed?.querySelector<HTMLElement>(".citizenSlideIntro");
+                  // Reset the home feed through its public event; header and hint state
+                  // belong to Home and are not in scope inside an individual report slide.
+                  window.dispatchEvent(new Event("pcs-home-reset"));
+                  setCommentsOpen(false);
+                  feed?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+                  document
+                    .querySelector<HTMLElement>("main")
+                    ?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+                  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+                  intro?.scrollIntoView({ block: "start", behavior: "auto" });
+                  feed?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+                }}
+              >
                 <HomeIcon aria-hidden="true" strokeWidth={2.2} />
                 <small>Accueil</small>
               </Link>
-              <Link className="feedPrimary feedRailLink feedRailReport" to="/signaler" aria-label="Signaler un problème" onClick={() => {
-                try { window.sessionStorage.setItem("pcs-report-return-v1", JSON.stringify({ type: "report", reportId: report.id })); } catch {}
-              }}>
+              <Link
+                className="feedPrimary feedRailLink feedRailReport"
+                to="/signaler"
+                aria-label="Signaler un problème"
+                onClick={() => {
+                  try {
+                    window.sessionStorage.setItem(
+                      "pcs-report-return-v1",
+                      JSON.stringify({ type: "report", reportId: report.id }),
+                    );
+                  } catch {}
+                }}
+              >
                 <Flag aria-hidden="true" strokeWidth={2.2} />
                 <small>Signaler</small>
               </Link>
@@ -787,19 +910,23 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                     Fermer ✕
                   </button>
                 </div>
-                {publicComments.length === 0 ? <p>Aucun commentaire public pour le moment.</p> : publicComments.map((comment) => (
-                  <article key={comment.id} className="citizenPublicComment">
-                    <div className="citizenCommentAvatar" aria-hidden="true">
-                      {(comment.display_name?.trim()?.[0] ?? "C").toUpperCase()}
-                    </div>
-                    <div className="citizenCommentBody">
-                      <div className="citizenCommentMeta">
-                        <small>{new Date(comment.created_at).toLocaleString("fr-FR")}</small>
+                {publicComments.length === 0 ? (
+                  <p>Aucun commentaire public pour le moment.</p>
+                ) : (
+                  publicComments.map((comment) => (
+                    <article key={comment.id} className="citizenPublicComment">
+                      <div className="citizenCommentAvatar" aria-hidden="true">
+                        {(comment.display_name?.trim()?.[0] ?? "C").toUpperCase()}
                       </div>
-                      <p>{comment.body}</p>
-                    </div>
-                  </article>
-                ))}
+                      <div className="citizenCommentBody">
+                        <div className="citizenCommentMeta">
+                          <small>{new Date(comment.created_at).toLocaleString("fr-FR")}</small>
+                        </div>
+                        <p>{comment.body}</p>
+                      </div>
+                    </article>
+                  ))
+                )}
                 <form onSubmit={submitPublicComment}>
                   <label htmlFor={`public-comment-${report.id}`}>Votre commentaire</label>
                   <textarea
@@ -812,7 +939,11 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                     placeholder="Partagez une information utile…"
                     required
                   />
-                  <button type="submit" className="feedPrimary" disabled={interactionBusy || commentText.trim().length < 2}>
+                  <button
+                    type="submit"
+                    className="feedPrimary"
+                    disabled={interactionBusy || commentText.trim().length < 2}
+                  >
                     {interactionBusy ? "Envoi…" : "Publier le commentaire"}
                   </button>
                 </form>
@@ -825,9 +956,11 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                 aria-live="polite"
               >
                 <span className="citizenInteractionPopupIcon" aria-hidden="true">
-                  {/^(Impossible|Les interactions|Activez)/i.test(interactionMessage)
-                    ? <AlertCircle strokeWidth={2.4} />
-                    : <CheckCircle2 strokeWidth={2.4} />}
+                  {/^(Impossible|Les interactions|Activez)/i.test(interactionMessage) ? (
+                    <AlertCircle strokeWidth={2.4} />
+                  ) : (
+                    <CheckCircle2 strokeWidth={2.4} />
+                  )}
                 </span>
                 <span className="citizenInteractionPopupText">{interactionMessage}</span>
                 <button
