@@ -2,19 +2,19 @@
 // The PCS telemetry wrapper below is intentionally kept here so every real
 // browser request made through the single Supabase client can be correlated
 // with a CST trace ID without exposing privileged credentials.
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
-import { brokeredPreviewStorage } from './previewAuthStorage';
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
+import { brokeredPreviewStorage } from "./previewAuthStorage";
 
 function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
+  return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
 }
 
 function randomHex(bytes: number): string {
   const out = new Uint8Array(bytes);
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) crypto.getRandomValues(out);
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) crypto.getRandomValues(out);
   else for (let i = 0; i < bytes; i++) out[i] = Math.floor(Math.random() * 256);
-  return Array.from(out, (b) => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(out, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 function createTraceContext(): { traceId: string; traceparent: string } {
@@ -26,21 +26,27 @@ function createTraceContext(): { traceId: string; traceparent: string } {
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
   return async (input, init) => {
     const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
+      typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
     );
     if (init?.headers) new Headers(init.headers).forEach((value, key) => headers.set(key, value));
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
+    if (
+      isNewSupabaseApiKey(supabaseKey) &&
+      headers.get("Authorization") === `Bearer ${supabaseKey}`
+    ) {
+      headers.delete("Authorization");
     }
-    headers.set('apikey', supabaseKey);
+    headers.set("apikey", supabaseKey);
 
-    const requestUrl = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-    headers.delete('x-pcs-trace-id');
-    headers.delete('traceparent');
-    const isBrowser = typeof window !== 'undefined';
-    const isTelemetryRequest = requestUrl.includes('/functions/v1/cst-telemetry');
-    const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
-    const retryable = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
+    const requestUrl =
+      typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    headers.delete("x-pcs-trace-id");
+    headers.delete("traceparent");
+    const isBrowser = typeof window !== "undefined";
+    const isTelemetryRequest = requestUrl.includes("/functions/v1/cst-telemetry");
+    const method = (
+      init?.method || (input instanceof Request ? input.method : "GET")
+    ).toUpperCase();
+    const retryable = method === "GET" || method === "HEAD" || method === "OPTIONS";
     const maxAttempts = retryable && !isTelemetryRequest ? 3 : 1;
     const trace = createTraceContext();
     // Edge Functions only allow a fixed list of CORS headers (authorization,
@@ -48,12 +54,12 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     // headers make the browser preflight fail ("Failed to send a request to the
     // Edge Function"), so they are only attached to non-function requests. The
     // trace id is still reported to cst-telemetry in the request body.
-    const isEdgeFunctionRequest = requestUrl.includes('/functions/v1/');
+    const isEdgeFunctionRequest = requestUrl.includes("/functions/v1/");
     if (!isEdgeFunctionRequest) {
-      headers.set('x-pcs-trace-id', trace.traceId);
-      headers.set('traceparent', trace.traceparent);
+      headers.set("x-pcs-trace-id", trace.traceId);
+      headers.set("traceparent", trace.traceparent);
     }
-    const started = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const started = typeof performance !== "undefined" ? performance.now() : Date.now();
 
     let response: Response | undefined;
     let lastError: unknown;
@@ -79,12 +85,12 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     }
 
     const latency = Math.round(
-      (typeof performance !== 'undefined' ? performance.now() : Date.now()) - started,
+      (typeof performance !== "undefined" ? performance.now() : Date.now()) - started,
     );
-    const token = headers.get('Authorization');
-    const telemetryUrl = `${import.meta.env['VITE_SUPABASE_URL'] || ''}/functions/v1/cst-telemetry`;
+    const token = headers.get("Authorization");
+    const telemetryUrl = `${import.meta.env["VITE_SUPABASE_URL"] || ""}/functions/v1/cst-telemetry`;
 
-    if (isBrowser && !isTelemetryRequest && telemetryUrl.startsWith('http')) {
+    if (isBrowser && !isTelemetryRequest && telemetryUrl.startsWith("http")) {
       queueTelemetry(telemetryUrl, token, {
         trace_id: trace.traceId,
         occurred_at: Date.now(),
@@ -92,12 +98,14 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
         endpoint: requestUrl,
         status_code: response?.status ?? 0,
         latency_ms: latency,
-        ...(response ? {} : { error_class: lastError instanceof Error ? lastError.name : 'NetworkError' }),
+        ...(response
+          ? {}
+          : { error_class: lastError instanceof Error ? lastError.name : "NetworkError" }),
       });
     }
 
     if (response) return response;
-    throw lastError instanceof Error ? lastError : new Error('Réseau indisponible.');
+    throw lastError instanceof Error ? lastError : new Error("Réseau indisponible.");
   };
 }
 // Telemetry is batched (one POST every 10 s, max 50 events) and paused for
@@ -115,8 +123,8 @@ function queueTelemetry(url: string, token: string | null, event: Record<string,
     const events = telemetryQueue.splice(0, telemetryQueue.length);
     if (!events.length) return;
     void fetch(url, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', ...(token ? { Authorization: token } : {}) },
+      method: "POST",
+      headers: { "content-type": "application/json", ...(token ? { Authorization: token } : {}) },
       body: JSON.stringify({ events }),
       keepalive: true,
     })
@@ -129,18 +137,24 @@ function queueTelemetry(url: string, token: string | null, event: Record<string,
 function createSupabaseClient() {
   // Public (publishable) fallbacks for the official PCS project, used when the
   // build did not inject VITE_* variables. Safe to ship: RLS enforces access.
-  const FALLBACK_URL = 'https://rqraxjypjwsxcmjdwroy.supabase.co';
-  const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxcmF4anlwandzeGNtamR3cm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMTAwNDYsImV4cCI6MjEwNTU4NjA0Nn0.KJjegtzYsWwU0cmTf3y4gIEuLxCZ-JcPIDcPa4DW7_A';
-  const serverEnv = typeof process !== 'undefined' ? process.env : ({} as Record<string, string | undefined>);
-  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || serverEnv['SUPABASE_URL'] || FALLBACK_URL;
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || serverEnv['SUPABASE_PUBLISHABLE_KEY'] || FALLBACK_KEY;
+  const FALLBACK_URL = "https://rqraxjypjwsxcmjdwroy.supabase.co";
+  const FALLBACK_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxcmF4anlwandzeGNtamR3cm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMTAwNDYsImV4cCI6MjEwNTU4NjA0Nn0.KJjegtzYsWwU0cmTf3y4gIEuLxCZ-JcPIDcPa4DW7_A";
+  const serverEnv =
+    typeof process !== "undefined" ? process.env : ({} as Record<string, string | undefined>);
+  const SUPABASE_URL =
+    import.meta.env["VITE_SUPABASE_URL"] || serverEnv["SUPABASE_URL"] || FALLBACK_URL;
+  const SUPABASE_PUBLISHABLE_KEY =
+    import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ||
+    serverEnv["SUPABASE_PUBLISHABLE_KEY"] ||
+    FALLBACK_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
+      ...(!SUPABASE_URL ? ["SUPABASE_URL"] : []),
+      ...(!SUPABASE_PUBLISHABLE_KEY ? ["SUPABASE_PUBLISHABLE_KEY"] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
+    const message = `Missing Supabase environment variable(s): ${missing.join(", ")}. Connect Supabase in Lovable Cloud.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }

@@ -2,8 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const readSource = (path: string) =>
-  readFileSync(resolve(process.cwd(), path), "utf8");
+const readSource = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
 describe("public media approval guards", () => {
   const home = readSource("src/pcs/pages/Home.tsx");
@@ -13,7 +12,7 @@ describe("public media approval guards", () => {
 
   it("requires explicit approval before media enters the public home feed", () => {
     expect(home).toContain('item.moderation_status === "approved"');
-    expect(home).toContain('<MediaCarousel media={media} onMediaError={refreshFailedMediaUrl} />');
+    expect(home).toContain("<MediaCarousel media={media} onMediaError={refreshFailedMediaUrl} />");
     expect(home).toContain("// Clear the previous slide's media before loading this report.");
     expect(home).toContain("setMedia([]);\n    let cancelled = false;");
     expect(home).not.toContain("mediaCarouselPlaceholder");
@@ -28,7 +27,9 @@ describe("public media approval guards", () => {
   });
 
   it("renews only a failed media URL through the approval-checking service", () => {
-    expect(home).toContain("const refreshFailedMediaUrl = async (mediaId: string, failedUrl: string) =>");
+    expect(home).toContain(
+      "const refreshFailedMediaUrl = async (mediaId: string, failedUrl: string) =>",
+    );
     expect(home).toContain("current.url !== failedUrl");
     expect(home).toContain("mediaUrlRefreshInFlight.current.has(mediaId)");
     expect(home).toContain("createReportMediaUrl(current.storage_path)");
@@ -38,7 +39,9 @@ describe("public media approval guards", () => {
 
   it("avoids autoplay and eager video buffering on 3G connections", () => {
     expect(mediaCarousel).toContain('effectiveType !== "3g"');
-    expect(mediaCarousel).toContain('video.preload = slowNetwork && !autoplayAllowed ? "metadata" : "auto";');
+    expect(mediaCarousel).toContain(
+      'video.preload = slowNetwork && !autoplayAllowed ? "metadata" : "auto";',
+    );
     expect(mediaCarousel).toContain('video.preload = "auto";');
   });
 

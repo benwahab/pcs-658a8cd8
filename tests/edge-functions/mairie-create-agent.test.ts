@@ -36,7 +36,7 @@ describe("mairie-create-agent authorization and identity invariants", () => {
 
   it("removes an inherited citizen role before completing agent provisioning", () => {
     expect(source).toContain('.eq("code", "citizen")');
-    expect(source).toContain('.delete()');
+    expect(source).toContain(".delete()");
     expect(source).toContain("inherited citizen role cleanup failed");
   });
 });

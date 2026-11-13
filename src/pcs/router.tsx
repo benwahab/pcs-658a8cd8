@@ -40,7 +40,9 @@ export function useLocation() {
   return { pathname: loc.pathname, search: loc.searchStr, hash: loc.hash };
 }
 
-export function useParams<T extends Record<string, string | undefined> = Record<string, string | undefined>>() {
+export function useParams<
+  T extends Record<string, string | undefined> = Record<string, string | undefined>,
+>() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (useTsParams as any)({ strict: false }) as T;
 }

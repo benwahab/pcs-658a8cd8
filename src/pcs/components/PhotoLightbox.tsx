@@ -2,7 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
-export function PhotoLightbox({ photos, startIndex, onClose }: { photos: string[]; startIndex: number; onClose: () => void }) {
+export function PhotoLightbox({
+  photos,
+  startIndex,
+  onClose,
+}: {
+  photos: string[];
+  startIndex: number;
+  onClose: () => void;
+}) {
   const [index, setIndex] = useState(startIndex);
   const [zoomed, setZoomed] = useState(false);
   const touch = useRef<{ x: number; y: number; n: number } | null>(null);
@@ -45,8 +53,14 @@ export function PhotoLightbox({ photos, startIndex, onClose }: { photos: string[
         else if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
       }}
     >
-      <button type="button" className="photoLightboxClose" aria-label="Fermer" onClick={onClose}>×</button>
-      {photos.length > 1 && <span className="photoLightboxCount">{index + 1}/{photos.length}</span>}
+      <button type="button" className="photoLightboxClose" aria-label="Fermer" onClick={onClose}>
+        ×
+      </button>
+      {photos.length > 1 && (
+        <span className="photoLightboxCount">
+          {index + 1}/{photos.length}
+        </span>
+      )}
       <TransformWrapper
         key={index}
         minScale={1}
@@ -59,8 +73,26 @@ export function PhotoLightbox({ photos, startIndex, onClose }: { photos: string[
           <img src={photos[index]} alt={`Photo ${index + 1} du signalement`} draggable={false} />
         </TransformComponent>
       </TransformWrapper>
-      {index > 0 && <button type="button" className="photoLightboxNav isPrev" aria-label="Photo précédente" onClick={() => go(-1)}>‹</button>}
-      {index < photos.length - 1 && <button type="button" className="photoLightboxNav isNext" aria-label="Photo suivante" onClick={() => go(1)}>›</button>}
+      {index > 0 && (
+        <button
+          type="button"
+          className="photoLightboxNav isPrev"
+          aria-label="Photo précédente"
+          onClick={() => go(-1)}
+        >
+          ‹
+        </button>
+      )}
+      {index < photos.length - 1 && (
+        <button
+          type="button"
+          className="photoLightboxNav isNext"
+          aria-label="Photo suivante"
+          onClick={() => go(1)}
+        >
+          ›
+        </button>
+      )}
     </div>,
     document.body,
   );

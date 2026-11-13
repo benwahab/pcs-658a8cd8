@@ -2,8 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const readSource = (path: string) =>
-  readFileSync(resolve(process.cwd(), path), "utf8");
+const readSource = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
 describe("organization signup UI integration", () => {
   const login = readSource("src/pcs/pages/OrganizationLogin.tsx");

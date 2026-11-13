@@ -168,28 +168,30 @@ export default function PwaInstallPrompt() {
         >
           ＋
         </div>
-        <h2
-          id="pcs-pwa-title"
-          style={{ margin: "0 0 10px", fontSize: 23, lineHeight: 1.2 }}
-        >
+        <h2 id="pcs-pwa-title" style={{ margin: "0 0 10px", fontSize: 23, lineHeight: 1.2 }}>
           Installer PCS
         </h2>
         <p style={{ margin: "0 0 20px", color: "#52605e", lineHeight: 1.55 }}>
           {(() => {
             try {
-              const pending = JSON.parse(localStorage.getItem(PENDING_REPORT_LINK_KEY) ?? "null") as { path?: string; createdAt?: number } | null;
+              const pending = JSON.parse(
+                localStorage.getItem(PENDING_REPORT_LINK_KEY) ?? "null",
+              ) as { path?: string; createdAt?: number } | null;
               return Boolean(
                 pending &&
-                  typeof pending.path === "string" &&
-                  /^\/signalement\/[^/]+$/.test(pending.path) &&
-                  typeof pending.createdAt === "number" &&
-                  Date.now() - pending.createdAt <= 86400000,
+                typeof pending.path === "string" &&
+                /^\/signalement\/[^/]+$/.test(pending.path) &&
+                typeof pending.createdAt === "number" &&
+                Date.now() - pending.createdAt <= 86400000,
               );
             } catch {
               return false;
             }
           })() ? (
-            <>Installez PCS sur votre téléphone. Après l’installation, le lien du signalement sera repris automatiquement.</>
+            <>
+              Installez PCS sur votre téléphone. Après l’installation, le lien du signalement sera
+              repris automatiquement.
+            </>
           ) : (
             <>Installez PCS sur votre téléphone en un seul geste.</>
           )}

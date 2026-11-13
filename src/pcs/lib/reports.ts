@@ -1,10 +1,5 @@
 import { supabase } from "./supabase";
-import type {
-  Category,
-  PublicReport,
-  ReportPriority,
-  ReportStatus,
-} from "../types";
+import type { Category, PublicReport, ReportPriority, ReportStatus } from "../types";
 
 export async function listCategories(): Promise<Category[]> {
   if (!supabase) return [];
@@ -36,18 +31,12 @@ export async function listPublicReports(): Promise<PublicReport[]> {
   }));
 }
 
-export async function changeStatus(
-  reportId: string,
-  status: ReportStatus,
-): Promise<void> {
+export async function changeStatus(reportId: string, status: ReportStatus): Promise<void> {
   if (!supabase) {
     throw new Error("Supabase n'est pas configuré.");
   }
 
-  const { error } = await supabase
-    .from("reports")
-    .update({ status })
-    .eq("id", reportId);
+  const { error } = await supabase.from("reports").update({ status }).eq("id", reportId);
 
   if (error) throw error;
 }
@@ -70,9 +59,7 @@ interface CitizenReportResult {
   reference_code: string;
 }
 
-export async function submitCitizenReport(
-  input: CitizenReportInput,
-): Promise<CitizenReportResult> {
+export async function submitCitizenReport(input: CitizenReportInput): Promise<CitizenReportResult> {
   if (!supabase) {
     throw new Error("Supabase n'est pas configuré.");
   }
@@ -91,30 +78,29 @@ export async function submitCitizenReport(
     body.append("location_label", input.location_label);
   }
 
-  input.photos
-    .slice(0, 5)
-    .forEach((file) => body.append("photos", file, file.name));
+  input.photos.slice(0, 5).forEach((file) => body.append("photos", file, file.name));
 
   if (input.video) {
     body.append("video", input.video, input.video.name);
   }
 
-  const { data, error } = await supabase.functions.invoke(
-    "citizen-report-submit",
-    { body },
-  );
+  const { data, error } = await supabase.functions.invoke("citizen-report-submit", { body });
 
   if (error) {
     throw new Error("L’envoi du signalement a échoué. Vérifiez votre connexion et réessayez.");
   }
   if (data?.error) {
     const message = typeof data.error === "string" ? data.error : "";
-    throw new Error(message && /^[A-Za-zÀ-ÿ]/.test(message)
-      ? message
-      : "Le signalement n’a pas pu être enregistré. Vérifiez les informations et les médias, puis réessayez.");
+    throw new Error(
+      message && /^[A-Za-zÀ-ÿ]/.test(message)
+        ? message
+        : "Le signalement n’a pas pu être enregistré. Vérifiez les informations et les médias, puis réessayez.",
+    );
   }
   if (!data || data.success !== true || typeof data.reference_code !== "string") {
-    throw new Error("Le serveur a renvoyé une réponse inattendue. Votre signalement n’est pas confirmé.");
+    throw new Error(
+      "Le serveur a renvoyé une réponse inattendue. Votre signalement n’est pas confirmé.",
+    );
   }
 
   return data as CitizenReportResult;

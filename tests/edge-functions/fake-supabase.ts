@@ -15,9 +15,15 @@ export const state: {
 
 export function reset() {
   state.getUser = () => ({ data: { user: null }, error: { message: "no" } });
-  state.createUser = () => ({ data: { user: { id: "11111111-2222-3333-4444-555555555555" } }, error: null });
+  state.createUser = () => ({
+    data: { user: { id: "11111111-2222-3333-4444-555555555555" } },
+    error: null,
+  });
   state.updateUserById = () => ({ data: {}, error: null });
-  state.signInWithPassword = () => ({ data: { session: null, user: null }, error: { message: "bad" } });
+  state.signInWithPassword = () => ({
+    data: { session: null, user: null },
+    error: { message: "bad" },
+  });
   state.rpc = () => ({ data: true, error: null });
   state.table = () => ({ data: null, error: null });
   state.deletedUsers = [];
@@ -30,8 +36,23 @@ function builder(table: string) {
   state.calls.push(call);
   const run = () => Promise.resolve({ data: null, error: null, ...state.table(call) });
   const b: Record<string, unknown> = {};
-  for (const op of ["select", "eq", "ilike", "is", "in", "order", "limit", "insert", "update", "upsert", "delete"]) {
-    b[op] = (...args: unknown[]) => { call.ops.push({ op, args }); return b; };
+  for (const op of [
+    "select",
+    "eq",
+    "ilike",
+    "is",
+    "in",
+    "order",
+    "limit",
+    "insert",
+    "update",
+    "upsert",
+    "delete",
+  ]) {
+    b[op] = (...args: unknown[]) => {
+      call.ops.push({ op, args });
+      return b;
+    };
   }
   b.maybeSingle = run;
   b.single = run;
@@ -42,14 +63,22 @@ function builder(table: string) {
 export function createClient() {
   return {
     from: (t: string) => builder(t),
-    rpc: async (name: string, args: unknown) => ({ data: null, error: null, ...state.rpc(name, args) }),
+    rpc: async (name: string, args: unknown) => ({
+      data: null,
+      error: null,
+      ...state.rpc(name, args),
+    }),
     auth: {
       getUser: async (token?: string) => state.getUser(token),
-      signInWithPassword: async (c: { email: string; password: string }) => state.signInWithPassword(c),
+      signInWithPassword: async (c: { email: string; password: string }) =>
+        state.signInWithPassword(c),
       admin: {
         createUser: async (a: unknown) => state.createUser(a),
         updateUserById: async () => state.updateUserById(),
-        deleteUser: async (id: string) => { state.deletedUsers.push(id); return { error: null }; },
+        deleteUser: async (id: string) => {
+          state.deletedUsers.push(id);
+          return { error: null };
+        },
       },
     },
   };

@@ -2,7 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 const inputSchema = z.object({
-  problem: z.string().trim().min(10, "Décrivez le problème en au moins 10 caractères.").max(1000, "Description trop longue (1000 caractères maximum)."),
+  problem: z
+    .string()
+    .trim()
+    .min(10, "Décrivez le problème en au moins 10 caractères.")
+    .max(1000, "Description trop longue (1000 caractères maximum)."),
 });
 
 const SYSTEM = `Tu es l'assistant de dépannage de PCS (Plateforme Citoyenne de Signalement, Niger) pour les agents terrain.
@@ -41,13 +45,26 @@ export const getAgentLoginHelp = createServerFn({ method: "POST" })
         },
       });
       const steps = (await result.text).trim();
-      if (!steps) return { ok: false, error: "L'assistant n'a pas pu proposer d'étapes. Contactez votre mairie ou agence." };
+      if (!steps)
+        return {
+          ok: false,
+          error: "L'assistant n'a pas pu proposer d'étapes. Contactez votre mairie ou agence.",
+        };
       return { ok: true, steps };
     } catch (e) {
       const status = (e as { statusCode?: number })?.statusCode;
       console.error("agent-help: gateway error", status, e instanceof Error ? e.message : e);
-      if (status === 429) return { ok: false, error: "Trop de demandes en ce moment. Réessayez dans une minute." };
-      if (status === 402 || status === 403) return { ok: false, error: "L'assistant est momentanément indisponible. Contactez votre mairie ou agence." };
-      return { ok: false, error: "L'assistant est indisponible. Réessayez plus tard ou contactez votre mairie ou agence." };
+      if (status === 429)
+        return { ok: false, error: "Trop de demandes en ce moment. Réessayez dans une minute." };
+      if (status === 402 || status === 403)
+        return {
+          ok: false,
+          error: "L'assistant est momentanément indisponible. Contactez votre mairie ou agence.",
+        };
+      return {
+        ok: false,
+        error:
+          "L'assistant est indisponible. Réessayez plus tard ou contactez votre mairie ou agence.",
+      };
     }
   });

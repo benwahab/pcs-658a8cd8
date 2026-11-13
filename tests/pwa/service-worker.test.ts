@@ -6,7 +6,7 @@ describe("PCS service worker offline startup", () => {
 
   it("caches fingerprinted JavaScript and CSS assets", () => {
     expect(source).toContain("async function cacheFirstBuildAsset");
-    expect(source).toContain('/assets/');
+    expect(source).toContain("/assets/");
     expect(source).toContain('request.destination==="script"||request.destination==="style"');
     expect(source).toContain("cacheFirstBuildAsset(request)");
   });

@@ -12,7 +12,9 @@ describe("public feed media visibility", () => {
   });
 
   it("filters public media to explicitly approved citizen evidence or resolution videos", () => {
-    expect(home).toContain("item.moderation_status === \"approved\"");
-    expect(home).toContain('(item.media_role === "citizen_evidence" || item.media_role === "resolution_video")');
+    expect(home).toContain('item.moderation_status === "approved"');
+    expect(home).toContain(
+      '(item.media_role === "citizen_evidence" || item.media_role === "resolution_video")',
+    );
   });
 });
