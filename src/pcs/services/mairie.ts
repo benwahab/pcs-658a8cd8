@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import type { FunctionInvokeError } from "../types/functions";
 import { compressCitizenVideo, uploadResolutionVideo } from "./media";
 
 export type MairieTransmissionTarget = {
@@ -133,7 +134,7 @@ export async function listMyMissions() {
   if (error) throw error;
   const rows = data ?? [];
   if (!rows.length) return [];
-  const ids = rows.map((x: any) => x.report_id);
+  const ids = rows.map((x) => x.report_id);
   const { data: reports, error: re } = await supabase
     .from("reports")
     .select(
@@ -141,10 +142,10 @@ export async function listMyMissions() {
     )
     .in("id", ids);
   if (re) throw re;
-  const byId = new Map((reports ?? []).map((r: any) => [r.id, r]));
+  const byId = new Map((reports ?? []).map((r) => [r.id, r] as const));
   return rows
-    .map((r: any) => ({ ...r, reports: byId.get(r.report_id) ?? null }))
-    .filter((r: any) => r.reports);
+    .map((r) => ({ ...r, reports: byId.get(r.report_id) ?? null }))
+    .filter((r): r is typeof r & { reports: NonNullable<typeof r.reports> } => !!r.reports);
 }
 export async function confirmFieldVerification(
   reportId: string,
@@ -232,7 +233,7 @@ export async function signupMairie(input: {
   const { data, error } = await supabase.functions.invoke("mairie-signup", { body: input });
   if (error) {
     let message = error.message || "Impossible de joindre le service de création de mairie.";
-    const context = (error as any).context;
+    const context = (error as FunctionInvokeError).context;
     if (context?.json) {
       try {
         const body = await context.json();
@@ -264,7 +265,7 @@ export async function resetFieldAgentPassword(agentId: string, password: string)
     headers: { Authorization: "Bearer " + session.access_token },
   });
   if (error) {
-    const context = (error as any).context;
+    const context = (error as FunctionInvokeError).context;
     let message = error.message || "La réinitialisation du mot de passe a échoué.";
     if (context instanceof Response) {
       try {
@@ -300,7 +301,7 @@ export async function createFieldAgent(input: {
     headers: { Authorization: "Bearer " + session.access_token },
   });
   if (error) {
-    const context = (error as any).context;
+    const context = (error as FunctionInvokeError).context;
     let message = error.message || "La création de l’agent a échoué.";
     if (context instanceof Response) {
       try {
@@ -334,7 +335,7 @@ export async function lookupAgentByPhone(phone: string) {
     body: { step: "identify", phone },
   });
   if (error) {
-    const context = (error as any).context;
+    const context = (error as FunctionInvokeError).context;
     let message = error.message || "Impossible de joindre le service de connexion agent.";
     if (context instanceof Response) {
       try {
@@ -360,7 +361,7 @@ export async function loginAgent(challenge: string, password: string) {
     body: { challenge, password },
   });
   if (error) {
-    const context = (error as any).context;
+    const context = (error as FunctionInvokeError).context;
     let message = error.message || "Impossible de joindre le service de connexion agent.";
     if (context instanceof Response) {
       try {
@@ -436,3 +437,9 @@ export async function uploadMairieLogo(file: File) {
   }
   return data.publicUrl;
 }
+
+// Shapes returned by the read functions above, derived from them so they always match the queries.
+export type MairieRecord = NonNullable<Awaited<ReturnType<typeof getMyMairie>>>;
+export type MairieReport = Awaited<ReturnType<typeof listMairieReports>>[number];
+export type FieldAgentRow = Awaited<ReturnType<typeof listMyAgents>>[number];
+export type AgentMission = Awaited<ReturnType<typeof listMyMissions>>[number];

@@ -1,4 +1,5 @@
 // Purely visual widgets for the CST dashboard (no data fetching, no business logic).
+import type { CSSProperties } from "react";
 
 const norm = (s: string) =>
   s
@@ -288,8 +289,8 @@ export function MiniDashboardPreview({ accent }: { accent: string }) {
           ))}
         </div>
         <div className="cstMiniCharts">
-          <span className="cstMiniChart" style={{ ["--a" as any]: accent }} />
-          <span className="cstMiniBlob" style={{ ["--a" as any]: accent }} />
+          <span className="cstMiniChart" style={{ "--a": accent } as CSSProperties} />
+          <span className="cstMiniBlob" style={{ "--a": accent } as CSSProperties} />
         </div>
         <div className="cstMiniRows">
           {[0, 1, 2].map((i) => (

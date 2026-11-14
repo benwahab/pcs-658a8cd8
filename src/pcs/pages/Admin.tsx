@@ -5,6 +5,8 @@ import {
   listAllReports,
   listAssignableAgents,
   listDepartments,
+  type AssignableAgent,
+  type DepartmentRow,
   updateReportPriority,
   updateReportStatus,
   listOrganizationSignupRequests,
@@ -36,8 +38,8 @@ const nextStatuses: Record<ReportStatus, ReportStatus[]> = {
 
 export default function Admin() {
   const [rows, setRows] = useState<Row[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
-  const [agents, setAgents] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<DepartmentRow[]>([]);
+  const [agents, setAgents] = useState<AssignableAgent[]>([]);
   const [orgRequests, setOrgRequests] = useState<OrganizationSignupRequest[]>([]);
   const [error, setError] = useState("");
   const [loadErrors, setLoadErrors] = useState<Record<string, string>>({});

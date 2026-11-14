@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link, useNavigate } from "@/pcs/router";
 import { supabase } from "../lib/supabase";
+import type { Tables } from "@/integrations/supabase/types";
 import {
   getMyMairie,
   listMairieReports,
@@ -12,12 +13,25 @@ import {
   resetFieldAgentPassword,
   updateMairieProfile,
   uploadMairieLogo,
+  type FieldAgentRow,
+  type MairieRecord,
+  type MairieReport,
+  type MairieTransmissionTarget,
 } from "../services/mairie";
 import { statusLabels } from "../types";
 import BrandLogo from "../components/BrandLogo";
 import { downloadAgentCredentialPdf } from "../utils/agentCredentialPdf";
 
-const statusMeta: any = {
+// Resolution video awaiting review, with a short-lived preview link added client-side.
+type ResolutionVideo = Pick<
+  Tables<"report_media">,
+  "id" | "report_id" | "storage_path" | "media_type" | "file_size" | "created_at"
+> & {
+  reports: Pick<Tables<"reports">, "reference_code" | "title" | "commune_id"> | null;
+  previewUrl: string | null;
+};
+
+const statusMeta: Record<string, { label: string; tone: string }> = {
   submitted: { label: "Envoyé", tone: "blue" },
   received: { label: "Reçu", tone: "slate" },
   verification: { label: "Vérification", tone: "amber" },
@@ -32,7 +46,7 @@ function formatDate(v: string) {
     year: "numeric",
   });
 }
-function mapsUrl(r: any) {
+function mapsUrl(r: { latitude?: number | null; longitude?: number | null }) {
   return typeof r.latitude === "number" && typeof r.longitude === "number"
     ? `https://www.google.com/maps/search/?api=1&query=${r.latitude},${r.longitude}`
     : "#";
@@ -40,11 +54,11 @@ function mapsUrl(r: any) {
 
 export default function MairieDashboard() {
   const nav = useNavigate();
-  const [m, setM] = useState<any>(null),
-    [rows, setRows] = useState<any[]>([]),
-    [agents, setAgents] = useState<any[]>([]),
-    [transmissionTargets, setTransmissionTargets] = useState<any[]>([]),
-    [resolutionVideos, setResolutionVideos] = useState<any[]>([]),
+  const [m, setM] = useState<MairieRecord | null>(null),
+    [rows, setRows] = useState<MairieReport[]>([]),
+    [agents, setAgents] = useState<FieldAgentRow[]>([]),
+    [transmissionTargets, setTransmissionTargets] = useState<MairieTransmissionTarget[]>([]),
+    [resolutionVideos, setResolutionVideos] = useState<ResolutionVideo[]>([]),
     [resolutionError, setResolutionError] = useState(""),
     [reviewBusy, setReviewBusy] = useState<string | null>(null);
   const [error, setError] = useState(""),
@@ -109,7 +123,7 @@ export default function MairieDashboard() {
         .order("created_at", { ascending: false });
       if (mediaError) throw mediaError;
       const withUrls = await Promise.all(
-        (media ?? []).map(async (item: any) => {
+        (media ?? []).map(async (item) => {
           const { data, error } = await supabase!.storage
             .from("report-media")
             .createSignedUrl(item.storage_path, 900);
@@ -127,7 +141,7 @@ export default function MairieDashboard() {
       );
     }
   }
-  async function reviewResolutionVideo(item: any, approve: boolean) {
+  async function reviewResolutionVideo(item: ResolutionVideo, approve: boolean) {
     if (!supabase) return;
     setError("");
     setSuccess("");
@@ -484,7 +498,7 @@ export default function MairieDashboard() {
               </div>
               <div
                 className="progressRing"
-                style={{ ["--progress" as any]: `${progress * 3.6}deg` }}
+                style={{ "--progress": `${progress * 3.6}deg` } as CSSProperties}
               >
                 <div>
                   <strong>{progress}%</strong>
@@ -653,7 +667,7 @@ export default function MairieDashboard() {
                   gap: 16,
                 }}
               >
-                {resolutionVideos.map((item: any) => (
+                {resolutionVideos.map((item) => (
                   <article
                     key={item.id}
                     style={{
@@ -812,7 +826,7 @@ export default function MairieDashboard() {
                                 ? "Choisir NIGELEC ou NDE…"
                                 : "Aucune structure locale configurée"}
                             </option>
-                            {transmissionTargets.map((o: any) => (
+                            {transmissionTargets.map((o) => (
                               <option
                                 key={`${o.organization_id}:${o.organization_unit_id}`}
                                 value={`${o.organization_id}:${o.organization_unit_id}`}

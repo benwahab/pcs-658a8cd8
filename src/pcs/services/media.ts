@@ -291,7 +291,7 @@ export async function uploadResolutionVideo(
       captured_latitude: latitude,
       captured_longitude: longitude,
       accuracy_m: accuracyM,
-    } as any)
+    })
     .select("id")
     .single();
 

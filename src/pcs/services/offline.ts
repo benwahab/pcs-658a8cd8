@@ -141,7 +141,7 @@ export function clearCachedAgentMissions(agentId: string) {
   }
 }
 
-export function getCachedAgentMissions<T = any>(agentId: string): T[] {
+export function getCachedAgentMissions<T = unknown>(agentId: string): T[] {
   try {
     return JSON.parse(localStorage.getItem(MISSIONS_PREFIX + agentId) || "[]") as T[];
   } catch {

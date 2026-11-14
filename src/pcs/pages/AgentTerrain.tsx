@@ -5,6 +5,7 @@ import {
   listMyMissions,
   confirmFieldVerification,
   resolveMissionWithVideo,
+  type AgentMission,
 } from "../services/mairie";
 import BrandLogo from "../components/BrandLogo";
 import { statusLabels } from "../types";
@@ -24,7 +25,7 @@ import {
 
 export default function AgentTerrain() {
   const navigate = useNavigate();
-  const [missions, setMissions] = useState<any[]>([]);
+  const [missions, setMissions] = useState<AgentMission[]>([]);
   const [agentUserId, setAgentUserId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [offlinePending, setOfflinePending] = useState(0);
@@ -68,7 +69,7 @@ export default function AgentTerrain() {
       if (agentUserId) cacheAgentMissions(agentUserId, data);
       setError("");
     } catch (e) {
-      const cached = agentUserId ? getCachedAgentMissions(agentUserId) : [];
+      const cached = agentUserId ? getCachedAgentMissions<AgentMission>(agentUserId) : [];
       if (cached.length) {
         setMissions(cached);
         setError("Mode hors connexion : missions précédemment chargées.");
@@ -259,7 +260,7 @@ export default function AgentTerrain() {
     previewUrlRef.current = "";
     setVideoPreviewUrl("");
   }
-  function resolve(m: any) {
+  function resolve(m: AgentMission) {
     if (!video) {
       setError("Ajoutez la vidéo de résolution.");
       return;

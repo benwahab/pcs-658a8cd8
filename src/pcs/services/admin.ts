@@ -219,3 +219,8 @@ export async function rejectMairieRequest(id: string) {
   if (error) throw error;
   return data;
 }
+
+// Shapes returned by the list functions above, derived from them so they always match the queries.
+export type DepartmentRow = Awaited<ReturnType<typeof listDepartments>>[number];
+export type CategoryRow = Awaited<ReturnType<typeof listCategoriesForAdmin>>[number];
+export type AssignableAgent = Awaited<ReturnType<typeof listAssignableAgents>>[number];

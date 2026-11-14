@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/pcs/router";
-import { listAllReports, listCategoriesForAdmin, listDepartments } from "../services/admin";
+import {
+  listAllReports,
+  listCategoriesForAdmin,
+  listDepartments,
+  type CategoryRow,
+  type DepartmentRow,
+} from "../services/admin";
 import { statusLabels, type ReportPriority, type ReportStatus } from "../types";
 
 type Row = {
@@ -13,8 +19,8 @@ type Row = {
 };
 export default function Dashboard() {
   const [rows, setRows] = useState<Row[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [departments, setDepartments] = useState<DepartmentRow[]>([]);
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
   const [category, setCategory] = useState("");
