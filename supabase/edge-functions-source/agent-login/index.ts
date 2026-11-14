@@ -64,13 +64,11 @@ Deno.serve(async (req) => {
       const raw = crypto.randomUUID() + "." + crypto.randomUUID();
       const hash = await sha256(raw);
       await admin.from("agent_login_challenges").delete().eq("agent_user_id", agent.user_id);
-      const { error: ce } = await admin
-        .from("agent_login_challenges")
-        .insert({
-          agent_user_id: agent.user_id,
-          challenge_hash: hash,
-          expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-        });
+      const { error: ce } = await admin.from("agent_login_challenges").insert({
+        agent_user_id: agent.user_id,
+        challenge_hash: hash,
+        expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+      });
       if (ce) return json({ error: "Impossible de préparer la connexion." }, 500);
       return json({
         identified: true,

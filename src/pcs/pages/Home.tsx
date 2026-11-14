@@ -126,6 +126,9 @@ export default function Home() {
     if (!feed) return;
 
     const mobileHint = window.matchMedia("(max-width: 700px), (pointer: coarse)");
+    // `cancelScrollHint` and the cleanup read this timer but are declared before it is armed below,
+    // so it must exist up front and cannot become a `const`.
+    // eslint-disable-next-line prefer-const -- read by closures declared before the timer is created
     let swipeHintTimer: number | undefined;
     let swipeHintHideTimer: number | undefined;
 
@@ -358,7 +361,9 @@ export default function Home() {
                     "pcs-report-return-v1",
                     JSON.stringify({ type: "home" }),
                   );
-                } catch {}
+                } catch {
+                  // Storage can be unavailable (private mode, quota): the return target is optional.
+                }
               }}
             >
               ＋ Signaler un problème
@@ -842,7 +847,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                     const next = count + 1;
                     try {
                       window.localStorage.setItem(`pcs-share-count:${report.id}`, String(next));
-                    } catch {}
+                    } catch {
+                      // Storage can be unavailable: the share counter is then simply not persisted.
+                    }
                     return next;
                   });
                 }}
@@ -887,7 +894,9 @@ function PublicReportSlide({ report }: { report: PublicReport }) {
                       "pcs-report-return-v1",
                       JSON.stringify({ type: "report", reportId: report.id }),
                     );
-                  } catch {}
+                  } catch {
+                    // Storage can be unavailable (private mode, quota): the return target is optional.
+                  }
                 }}
               >
                 <Flag aria-hidden="true" strokeWidth={2.2} />

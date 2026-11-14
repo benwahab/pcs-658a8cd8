@@ -118,16 +118,14 @@ Deno.serve(async (req) => {
       }
       const { error: removeError } = await admin.storage.from("report-media").remove([path]);
       if (removeError) {
-        await admin
-          .from("cst_archive_cleanup_log")
-          .insert({
-            archive_id: row.id,
-            media_id: row.media_id,
-            report_id: row.report_id,
-            storage_path: path,
-            outcome: "failed",
-            details: String(removeError.message ?? removeError).slice(0, 1000),
-          });
+        await admin.from("cst_archive_cleanup_log").insert({
+          archive_id: row.id,
+          media_id: row.media_id,
+          report_id: row.report_id,
+          storage_path: path,
+          outcome: "failed",
+          details: String(removeError.message ?? removeError).slice(0, 1000),
+        });
         results.push({ id: row.id, outcome: "failed" });
         continue;
       }
@@ -136,18 +134,16 @@ Deno.serve(async (req) => {
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", row.id)
         .is("deleted_at", null);
-      await admin
-        .from("cst_archive_cleanup_log")
-        .insert({
-          archive_id: row.id,
-          media_id: row.media_id,
-          report_id: row.report_id,
-          storage_path: path,
-          outcome: markError ? "deleted" : "deleted",
-          details: markError
-            ? "Objet supprimé; marquage à réconcilier: " + String(markError.message).slice(0, 900)
-            : null,
-        });
+      await admin.from("cst_archive_cleanup_log").insert({
+        archive_id: row.id,
+        media_id: row.media_id,
+        report_id: row.report_id,
+        storage_path: path,
+        outcome: markError ? "deleted" : "deleted",
+        details: markError
+          ? "Objet supprimé; marquage à réconcilier: " + String(markError.message).slice(0, 900)
+          : null,
+      });
       results.push({ id: row.id, outcome: markError ? "deleted_needs_reconciliation" : "deleted" });
     }
     return json({ dry_run: false, processed: results.length, results });

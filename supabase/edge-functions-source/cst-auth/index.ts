@@ -302,15 +302,13 @@ Deno.serve(async (req) => {
         await admin.auth.admin.deleteUser(userId);
         return json({ error: "Attribution du rôle modérateur impossible." }, 500);
       }
-      const { error: profileError } = await admin
-        .from("moderator_profiles")
-        .insert({
-          user_id: userId,
-          email,
-          full_name: fullName,
-          region_id: regionId,
-          is_active: true,
-        });
+      const { error: profileError } = await admin.from("moderator_profiles").insert({
+        user_id: userId,
+        email,
+        full_name: fullName,
+        region_id: regionId,
+        is_active: true,
+      });
       if (profileError) {
         await admin.from("user_roles").delete().eq("user_id", userId).eq("role_id", role.id);
         await admin.auth.admin.deleteUser(userId);

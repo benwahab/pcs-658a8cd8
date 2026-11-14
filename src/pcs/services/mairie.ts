@@ -237,7 +237,9 @@ export async function signupMairie(input: {
       try {
         const body = await context.json();
         if (typeof body?.error === "string" && body.error.trim()) message = body.error;
-      } catch {}
+      } catch {
+        // The error body could not be parsed: keep the generic message.
+      }
     }
     if (/already registered|already exists|user.*exist/i.test(message))
       message =
@@ -269,7 +271,9 @@ export async function resetFieldAgentPassword(agentId: string, password: string)
         const payload = await context.clone().json();
         if (typeof payload?.error === "string" && payload.error.trim())
           message = payload.error.trim();
-      } catch {}
+      } catch {
+        // The error body could not be parsed: keep the generic message.
+      }
     }
     throw new Error(message);
   }
@@ -309,7 +313,9 @@ export async function createFieldAgent(input: {
         try {
           const raw = await context.clone().text();
           if (raw.trim()) message = raw.trim().slice(0, 300);
-        } catch {}
+        } catch {
+          // The error body could not be read as text: keep the generic message.
+        }
       }
     }
     throw new Error(message);

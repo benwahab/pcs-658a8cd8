@@ -104,13 +104,11 @@ Deno.serve(async (req) => {
     if (e.occurred_at > x.last_activity) x.last_activity = e.occurred_at;
     apiMap.set(k, x);
   }
-  const apiMonitoring = [...apiMap.values()]
-    .slice(0, 30)
-    .map((x) => ({
-      ...x,
-      avg_latency_ms: x.requests ? Math.round(x.totalLatency / x.requests) : null,
-      error_rate: x.requests ? Number(((x.errors / x.requests) * 100).toFixed(2)) : 0,
-    }));
+  const apiMonitoring = [...apiMap.values()].slice(0, 30).map((x) => ({
+    ...x,
+    avg_latency_ms: x.requests ? Math.round(x.totalLatency / x.requests) : null,
+    error_rate: x.requests ? Number(((x.errors / x.requests) * 100).toFixed(2)) : 0,
+  }));
   return json({
     environment: "PRODUCTION",
     checked_at: new Date().toISOString(),

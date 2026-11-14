@@ -319,7 +319,9 @@ export default function ReportForm() {
         const target = returnTargetRef.current ?? { type: "home" as const };
         try {
           window.sessionStorage.removeItem("pcs-report-return-v1");
-        } catch {}
+        } catch {
+          // Storage can be unavailable: there is nothing to clean up.
+        }
         const query =
           target.type === "report" && target.reportId
             ? `?pcsReturnReport=${encodeURIComponent(target.reportId)}`

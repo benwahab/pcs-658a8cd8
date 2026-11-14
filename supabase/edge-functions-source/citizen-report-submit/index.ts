@@ -434,17 +434,15 @@ Deno.serve(async (req) => {
           .upload(path, file, { contentType: file.type, upsert: false });
         if (error) throw new Error("Échec du stockage d’une photo.");
         uploaded.push(path);
-        const { error: rowError } = await admin
-          .from("report_media")
-          .insert({
-            report_id: report.id,
-            storage_path: path,
-            media_type: file.type,
-            file_size: file.size,
-            uploaded_by: null,
-            media_role: "citizen_evidence",
-            moderation_status: "pending",
-          });
+        const { error: rowError } = await admin.from("report_media").insert({
+          report_id: report.id,
+          storage_path: path,
+          media_type: file.type,
+          file_size: file.size,
+          uploaded_by: null,
+          media_role: "citizen_evidence",
+          moderation_status: "pending",
+        });
         if (rowError) throw new Error("Impossible d’enregistrer une photo du signalement.");
       }
       if (videoFile) {
@@ -454,17 +452,15 @@ Deno.serve(async (req) => {
           .upload(path, videoFile, { contentType: videoFile.type, upsert: false });
         if (error) throw new Error("Échec du stockage sécurisé de la vidéo.");
         uploaded.push(path);
-        const { error: rowError } = await admin
-          .from("report_media")
-          .insert({
-            report_id: report.id,
-            storage_path: path,
-            media_type: videoFile.type,
-            file_size: videoFile.size,
-            uploaded_by: null,
-            media_role: "citizen_evidence",
-            moderation_status: "pending",
-          });
+        const { error: rowError } = await admin.from("report_media").insert({
+          report_id: report.id,
+          storage_path: path,
+          media_type: videoFile.type,
+          file_size: videoFile.size,
+          uploaded_by: null,
+          media_role: "citizen_evidence",
+          moderation_status: "pending",
+        });
         if (rowError) throw new Error("Impossible d’enregistrer la vidéo du signalement.");
       }
     } catch (error) {

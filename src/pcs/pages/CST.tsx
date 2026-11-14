@@ -983,7 +983,9 @@ export function CSTDashboard() {
           .order("created_at", { ascending: false })
           .limit(2000);
         if (on) setStats(data ?? []);
-      } catch {}
+      } catch {
+        // Statistics are optional: keep the current values if the request fails.
+      }
     })();
     return () => {
       on = false;

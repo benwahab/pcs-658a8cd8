@@ -127,7 +127,9 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
             try {
               const payload = await context.clone().json();
               if (typeof payload?.error === "string") message = payload.error;
-            } catch {}
+            } catch {
+              // The error body could not be parsed: keep the generic message.
+            }
           }
           throw new Error(message);
         }

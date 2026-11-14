@@ -128,13 +128,17 @@ const MISSIONS_PREFIX = "pcs_offline_agent_missions_v2_";
 export function cacheAgentMissions(agentId: string, missions: unknown[]) {
   try {
     localStorage.setItem(MISSIONS_PREFIX + agentId, JSON.stringify(missions));
-  } catch {}
+  } catch {
+    // Storage full or unavailable: the offline mission cache is best-effort.
+  }
 }
 
 export function clearCachedAgentMissions(agentId: string) {
   try {
     localStorage.removeItem(MISSIONS_PREFIX + agentId);
-  } catch {}
+  } catch {
+    // Storage unavailable: there is nothing to clear.
+  }
 }
 
 export function getCachedAgentMissions<T = any>(agentId: string): T[] {
