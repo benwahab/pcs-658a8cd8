@@ -3,20 +3,38 @@ import { NigerRegionMap, TrendChart, MiniDashboardPreview } from "../components/
 import { Link, useNavigate } from "@/pcs/router";
 import { supabase } from "@/pcs/lib/supabase";
 import { LoginBrand, LoginFooter } from "../components/LoginBrand";
+import type { FunctionInvokeError } from "../types/functions";
+import type {
+  CstAlert,
+  CstApiEndpoint,
+  CstArchiveItem,
+  CstFrontendEvent,
+  CstHealth,
+  CstMediaItem,
+  CstOperations,
+  CstProfessionalAccount,
+  CstReportRow,
+  CstRequestEvent,
+  CstStatRow,
+  MairieSignupRequest,
+  OrganizationSignupRequest,
+} from "../types/cst";
 
-async function callCst(body: Record<string, unknown>) {
+async function callCst(
+  body: Record<string, unknown>,
+): Promise<{ configured?: boolean; session: { access_token: string; refresh_token: string } }> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase.functions.invoke("cst-auth", { body });
   if (error) throw new Error(error.message || "Service CST indisponible.");
   if (data?.error) throw new Error(data.error);
-  return data as any;
+  return data;
 }
 class SessionExpiredError extends Error {
   constructor() {
     super("Votre session CST a expiré. Reconnectez-vous.");
   }
 }
-async function health() {
+async function health(): Promise<CstHealth> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const invoke = (accessToken: string) =>
     supabase!.functions.invoke("cst-health", {
@@ -41,7 +59,7 @@ async function health() {
     accessToken = await refreshAccessToken();
   }
   let result = await invoke(accessToken);
-  const status = (result.error as any)?.context?.status;
+  const status = (result.error as FunctionInvokeError | null)?.context?.status;
   if (status === 401) {
     // A parallel tab/request may have rotated the refresh token; re-read the
     // current session before attempting a single controlled refresh.
@@ -52,18 +70,18 @@ async function health() {
       accessToken = await refreshAccessToken();
     }
     result = await invoke(accessToken);
-    if ((result.error as any)?.context?.status === 401) {
+    if ((result.error as FunctionInvokeError | null)?.context?.status === 401) {
       await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
       throw new SessionExpiredError();
     }
   }
   if (result.error || result.data?.error)
-    throw new Error(
-      result.data?.error ?? (result.error as any)?.message ?? "Supervision indisponible.",
-    );
-  return result.data as any;
+    throw new Error(result.data?.error ?? result.error?.message ?? "Supervision indisponible.");
+  return result.data;
 }
-async function mediaModeration(body: Record<string, unknown> = { action: "list" }) {
+async function mediaModeration(
+  body: Record<string, unknown> = { action: "list" },
+): Promise<{ items?: CstMediaItem[] }> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const getAccessToken = async (forceRefresh = false) => {
     const { data, error } = forceRefresh
@@ -86,58 +104,62 @@ async function mediaModeration(body: Record<string, unknown> = { action: "list" 
     body,
     headers: { Authorization: "Bearer " + accessToken },
   });
-  if ((result.error as any)?.context?.status === 401) {
+  if ((result.error as FunctionInvokeError | null)?.context?.status === 401) {
     accessToken = await getAccessToken(true);
     result = await supabase.functions.invoke("cst-media-moderation", {
       body,
       headers: { Authorization: "Bearer " + accessToken },
     });
-    if ((result.error as any)?.context?.status === 401) {
+    if ((result.error as FunctionInvokeError | null)?.context?.status === 401) {
       await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
       throw new SessionExpiredError();
     }
   }
   if (result.error || result.data?.error) {
-    const status = (result.error as any)?.context?.status;
+    const status = (result.error as FunctionInvokeError | null)?.context?.status;
     if (status === 503)
       throw new Error(
         "Service de modération temporairement indisponible. Le tableau réessaiera automatiquement.",
       );
     throw new Error(
-      result.data?.error ?? (result.error as any)?.message ?? "Service de modération indisponible.",
+      result.data?.error ?? result.error?.message ?? "Service de modération indisponible.",
     );
   }
-  return result.data as any;
+  return result.data;
 }
-async function listVideoArchives() {
+async function listVideoArchives(): Promise<{ items?: CstArchiveItem[] }> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase.functions.invoke("cst-video-archives", {
     body: { action: "list" },
   });
   if (error || data?.error)
     throw new Error(data?.error ?? "Impossible de charger les archives vidéo.");
-  return data as any;
+  return data;
 }
-async function reportManagement(body: Record<string, unknown>) {
+async function reportManagement(
+  body: Record<string, unknown>,
+): Promise<{ items?: CstReportRow[] }> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase.functions.invoke("cst-report-management", { body });
   if (error || data?.error)
     throw new Error(data?.error ?? "Gestion des signalements indisponible.");
-  return data as any;
+  return data;
 }
-async function professionalAccounts(body: Record<string, unknown>) {
+async function professionalAccounts(
+  body: Record<string, unknown>,
+): Promise<{ accounts?: CstProfessionalAccount[] }> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase.functions.invoke("cst-auth", { body });
   if (error || data?.error)
     throw new Error(data?.error ?? "Gestion des comptes professionnels indisponible.");
-  return data as any;
+  return data;
 }
-async function operationalOverview() {
+async function operationalOverview(): Promise<CstOperations> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase.functions.invoke("cst-operations", { method: "GET" });
   if (error || data?.error)
     throw new Error(data?.error ?? "Impossible de charger la supervision opérationnelle.");
-  return data as any;
+  return data;
 }
 async function setArchiveHold(archiveId: string, action: "hold" | "release", reason?: string) {
   if (!supabase) throw new Error("Supabase non configuré.");
@@ -148,13 +170,15 @@ async function setArchiveHold(archiveId: string, action: "hold" | "release", rea
     throw new Error(data?.error ?? "Impossible de modifier la conservation.");
   return data;
 }
-async function cleanupExpiredArchives(dryRun: boolean) {
+async function cleanupExpiredArchives(
+  dryRun: boolean,
+): Promise<{ count: number; processed: number }> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase.functions.invoke("cst-video-archives", {
     body: { action: "cleanup", dry_run: dryRun, limit: 100 },
   });
   if (error || data?.error) throw new Error(data?.error ?? "Nettoyage impossible.");
-  return data as any;
+  return data;
 }
 const Dot = ({ s }: { s: string }) => <span className={"cstStatusDot " + s} aria-hidden="true" />;
 const EyeIcon = ({ off = false }: { off?: boolean }) => (
@@ -194,7 +218,7 @@ export function CSTAccess() {
       try {
         const { data: sd } = await supabase!.auth.getSession();
         if (sd.session && !recoveryChange) {
-          const { data: a } = await (supabase as any)
+          const { data: a } = await supabase!
             .from("cst_accounts")
             .select("id")
             .eq("user_id", sd.session.user.id)
@@ -489,17 +513,17 @@ function Status({ value }: { value: string }) {
 
 export function CSTDashboard() {
   const nav = useNavigate();
-  const [data, setData] = useState<any>(null);
-  const [operations, setOperations] = useState<any>(null);
+  const [data, setData] = useState<CstHealth | null>(null);
+  const [operations, setOperations] = useState<CstOperations | null>(null);
   const [error, setError] = useState("");
   const [last, setLast] = useState("");
   const [traceFilter, setTraceFilter] = useState("");
-  const [mediaQueue, setMediaQueue] = useState<any[]>([]);
+  const [mediaQueue, setMediaQueue] = useState<CstMediaItem[]>([]);
   const [mediaBusy, setMediaBusy] = useState(false);
-  const [archives, setArchives] = useState<any[]>([]);
+  const [archives, setArchives] = useState<CstArchiveItem[]>([]);
   const [archivesBusy, setArchivesBusy] = useState(false);
-  const [reports, setReports] = useState<any[]>([]);
-  const [regions, setRegions] = useState<any[]>([]);
+  const [reports, setReports] = useState<CstReportRow[]>([]);
+  const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
   const [reportsBusy, setReportsBusy] = useState(false);
   const [reportSearch, setReportSearch] = useState("");
   const [reportRegionFilter, setReportRegionFilter] = useState("");
@@ -507,13 +531,15 @@ export function CSTDashboard() {
   const [archiveSearch, setArchiveSearch] = useState("");
   const [rejectingId, setRejectingId] = useState("");
   const [rejectReason, setRejectReason] = useState("");
-  const [orgRequests, setOrgRequests] = useState<any[]>([]);
+  const [orgRequests, setOrgRequests] = useState<OrganizationSignupRequest[]>([]);
   const [orgReviewBusy, setOrgReviewBusy] = useState(false);
   const [orgRejectingId, setOrgRejectingId] = useState("");
   const [orgRejectNote, setOrgRejectNote] = useState("");
-  const [mairieRequests, setMairieRequests] = useState<any[]>([]);
+  const [mairieRequests, setMairieRequests] = useState<MairieSignupRequest[]>([]);
   const [mairieReviewBusy, setMairieReviewBusy] = useState(false);
-  const [professionalAccountsList, setProfessionalAccountsList] = useState<any[]>([]);
+  const [professionalAccountsList, setProfessionalAccountsList] = useState<
+    CstProfessionalAccount[]
+  >([]);
   const [professionalAccountsBusy, setProfessionalAccountsBusy] = useState(false);
   const [professionalAccountActionBusy, setProfessionalAccountActionBusy] = useState(false);
   const [professionalAccountSearch, setProfessionalAccountSearch] = useState("");
@@ -534,7 +560,7 @@ export function CSTDashboard() {
     if (!supabase) throw new Error("Supabase non configuré.");
     const { data, error } = await supabase.rpc("list_organization_signup_requests");
     if (error) throw error;
-    setOrgRequests((data ?? []).filter((r: any) => r.status === "pending"));
+    setOrgRequests((data ?? []).filter((r) => r.status === "pending"));
   };
   const refreshProfessionalAccounts = async () => {
     setProfessionalAccountsBusy(true);
@@ -601,10 +627,10 @@ export function CSTDashboard() {
     const result = await mediaModeration({ action: "list" });
     const now = Date.now();
     setMediaQueue((previous) => {
-      const oldById = new Map(previous.map((item: any) => [item.id, item]));
+      const oldById = new Map(previous.map((item) => [item.id, item] as const));
       const refreshUrls = forceUrlRefresh || now - queueLoadedAt.current >= 12 * 60 * 1000;
-      return (result?.items ?? []).map((item: any) => {
-        const old: any = oldById.get(item.id);
+      return (result?.items ?? []).map((item) => {
+        const old = oldById.get(item.id);
         return old && !refreshUrls && old.preview_url
           ? { ...item, preview_url: old.preview_url }
           : item;
@@ -625,7 +651,7 @@ export function CSTDashboard() {
           nav("/cst");
           return;
         }
-        const { data: a } = await (supabase as any)
+        const { data: a } = await supabase!
           .from("cst_accounts")
           .select("id")
           .eq("user_id", s.session.user.id)
@@ -862,40 +888,40 @@ export function CSTDashboard() {
     }
   }
   const db = data?.database;
-  const m = data?.metrics ?? {};
+  const m: Partial<CstHealth["metrics"]> = data?.metrics ?? {};
   const global = error ? "degraded" : (db?.status ?? "offline");
   const requests = data?.live_requests ?? [];
   const frontend = data?.frontend_events ?? [];
   const traces = useMemo(
     () =>
       requests.filter(
-        (r: any) => !traceFilter || r.trace_id?.toLowerCase().includes(traceFilter.toLowerCase()),
+        (r) => !traceFilter || r.trace_id?.toLowerCase().includes(traceFilter.toLowerCase()),
       ),
     [requests, traceFilter],
   );
   const alerts = [
-    m.error_rate_percent > 5
+    (m.error_rate_percent ?? 0) > 5
       ? {
           severity: "critical",
           title: "ERROR RATE > 5%",
           detail: `Taux actuel : ${m.error_rate_percent}%`,
         }
       : null,
-    m.average_latency_ms > 1000
+    (m.average_latency_ms ?? 0) > 1000
       ? {
           severity: "warning",
           title: "LATENCY > 1000 ms",
           detail: `Moyenne actuelle : ${m.average_latency_ms} ms`,
         }
       : null,
-    db?.connection_utilization_percent > 80
+    (db?.connection_utilization_percent ?? 0) > 80
       ? {
           severity: "warning",
           title: "DATABASE CONNECTIONS > 80%",
-          detail: `Utilisation : ${db.connection_utilization_percent}%`,
+          detail: `Utilisation : ${db?.connection_utilization_percent}%`,
         }
       : null,
-  ].filter(Boolean) as any[];
+  ].filter(Boolean) as CstAlert[];
   const api = data?.api_monitoring ?? [];
   const reportCounts = operations?.reports ?? {};
   const missionCounts = operations?.missions ?? {};
@@ -943,7 +969,7 @@ export function CSTDashboard() {
   ];
   const missionMax = Math.max(1, ...missionRows.map(([, v]) => Number(v ?? 0)));
   const latestReports = [...reports]
-    .sort((a: any, b: any) => String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")))
+    .sort((a, b) => String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")))
     .slice(0, 5);
   const alertCount = alerts.length + (mairieRequests.length + orgRequests.length > 0 ? 1 : 0);
   const [techOpen, setTechOpen] = useState(false);
@@ -971,13 +997,13 @@ export function CSTDashboard() {
   }, []);
   const [openMenu, setOpenMenu] = useState<string>("");
   const [userMenu, setUserMenu] = useState(false);
-  const [stats, setStats] = useState<any[]>([]);
+  const [stats, setStats] = useState<CstStatRow[]>([]);
   useEffect(() => {
     let on = true;
     (async () => {
       try {
         if (!supabase) return;
-        const { data } = await (supabase as any)
+        const { data } = await supabase
           .from("reports")
           .select("id,created_at,status,categories(name),regions(name)")
           .order("created_at", { ascending: false })
@@ -991,25 +1017,25 @@ export function CSTDashboard() {
       on = false;
     };
   }, [reports.length]);
-  const statById = new Map(stats.map((s: any) => [s.id, s]));
+  const statById = new Map(stats.map((s) => [s.id, s] as const));
   const dayMs = 86400000;
   const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const inWin = (r: any, from: number, to: number) => {
+  const inWin = (r: CstStatRow, from: number, to: number) => {
     const t = new Date(r.created_at).getTime();
     return t >= from && t < to;
   };
-  const wk = (f: (r: any) => boolean, w: number) =>
+  const wk = (f: (r: CstStatRow) => boolean, w: number) =>
     stats.filter(
       (r) => inWin(r, today0 + dayMs - (w + 1) * 7 * dayMs, today0 + dayMs - w * 7 * dayMs) && f(r),
     ).length;
-  const trend = (f: (r: any) => boolean) => {
+  const trend = (f: (r: CstStatRow) => boolean) => {
     const a = wk(f, 0),
       b = wk(f, 1);
     if (!b) return a ? "+100%" : "0%";
     const p = Math.round(((a - b) / b) * 100);
     return (p >= 0 ? "+" : "") + p + "%";
   };
-  const isTreated = (r: any) => ["in_progress", "resolved"].includes(r.status);
+  const isTreated = (r: CstStatRow) => ["in_progress", "resolved"].includes(r.status);
   const trendPoints = Array.from({ length: 8 }, (_, i) => {
     const from = today0 - (7 - i) * dayMs;
     const rows = stats.filter((r) => inWin(r, from, from + dayMs));
@@ -1017,11 +1043,11 @@ export function CSTDashboard() {
       label: new Date(from).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }),
       received: rows.length,
       treated: rows.filter(isTreated).length,
-      resolved: rows.filter((r: any) => r.status === "resolved").length,
+      resolved: rows.filter((r) => r.status === "resolved").length,
     };
   });
   const catCounts: Record<string, number> = {};
-  stats.forEach((r: any) => {
+  stats.forEach((r) => {
     const k = r.categories?.name ?? "Autres";
     catCounts[k] = (catCounts[k] ?? 0) + 1;
   });
@@ -1041,7 +1067,7 @@ export function CSTDashboard() {
       })
       .join(",") || "#ece7fb 0deg 360deg";
   const regionCounts: Record<string, number> = {};
-  stats.forEach((r: any) => {
+  stats.forEach((r) => {
     const k = r.regions?.name;
     if (k) regionCounts[k] = (regionCounts[k] ?? 0) + 1;
   });
@@ -1145,7 +1171,7 @@ export function CSTDashboard() {
             );
             if (it.to)
               return (
-                <Link key={it.id} to={it.to as any}>
+                <Link key={it.id} to={it.to}>
                   {inner}
                   <b className="cstNavChevron">›</b>
                 </Link>
@@ -1305,16 +1331,16 @@ export function CSTDashboard() {
                     "◷",
                     "En attente de validation",
                     pendingReports,
-                    trend((r: any) => ["submitted", "received", "verification"].includes(r.status)),
+                    trend((r) => ["submitted", "received", "verification"].includes(r.status)),
                   ],
                   [
                     "blue",
                     "👥",
                     "En cours de traitement",
                     Number(reportCounts.in_progress ?? 0),
-                    trend((r: any) => r.status === "in_progress"),
+                    trend((r) => r.status === "in_progress"),
                   ],
-                  ["green", "✓", "Résolus", resolved, trend((r: any) => r.status === "resolved")],
+                  ["green", "✓", "Résolus", resolved, trend((r) => r.status === "resolved")],
                 ] as [string, string, string, number, string][]
               ).map(([tone, ic, label, val, tr]) => (
                 <article className="cstKpiCard" key={label}>
@@ -1419,8 +1445,8 @@ export function CSTDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {latestReports.map((r: any) => {
-                          const s: any = statById.get(r.id);
+                        {latestReports.map((r) => {
+                          const s = statById.get(r.id);
                           return (
                             <tr key={r.id}>
                               <td>{r.reference_code ?? "—"}</td>
@@ -1467,8 +1493,8 @@ export function CSTDashboard() {
                 </div>
                 {latestReports.length ? (
                   <ul className="cstActivity">
-                    {latestReports.map((r: any) => {
-                      const s: any = statById.get(r.id);
+                    {latestReports.map((r) => {
+                      const s = statById.get(r.id);
                       return (
                         <li key={"a" + r.id}>
                           <span className={"cstActIcon s-" + r.status}>
@@ -1577,7 +1603,7 @@ export function CSTDashboard() {
               </div>
               {mediaQueue.length > 0 && (
                 <div className="cstMediaStrip">
-                  {mediaQueue.slice(0, 4).map((v: any) => (
+                  {mediaQueue.slice(0, 4).map((v) => (
                     <a href="#moderation" key={v.id}>
                       {v.preview_url && String(v.media_type ?? "").startsWith("image/") ? (
                         <img src={v.preview_url} alt="" />
@@ -1613,10 +1639,10 @@ export function CSTDashboard() {
                   <span
                     className={
                       "cstRateTrend " +
-                      (trend((r: any) => r.status === "resolved").startsWith("-") ? "down" : "up")
+                      (trend((r) => r.status === "resolved").startsWith("-") ? "down" : "up")
                     }
                   >
-                    {trend((r: any) => r.status === "resolved")}
+                    {trend((r) => r.status === "resolved")}
                   </span>
                   <p>vs. semaine précédente</p>
                 </div>
@@ -1699,7 +1725,7 @@ export function CSTDashboard() {
                       <h3>
                         {operations.totals?.organizations_active ?? 0} organisation(s) active(s)
                       </h3>
-                      {(operations.organizations ?? []).map((org: any) => (
+                      {(operations.organizations ?? []).map((org) => (
                         <div className="cstRows" key={org.code}>
                           <div>
                             <span>{org.name}</span>
@@ -1791,11 +1817,11 @@ export function CSTDashboard() {
                 {professionalAccountsBusy && professionalAccountsList.length === 0 ? (
                   <p className="cstMuted">Chargement des comptes approuvés…</p>
                 ) : null}
-                {professionalAccountsList.filter((a: any) => {
+                {professionalAccountsList.filter((a) => {
                   const q = professionalAccountSearch.trim().toLowerCase();
                   return (
                     !q ||
-                    [a.type, a.name, a.structure, a.region, a.email, a.phone].some((v: any) =>
+                    [a.type, a.name, a.structure, a.region, a.email, a.phone].some((v) =>
                       String(v ?? "")
                         .toLowerCase()
                         .includes(q),
@@ -1806,18 +1832,18 @@ export function CSTDashboard() {
                 ) : (
                   <div className="cstVideoQueue">
                     {professionalAccountsList
-                      .filter((a: any) => {
+                      .filter((a) => {
                         const q = professionalAccountSearch.trim().toLowerCase();
                         return (
                           !q ||
-                          [a.type, a.name, a.structure, a.region, a.email, a.phone].some((v: any) =>
+                          [a.type, a.name, a.structure, a.region, a.email, a.phone].some((v) =>
                             String(v ?? "")
                               .toLowerCase()
                               .includes(q),
                           )
                         );
                       })
-                      .map((a: any) => (
+                      .map((a) => (
                         <article className="cstVideoReview" key={a.key}>
                           <div className="cstVideoMeta">
                             <div className="cstVideoTitle">
@@ -1912,7 +1938,7 @@ export function CSTDashboard() {
                   <p className="cstMuted">Aucune demande mairie en attente.</p>
                 ) : (
                   <div className="cstVideoQueue">
-                    {mairieRequests.map((r: any) => (
+                    {mairieRequests.map((r) => (
                       <article className="cstVideoReview" key={r.id}>
                         <div className="cstVideoMeta">
                           <div className="cstVideoTitle">
@@ -1997,7 +2023,7 @@ export function CSTDashboard() {
                   <p className="cstMuted">Aucune demande NIGELEC/NDE en attente.</p>
                 ) : (
                   <div className="cstVideoQueue">
-                    {orgRequests.map((r: any) => (
+                    {orgRequests.map((r) => (
                       <article className="cstVideoReview" key={r.id}>
                         <div className="cstVideoMeta">
                           <div className="cstVideoTitle">
@@ -2167,12 +2193,12 @@ export function CSTDashboard() {
                 {archivesBusy && archives.length === 0 ? (
                   <p className="cstMuted">Chargement des archives…</p>
                 ) : null}
-                {archives.filter((v: any) => {
+                {archives.filter((v) => {
                   const q = archiveSearch.trim().toLowerCase();
                   return (
                     !q ||
                     [v.report?.reference_code, v.report?.title, v.report?.location_label].some(
-                      (x: any) =>
+                      (x) =>
                         String(x ?? "")
                           .toLowerCase()
                           .includes(q),
@@ -2185,7 +2211,7 @@ export function CSTDashboard() {
                 ) : (
                   <div className="cstVideoQueue">
                     {archives
-                      .filter((v: any) => {
+                      .filter((v) => {
                         const q = archiveSearch.trim().toLowerCase();
                         return (
                           !q ||
@@ -2193,14 +2219,14 @@ export function CSTDashboard() {
                             v.report?.reference_code,
                             v.report?.title,
                             v.report?.location_label,
-                          ].some((x: any) =>
+                          ].some((x) =>
                             String(x ?? "")
                               .toLowerCase()
                               .includes(q),
                           )
                         );
                       })
-                      .map((v: any) => (
+                      .map((v) => (
                         <article className="cstVideoReview" key={v.id}>
                           <div className="cstVideoPreview">
                             {v.preview_url ? (
@@ -2344,7 +2370,7 @@ export function CSTDashboard() {
                     onChange={(e) => setReportRegionFilter(e.target.value)}
                   >
                     <option value="">Toutes les régions</option>
-                    {regions.map((region: any) => (
+                    {regions.map((region) => (
                       <option key={region.id} value={region.id}>
                         {region.name}
                       </option>
@@ -2376,12 +2402,12 @@ export function CSTDashboard() {
                 {reportsBusy && reports.length === 0 ? (
                   <p className="cstMuted">Chargement des signalements…</p>
                 ) : null}
-                {reports.filter((r: any) => {
+                {reports.filter((r) => {
                   const q = reportSearch.trim().toLowerCase();
                   const matchesSearch =
                     !q ||
                     [r.reference_code, r.title, r.location_label, r.status, r.regions?.name].some(
-                      (v: any) =>
+                      (v) =>
                         String(v ?? "")
                           .toLowerCase()
                           .includes(q),
@@ -2393,7 +2419,7 @@ export function CSTDashboard() {
                 ) : (
                   <div className="cstReportList">
                     {reports
-                      .filter((r: any) => {
+                      .filter((r) => {
                         const q = reportSearch.trim().toLowerCase();
                         const matchesSearch =
                           !q ||
@@ -2403,7 +2429,7 @@ export function CSTDashboard() {
                             r.location_label,
                             r.status,
                             r.regions?.name,
-                          ].some((v: any) =>
+                          ].some((v) =>
                             String(v ?? "")
                               .toLowerCase()
                               .includes(q),
@@ -2412,7 +2438,7 @@ export function CSTDashboard() {
                           !reportRegionFilter || r.region_id === reportRegionFilter;
                         return matchesSearch && matchesRegion;
                       })
-                      .map((r: any) => (
+                      .map((r) => (
                         <article className="cstReportRow" key={r.id}>
                           <div className="cstReportIdentity">
                             <strong>{r.reference_code || "Signalement"}</strong>
@@ -2538,7 +2564,7 @@ export function CSTDashboard() {
                   </p>
                 ) : (
                   <div className="cstVideoQueue">
-                    {mediaQueue.map((v: any) => (
+                    {mediaQueue.map((v) => (
                       <article className="cstVideoReview" key={v.id}>
                         <div className="cstVideoPreview">
                           {v.preview_url ? (
@@ -2739,7 +2765,7 @@ export function CSTDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {requests.slice(0, 40).map((r: any) => (
+                        {requests.slice(0, 40).map((r) => (
                           <tr key={r.id}>
                             <td>{new Date(r.occurred_at).toLocaleTimeString("fr-FR")}</td>
                             <td>
@@ -2788,7 +2814,7 @@ export function CSTDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {api.map((a: any) => (
+                        {api.map((a) => (
                           <tr key={a.method + " " + a.endpoint}>
                             <td>{a.method}</td>
                             <td>{a.endpoint}</td>
@@ -2810,7 +2836,7 @@ export function CSTDashboard() {
                 <h2>{frontend.length ? "Événements détectés" : "Aucune erreur détectée"}</h2>
                 {frontend.length ? (
                   <div className="cstEventList">
-                    {frontend.slice(0, 20).map((e: any) => (
+                    {frontend.slice(0, 20).map((e) => (
                       <div key={e.id}>
                         <strong>{e.event_type}</strong>
                         <span>{e.message || "—"}</span>
@@ -2895,7 +2921,7 @@ export function CSTDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {traces.map((r: any) => (
+                        {traces.map((r) => (
                           <tr key={"t" + r.id}>
                             <td>
                               <code>{r.trace_id}</code>
@@ -2927,7 +2953,7 @@ export function CSTDashboard() {
                 <h2>{alerts.length ? "Alertes actives" : "Aucune alerte active"}</h2>
                 {alerts.length ? (
                   <div className="cstEventList">
-                    {alerts.map((a: any) => (
+                    {alerts.map((a) => (
                       <div key={a.title} className="cstAlertRow">
                         <strong>{a.title}</strong>
                         <span>{a.detail}</span>
