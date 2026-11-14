@@ -7,6 +7,7 @@ import { getMyOrganizationMembership } from "../services/organization";
 import PasswordField from "../components/PasswordField";
 import PasswordRecovery from "../components/PasswordRecovery";
 import { listRegions, listCommunes } from "../services/mairie";
+import type { CommuneOption, RegionOption } from "../types/organization";
 
 const ORG_SPACES = {
   NIGELEC: {
@@ -43,8 +44,8 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
   const [fullName, setFullName] = useState("");
   const [structureName, setStructureName] = useState("");
   const [phone, setPhone] = useState("");
-  const [regions, setRegions] = useState<any[]>([]);
-  const [communes, setCommunes] = useState<any[]>([]);
+  const [regions, setRegions] = useState<RegionOption[]>([]);
+  const [communes, setCommunes] = useState<CommuneOption[]>([]);
   const [regionId, setRegionId] = useState("");
   const [communeId, setCommuneId] = useState("");
 
@@ -121,7 +122,7 @@ export default function OrganizationLogin({ org }: { org: OrgCode }) {
           },
         );
         if (signupError) {
-          const context = (signupError as any).context;
+          const context = signupError.context;
           let message = signupError.message || "Impossible d’enregistrer la demande.";
           if (context instanceof Response) {
             try {

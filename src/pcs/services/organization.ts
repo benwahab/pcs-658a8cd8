@@ -1,4 +1,15 @@
 import { supabase } from "../lib/supabase";
+import type {
+  AgencyAgent,
+  AgencyMission,
+  MembershipUnitRow,
+  OrganizationLookupRow,
+  OrganizationTransfer,
+  OrganizationUnitAssignment,
+  OrganizationUnitListItem,
+  PublicReportSummary,
+  UnitSummary,
+} from "../types/organization";
 
 export type OrganizationMembership = {
   organization_id: string;
@@ -26,10 +37,8 @@ export async function getMyOrganizationMembership(): Promise<OrganizationMembers
   if (error) throw error;
   if (!memberships?.length) return null;
 
-  const organizationIds = [
-    ...new Set(memberships.map((m: any) => m.organization_id).filter(Boolean)),
-  ];
-  const unitIds = [...new Set(memberships.map((m: any) => m.unit_id).filter(Boolean))];
+  const organizationIds = [...new Set(memberships.map((m) => m.organization_id).filter(Boolean))];
+  const unitIds = [...new Set(memberships.map((m) => m.unit_id).filter(Boolean))] as string[];
   const [{ data: organizations, error: orgError }, { data: linkedUnits, error: unitError }] =
     await Promise.all([
       supabase
@@ -41,20 +50,22 @@ export async function getMyOrganizationMembership(): Promise<OrganizationMembers
             .from("organization_units")
             .select("id,organization_id,name,code,unit_type,is_active")
             .in("id", unitIds)
-        : Promise.resolve({ data: [], error: null } as any),
+        : Promise.resolve({ data: [], error: null } as { data: MembershipUnitRow[]; error: null }),
     ]);
   if (orgError) throw orgError;
   if (unitError) throw unitError;
 
-  const organizationById = new Map((organizations ?? []).map((o: any) => [o.id, o]));
-  const unitById = new Map<string, any>((linkedUnits ?? []).map((u: any) => [u.id, u]));
+  const organizationById = new Map<string, OrganizationLookupRow>(
+    (organizations ?? []).map((o) => [o.id, o]),
+  );
+  const unitById = new Map<string, MembershipUnitRow>((linkedUnits ?? []).map((u) => [u.id, u]));
   const hydrated = memberships
-    .map((m: any) => ({
+    .map((m) => ({
       membership: m,
       organization: organizationById.get(m.organization_id) ?? null,
       unit: m.unit_id ? (unitById.get(m.unit_id) ?? null) : null,
     }))
-    .filter((x: any) => x.organization?.is_active !== false);
+    .filter((x) => x.organization?.is_active !== false);
 
   for (const item of hydrated) {
     if (item.unit || item.membership.unit_id) continue;
@@ -68,7 +79,7 @@ export async function getMyOrganizationMembership(): Promise<OrganizationMembers
     if (centralUnits?.length === 1) item.unit = centralUnits[0];
   }
 
-  hydrated.sort((a: any, b: any) => Number(Boolean(b.unit)) - Number(Boolean(a.unit)));
+  hydrated.sort((a, b) => Number(Boolean(b.unit)) - Number(Boolean(a.unit)));
   const selected = hydrated[0];
   if (!selected?.organization) return null;
   return {
@@ -76,11 +87,12 @@ export async function getMyOrganizationMembership(): Promise<OrganizationMembers
     unit_id: selected.unit?.id ?? selected.membership.unit_id ?? null,
     role: selected.membership.role as OrganizationMembership["role"],
     organization: selected.organization,
-    unit: selected.unit,
+    // unit_type is a plain string column in the generated types; the union is enforced by the app.
+    unit: selected.unit as OrganizationMembership["unit"],
   };
 }
 
-export async function listOrganizationTransfers() {
+export async function listOrganizationTransfers(): Promise<OrganizationTransfer[]> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase
     .from("report_organization_transfers")
@@ -88,15 +100,18 @@ export async function listOrganizationTransfers() {
     .order("transmitted_at", { ascending: false });
   if (error) throw error;
   const rows = data ?? [],
-    ids = rows.map((x: any) => x.report_id);
+    ids = rows.map((x) => x.report_id);
   if (!ids.length) return rows;
   const { data: reports, error: re } = await supabase
     .from("public_reports")
     .select("id,reference_code,title,status,priority,latitude,longitude,location_label,created_at")
     .in("id", ids);
   if (re) throw re;
-  const byId = new Map((reports ?? []).map((r: any) => [r.id, r]));
-  return rows.map((r: any) => ({ ...r, reports: byId.get(r.report_id) ?? null }));
+  // The generated public_reports view type has no latitude/longitude, so Supabase types this select as an error type.
+  const byId = new Map<string | null, PublicReportSummary>(
+    ((reports ?? []) as unknown as PublicReportSummary[]).map((r) => [r.id, r]),
+  );
+  return rows.map((r) => ({ ...r, reports: byId.get(r.report_id) ?? null }));
 }
 
 export async function acceptOrganizationTransfer(id: string, note?: string) {
@@ -117,7 +132,10 @@ export async function declineOrganizationTransfer(id: string, note: string) {
   if (error) throw error;
   return data;
 }
-export async function listOrganizationUnits(organizationId: string, centralUnitId?: string | null) {
+export async function listOrganizationUnits(
+  organizationId: string,
+  centralUnitId?: string | null,
+): Promise<OrganizationUnitListItem[]> {
   if (!supabase) throw new Error("Supabase non configuré.");
   let query = supabase
     .from("organization_units")
@@ -141,7 +159,9 @@ export async function assignOrganizationAgency(transferId: string, unitId: strin
   if (error) throw error;
   return data;
 }
-export async function listOrganizationUnitAssignments(organizationId: string) {
+export async function listOrganizationUnitAssignments(
+  organizationId: string,
+): Promise<OrganizationUnitAssignment[]> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase
     .from("report_unit_assignments")
@@ -152,8 +172,8 @@ export async function listOrganizationUnitAssignments(organizationId: string) {
     .order("assigned_at", { ascending: false });
   if (error) throw error;
   const rows = data ?? [],
-    ids = rows.map((x: any) => x.report_id),
-    unitIds = [...new Set(rows.map((x: any) => x.unit_id).filter(Boolean))];
+    ids = rows.map((x) => x.report_id),
+    unitIds = [...new Set(rows.map((x) => x.unit_id).filter(Boolean))];
   if (!ids.length) return [];
   const [{ data: reports, error: re }, { data: units, error: ue }] = await Promise.all([
     supabase
@@ -162,19 +182,21 @@ export async function listOrganizationUnitAssignments(organizationId: string) {
       .in("id", ids),
     unitIds.length
       ? supabase.from("organization_units").select("id,name,code").in("id", unitIds)
-      : Promise.resolve({ data: [], error: null } as any),
+      : Promise.resolve({ data: [], error: null } as { data: UnitSummary[]; error: null }),
   ]);
   if (re) throw re;
   if (ue) throw ue;
-  const byReport = new Map((reports ?? []).map((r: any) => [r.id, r]));
-  const byUnit = new Map((units ?? []).map((u: any) => [u.id, u]));
-  return rows.map((r: any) => ({
+  const byReport = new Map<string | null, PublicReportSummary>(
+    (reports ?? []).map((r) => [r.id, r]),
+  );
+  const byUnit = new Map<string, UnitSummary>((units ?? []).map((u) => [u.id, u]));
+  return rows.map((r) => ({
     ...r,
     reports: byReport.get(r.report_id) ?? null,
     unit: byUnit.get(r.unit_id) ?? null,
   }));
 }
-export async function listAgencyMissions(unitId: string) {
+export async function listAgencyMissions(unitId: string): Promise<AgencyMission[]> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase
     .from("report_unit_assignments")
@@ -183,15 +205,18 @@ export async function listAgencyMissions(unitId: string) {
     .order("assigned_at", { ascending: false });
   if (error) throw error;
   const rows = data ?? [],
-    ids = rows.map((x: any) => x.report_id);
+    ids = rows.map((x) => x.report_id);
   if (!ids.length) return rows;
   const { data: reports, error: re } = await supabase
     .from("public_reports")
     .select("id,reference_code,title,status,priority,latitude,longitude,location_label,created_at")
     .in("id", ids);
   if (re) throw re;
-  const byId = new Map((reports ?? []).map((r: any) => [r.id, r]));
-  return rows.map((r: any) => ({ ...r, reports: byId.get(r.report_id) ?? null }));
+  // The generated public_reports view type has no latitude/longitude, so Supabase types this select as an error type.
+  const byId = new Map<string | null, PublicReportSummary>(
+    ((reports ?? []) as unknown as PublicReportSummary[]).map((r) => [r.id, r]),
+  );
+  return rows.map((r) => ({ ...r, reports: byId.get(r.report_id) ?? null }));
 }
 export async function assignAgencyMissionToAgent(
   missionId: string,
@@ -207,7 +232,10 @@ export async function assignAgencyMissionToAgent(
   if (error) throw error;
   return data;
 }
-export async function listAgencyAgents(organizationId: string, unitId: string) {
+export async function listAgencyAgents(
+  organizationId: string,
+  unitId: string,
+): Promise<AgencyAgent[]> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase
     .from("field_agents")
@@ -242,7 +270,7 @@ export async function createAgencyAgent(input: {
     headers: { Authorization: "Bearer " + session.access_token },
   });
   if (error) {
-    const context = (error as any).context;
+    const context = error.context;
     let message = error.message || "La création de l’agent a échoué.";
     if (context instanceof Response) {
       try {
@@ -290,7 +318,7 @@ export async function createOrganizationAgency(input: {
     headers: { Authorization: "Bearer " + session.access_token },
   });
   if (error) {
-    const context = (error as any).context;
+    const context = error.context;
     let message = error.message || "La création du compte d’agence a échoué.";
     if (context instanceof Response) {
       try {

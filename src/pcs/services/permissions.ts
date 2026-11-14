@@ -14,7 +14,7 @@ export async function getMyRoles(): Promise<AppRole[]> {
     .select("roles(code)")
     .eq("user_id", session.user.id);
   if (error) throw error;
-  return (data ?? []).map((row: any) => row.roles?.code).filter(Boolean) as AppRole[];
+  return (data ?? []).map((row) => row.roles?.code).filter(Boolean) as AppRole[];
 }
 export function canOperate(roles: AppRole[]) {
   return roles.some((r) => r === "agent" || r === "admin" || r === "mairie");

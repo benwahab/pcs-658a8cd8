@@ -17,15 +17,23 @@ import {
   listOrganizationUnitAssignments,
   uploadOrganizationLogo,
 } from "../services/organization";
+import type { OrganizationMembership } from "../services/organization";
+import type {
+  AgencyAgent,
+  AgencyMission,
+  OrganizationTransfer,
+  OrganizationUnitAssignment,
+  OrganizationUnitListItem,
+} from "../types/organization";
 
 export default function OrganizationDashboard() {
   const nav = useNavigate();
-  const [membership, setMembership] = useState<any>(null),
-    [transfers, setTransfers] = useState<any[]>([]),
-    [units, setUnits] = useState<any[]>([]),
-    [missions, setMissions] = useState<any[]>([]),
-    [agencyMissions, setAgencyMissions] = useState<any[]>([]),
-    [agents, setAgents] = useState<any[]>([]);
+  const [membership, setMembership] = useState<OrganizationMembership | null>(null),
+    [transfers, setTransfers] = useState<OrganizationTransfer[]>([]),
+    [units, setUnits] = useState<OrganizationUnitListItem[]>([]),
+    [missions, setMissions] = useState<AgencyMission[]>([]),
+    [agencyMissions, setAgencyMissions] = useState<OrganizationUnitAssignment[]>([]),
+    [agents, setAgents] = useState<AgencyAgent[]>([]);
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [agencyFor, setAgencyFor] = useState<Record<string, string>>({}),
@@ -59,7 +67,7 @@ export default function OrganizationDashboard() {
           listOrganizationUnitAssignments(m.organization_id),
         ]);
         setTransfers(t);
-        setUnits(u.filter((x: any) => x.unit_type === "agency"));
+        setUnits(u.filter((x) => x.unit_type === "agency"));
         setAgencyMissions(am);
       } else if (m.unit?.unit_type === "agency" && m.organization_id && m.unit_id) {
         const [t, ms, as] = await Promise.all([
@@ -84,7 +92,7 @@ export default function OrganizationDashboard() {
     await supabase?.auth.signOut();
     nav("/");
   }
-  async function act(fn: () => Promise<any>) {
+  async function act(fn: () => Promise<unknown>) {
     setError("");
     setBusy(true);
     try {
@@ -179,9 +187,7 @@ export default function OrganizationDashboard() {
                 <span className="orgKpiIcon violet">⇄</span>
                 <div>
                   <small>Transmissions en attente</small>
-                  <strong>
-                    {transfers.filter((item: any) => item.status === "pending").length}
-                  </strong>
+                  <strong>{transfers.filter((item) => item.status === "pending").length}</strong>
                   <span>À examiner par la direction</span>
                 </div>
               </article>
@@ -216,9 +222,7 @@ export default function OrganizationDashboard() {
                 <span className="orgKpiIcon amber">◷</span>
                 <div>
                   <small>À prendre en charge</small>
-                  <strong>
-                    {transfers.filter((item: any) => item.status === "pending").length}
-                  </strong>
+                  <strong>{transfers.filter((item) => item.status === "pending").length}</strong>
                   <span>En attente de décision</span>
                 </div>
               </article>
@@ -310,7 +314,7 @@ export default function OrganizationDashboard() {
               {!transfers.length ? (
                 <p>Aucune transmission en attente ou historique disponible.</p>
               ) : (
-                transfers.map((t: any) => (
+                transfers.map((t) => (
                   <article className="card" key={t.id}>
                     <strong>{t.reports?.reference_code ?? t.report_id}</strong>
                     <h3>{t.reports?.title ?? "Signalement transmis"}</h3>
@@ -350,7 +354,7 @@ export default function OrganizationDashboard() {
                             onChange={(e) => setAgencyFor({ ...agencyFor, [t.id]: e.target.value })}
                           >
                             <option value="">Choisir une agence…</option>
-                            {units.map((u: any) => (
+                            {units.map((u) => (
                               <option key={u.id} value={u.id}>
                                 {u.name}
                               </option>
@@ -375,7 +379,7 @@ export default function OrganizationDashboard() {
               {!units.length ? (
                 <p>Aucune agence opérationnelle n'est encore créée.</p>
               ) : (
-                units.map((u: any) => (
+                units.map((u) => (
                   <div className="row" key={u.id}>
                     <strong>{u.name}</strong>
                     <span>{u.code}</span>
@@ -388,7 +392,7 @@ export default function OrganizationDashboard() {
               {!agencyMissions.length ? (
                 <p>Aucune mission locale n'est encore enregistrée.</p>
               ) : (
-                agencyMissions.map((m: any) => (
+                agencyMissions.map((m) => (
                   <div className="row" key={m.id}>
                     <div>
                       <strong>{m.reports?.reference_code ?? m.report_id}</strong>
@@ -486,12 +490,12 @@ export default function OrganizationDashboard() {
           <>
             <div className="card" id="org-transfers">
               <h2>Transmissions de la mairie</h2>
-              {transfers.filter((t: any) => t.status === "pending").length === 0 ? (
+              {transfers.filter((t) => t.status === "pending").length === 0 ? (
                 <p>Aucune transmission locale en attente.</p>
               ) : (
                 transfers
-                  .filter((t: any) => t.status === "pending")
-                  .map((t: any) => (
+                  .filter((t) => t.status === "pending")
+                  .map((t) => (
                     <article className="card" key={t.id}>
                       <strong>{t.reports?.reference_code ?? t.report_id}</strong>
                       <h3>{t.reports?.title ?? "Signalement transmis"}</h3>
@@ -525,12 +529,12 @@ export default function OrganizationDashboard() {
               )}
             </div>
             <div className="card" id="org-missions">
-              <h2>{membership.unit?.name}</h2>
+              <h2>{membership?.unit?.name}</h2>
               <p>Missions reçues : {missions.length}</p>
               {!missions.length ? (
                 <p>Aucune mission attribuée.</p>
               ) : (
-                missions.map((m: any) => (
+                missions.map((m) => (
                   <article className="card" key={m.id}>
                     <strong>{m.reports?.reference_code ?? m.report_id}</strong>
                     <h3>{m.reports?.title ?? "Mission"}</h3>
@@ -544,7 +548,7 @@ export default function OrganizationDashboard() {
                         }
                       >
                         <option value="">Affecter un agent…</option>
-                        {agents.map((a: any) => (
+                        {agents.map((a) => (
                           <option key={a.id} value={a.id}>
                             {a.first_name} {a.last_name} — {a.matricule}
                           </option>
@@ -616,7 +620,7 @@ export default function OrganizationDashboard() {
               {!agents.length ? (
                 <p>Aucun agent dans cette agence.</p>
               ) : (
-                agents.map((a: any) => (
+                agents.map((a) => (
                   <div className="row" key={a.id}>
                     <strong>
                       {a.first_name} {a.last_name}
