@@ -30,6 +30,7 @@ export function PhotoLightbox({
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `go` n'utilise que le setter d'état ; l'écouteur clavier ne doit être réinstallé que si `onClose` change
   }, [onClose]);
 
   return createPortal(

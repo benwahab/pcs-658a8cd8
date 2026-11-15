@@ -185,6 +185,7 @@ export default function MairieDashboard() {
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- abonnements et minuterie installés une seule fois au montage
   }, []);
   async function createAgent() {
     setError("");

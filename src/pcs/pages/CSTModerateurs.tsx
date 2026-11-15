@@ -43,6 +43,7 @@ export default function CSTModerateurs() {
   }
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chargement initial au montage uniquement
   }, []);
 
   async function create(e: React.FormEvent) {

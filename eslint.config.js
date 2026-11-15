@@ -36,5 +36,12 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    // Fast refresh : ces fichiers exportent volontairement composants ET utilitaires
+    // (variantes `cva`, hooks, helpers de routage) selon le schéma standard de shadcn/ui.
+    // Seul effet : rechargement complet au lieu du rafraîchissement à chaud en développement.
+    files: ["src/components/ui/**/*.{ts,tsx}", "src/pcs/router.tsx"],
+    rules: { "react-refresh/only-export-components": "off" },
+  },
   eslintPluginPrettier,
 );

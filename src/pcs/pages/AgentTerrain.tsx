@@ -186,6 +186,7 @@ export default function AgentTerrain() {
     void syncPending();
     window.addEventListener("online", syncPending);
     return () => window.removeEventListener("online", syncPending);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chargement initial une seule fois, dès que l'agent est identifié (`load`/`syncPending` sont recréés à chaque rendu)
   }, [agentUserId]);
 
   function route(lat: number | null, lng: number | null) {

@@ -890,7 +890,7 @@ export function CSTDashboard() {
   const db = data?.database;
   const m: Partial<CstHealth["metrics"]> = data?.metrics ?? {};
   const global = error ? "degraded" : (db?.status ?? "offline");
-  const requests = data?.live_requests ?? [];
+  const requests = useMemo(() => data?.live_requests ?? [], [data]);
   const frontend = data?.frontend_events ?? [];
   const traces = useMemo(
     () =>

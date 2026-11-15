@@ -50,10 +50,12 @@ export default function Dashboard() {
       })
       .catch((e) => setError(e.message));
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- chargement initial au montage uniquement
   }, []);
   useEffect(() => {
     const t = setTimeout(load, 250);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `load` lit ces filtres ; on recharge (avec délai) uniquement quand ils changent
   }, [status, priority, category, department, search]);
   const counts = useMemo(
     () =>
