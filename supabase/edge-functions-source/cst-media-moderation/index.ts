@@ -82,12 +82,33 @@ Deno.serve(async (req) => {
     if (error) return json({ error: "Impossible de charger la file de modération." }, 500);
     const filtered = data ?? [];
     const items = [];
+    const nearbyByReport = new Map<string, unknown[]>();
     for (const media of filtered) {
       const report = media.reports ?? null;
+      let nearbyReports: unknown[] = [];
+      if (report?.id) {
+        if (!nearbyByReport.has(report.id)) {
+          const { data: nearby, error: nearbyError } = await admin.rpc(
+            "find_nearby_reports_for_moderation",
+            { p_report_id: report.id },
+          );
+          if (nearbyError) {
+            console.error("cst-media-moderation nearby report check", nearbyError);
+          }
+          nearbyByReport.set(report.id, nearbyError ? [] : (nearby ?? []));
+        }
+        nearbyReports = nearbyByReport.get(report.id) ?? [];
+      }
       const { data: signed } = await admin.storage
         .from("report-media")
         .createSignedUrl(media.storage_path, 900);
-      items.push({ ...media, reports: undefined, report, preview_url: signed?.signedUrl ?? null });
+      items.push({
+        ...media,
+        reports: undefined,
+        report,
+        nearby_reports: nearbyReports,
+        preview_url: signed?.signedUrl ?? null,
+      });
     }
     return json({
       items,
