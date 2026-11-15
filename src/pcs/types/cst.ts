@@ -103,6 +103,7 @@ export type CstMediaItem = Pick<
   | "report_id"
   | "storage_path"
   | "media_type"
+  | "media_role"
   | "file_size"
   | "created_at"
   | "captured_latitude"
@@ -110,8 +111,6 @@ export type CstMediaItem = Pick<
   | "uploaded_by"
   | "moderation_status"
 > & {
-  // Read by the UI but NOT returned by cst-media-moderation `list` (absent from its select).
-  media_role?: string;
   report: Pick<
     Tables<"reports">,
     | "id"
@@ -136,8 +135,6 @@ export type CstArchiveItem = Pick<
   file_size: number | null;
   media_created_at: string;
   preview_url: string | null;
-  // Read by the UI but always `undefined` in the payload (cst-video-archives strips it).
-  report_media?: { file_size?: number | null };
   report: Pick<
     Tables<"reports">,
     "id" | "reference_code" | "title" | "location_label" | "status" | "created_at" | "region_id"

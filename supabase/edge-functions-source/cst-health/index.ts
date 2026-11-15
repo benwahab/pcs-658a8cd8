@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     { data: events },
     { data: frontends },
     { count: recentCount },
-    { count: activeUsers },
+    { data: activeUsers },
     { data: endpoints },
   ] = await Promise.all([
     admin
@@ -80,13 +80,7 @@ Deno.serve(async (req) => {
   const avg = lat.length
     ? Math.round(lat.reduce((a: number, b: number) => a + b, 0) / lat.length)
     : null;
-  // NB (audit) : la 4e requête ci-dessus renvoie ses lignes dans `data`, pas dans `count` ;
-  // `activeUsers` vaut donc toujours null et `active_users` reste à 0. Comportement conservé tel quel.
-  const uniqueUsers = new Set(
-    ((activeUsers ?? []) as unknown as { user_hash: string | null }[])
-      .map((x) => x.user_hash)
-      .filter(Boolean),
-  );
+  const uniqueUsers = new Set((activeUsers ?? []).map((x) => x.user_hash).filter(Boolean));
   const errors = windowEvents.filter((e) => Number(e.status_code) >= 500).length;
   const errorRate = windowEvents.length
     ? Number(((errors / windowEvents.length) * 100).toFixed(2))

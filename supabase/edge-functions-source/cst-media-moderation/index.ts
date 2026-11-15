@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     let queue = admin
       .from("report_media")
       .select(
-        "id,report_id,storage_path,media_type,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status,reports!inner(id,reference_code,title,status,priority,location_label,created_at,is_public,region_id)",
+        "id,report_id,storage_path,media_type,media_role,file_size,created_at,captured_latitude,captured_longitude,uploaded_by,moderation_status,reports!inner(id,reference_code,title,status,priority,location_label,created_at,is_public,region_id)",
       )
       .eq("media_role", "citizen_evidence")
       .or("media_type.like.video/%,media_type.like.image/%")

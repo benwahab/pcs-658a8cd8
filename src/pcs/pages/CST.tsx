@@ -2268,13 +2268,9 @@ export function CSTDashboard() {
                               <div>
                                 <dt>Taille</dt>
                                 <dd>
-                                  {v.report_media?.file_size
-                                    ? Math.round((v.report_media.file_size / 1024 / 1024) * 10) /
-                                        10 +
-                                      " Mo"
-                                    : v.file_size
-                                      ? Math.round((v.file_size / 1024 / 1024) * 10) / 10 + " Mo"
-                                      : "—"}
+                                  {v.file_size
+                                    ? Math.round((v.file_size / 1024 / 1024) * 10) / 10 + " Mo"
+                                    : "—"}
                                 </dd>
                               </div>
                               <div>
