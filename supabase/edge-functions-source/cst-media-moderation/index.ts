@@ -95,7 +95,23 @@ Deno.serve(async (req) => {
           if (nearbyError) {
             console.error("cst-media-moderation nearby report check", nearbyError);
           }
-          nearbyByReport.set(report.id, nearbyError ? [] : (nearby ?? []));
+          let scopedNearby = nearbyError ? [] : (nearby ?? []);
+          if (isModerator && scopedNearby.length) {
+            const nearbyIds = scopedNearby.map((item: { id: string }) => item.id);
+            const { data: allowedReports, error: scopeError } = await admin
+              .from("reports")
+              .select("id")
+              .eq("region_id", moderatorRegionId)
+              .in("id", nearbyIds);
+            if (scopeError) {
+              console.error("cst-media-moderation nearby report scope", scopeError);
+              scopedNearby = [];
+            } else {
+              const allowedIds = new Set((allowedReports ?? []).map((item) => item.id));
+              scopedNearby = scopedNearby.filter((item: { id: string }) => allowedIds.has(item.id));
+            }
+          }
+          nearbyByReport.set(report.id, scopedNearby);
         }
         nearbyReports = nearbyByReport.get(report.id) ?? [];
       }
