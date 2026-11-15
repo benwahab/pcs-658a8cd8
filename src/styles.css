@@ -983,7 +983,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   background:#030605!important;
   box-sizing:border-box!important;
 }
-/* PCS mobile feed: force media to the full viewport, without letterbox bands. */
+/* PCS mobile feed: fit the complete original media inside the viewport without cropping or forced zoom. */
 .citizenSlideTrack .mediaCarouselItem{
   position:relative!important;
   width:100vw!important;
@@ -1023,7 +1023,7 @@ main>section:not(.authScreen){animation:pcsFadeUp .45s var(--pcs-ease) both}
   max-width:100%!important;
   max-height:100%!important;
   flex:none!important;
-  object-fit:cover!important;
+  object-fit:contain!important;
   object-position:center;
   background:#030605!important;
   box-sizing:border-box!important;
