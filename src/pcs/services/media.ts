@@ -31,7 +31,9 @@ export async function compressCitizenPhoto(file: File): Promise<File> {
     const blob = await new Promise<Blob | null>((resolve) => {
       canvas.toBlob(resolve, "image/webp", 0.74);
     });
-    if (!blob || blob.size === 0 || blob.size >= file.size) return file;
+    // Some browsers silently fall back to PNG when WebP encoding is unsupported.
+    if (!blob || blob.type !== "image/webp" || blob.size === 0 || blob.size >= file.size)
+      return file;
 
     const baseName = file.name.replace(/\.[^.]+$/, "") || "photo";
     return new File([blob], `${baseName}.webp`, {
@@ -46,13 +48,14 @@ export async function compressCitizenPhoto(file: File): Promise<File> {
   }
 }
 
-// Phone cameras record at 10–20 Mbit/s, far above mobile streaming capacity:
-// re-encode anything above 2 MB so playback never outruns the network.
+// Phone cameras record at 10–20 Mbit/s (often 60 fps), far above mobile streaming
+// capacity: re-encode anything above 2 MB so playback never outruns the network.
+// Measured with a 20 s 1080p60 clip: 29 MB -> ~3.7 MB at ~1.6 Mbit/s total (≈12 MB/min).
 const VIDEO_COMPRESS_THRESHOLD_BYTES = 2 * 1024 * 1024;
 const VIDEO_MAX_LONG_SIDE = 1280;
 
 /**
- * Re-encode heavy citizen videos on the phone (720p H.264 MP4, ~2 Mbit/s)
+ * Re-encode heavy citizen videos on the phone (720p, 30 fps H.264 MP4, ~1.5 Mbit/s)
  * before upload. Light files, unsupported browsers or any failure keep the
  * original file untouched. No duration limit is applied.
  */
@@ -84,7 +87,8 @@ export async function compressCitizenVideo(
           ? { width: Math.round((w * scale) / 2) * 2 }
           : { height: Math.round((h * scale) / 2) * 2 }),
         codec: "avc",
-        bitrate: 2_000_000,
+        bitrate: 1_500_000,
+        frameRate: 30,
       },
       audio: { codec: "aac", bitrate: 96_000 },
     });
