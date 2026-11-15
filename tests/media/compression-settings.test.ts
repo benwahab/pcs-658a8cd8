@@ -16,9 +16,9 @@ describe("media compression budget (poor-connection playback)", () => {
     expectCode(media).toContain('fastStart: "in-memory"');
   });
 
-  it("downsizes photos to 1280 px WebP and never keeps a non-WebP result", () => {
-    expectCode(media).toContain("const maxDimension = 1280;");
-    expectCode(media).toContain('"image/webp", 0.74');
+  it("preserves more photo detail with 1920 px WebP and never keeps a non-WebP result", () => {
+    expectCode(media).toContain("const maxDimension = 1920;");
+    expectCode(media).toContain('"image/webp", 0.86');
     expectCode(media).toContain('blob.type !== "image/webp"');
   });
 });
