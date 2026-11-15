@@ -518,7 +518,7 @@ export default function ReportForm() {
               ref={photoInputRef}
               hidden
               type="file"
-              accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+              accept="image/*"
               multiple
               onChange={(event) => {
                 const input = event.currentTarget;
@@ -546,7 +546,7 @@ export default function ReportForm() {
               ref={videoInputRef}
               hidden
               type="file"
-              accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v"
+              accept="video/*"
               onChange={(event) => {
                 const input = event.currentTarget;
                 const selected = input.files?.[0] ?? null;
