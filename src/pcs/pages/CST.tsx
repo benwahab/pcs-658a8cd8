@@ -2607,6 +2607,31 @@ export function CSTDashboard() {
                               <span className="cstPendingBadge">EN ATTENTE</span>
                               <h3>{v.report?.reference_code ?? "Signalement"}</h3>
                               <p>{v.report?.title ?? "Vidéo de signalement"}</p>
+                              {v.nearby_reports?.length ? (
+                                <div
+                                  role="note"
+                                  style={{
+                                    marginTop: 10,
+                                    padding: 10,
+                                    border: "1px solid #d97706",
+                                    borderRadius: 8,
+                                    background: "rgba(217, 119, 6, 0.08)",
+                                    color: "inherit",
+                                  }}
+                                >
+                                  <strong>⚠ Doublon potentiel à vérifier</strong>
+                                  <p style={{ margin: "4px 0" }}>
+                                    {v.nearby_reports.length} autre(s) signalement(s) à moins de 20 mètres.
+                                    Vérifiez s’il s’agit du même problème.
+                                  </p>
+                                  {v.nearby_reports.map((nearby) => (
+                                    <p key={nearby.id} style={{ margin: "4px 0" }}>
+                                      {nearby.reference_code} · {nearby.title} ·{" "}
+                                      {Math.round(nearby.distance_m)} m · {nearby.status}
+                                    </p>
+                                  ))}
+                                </div>
+                              ) : null}
                             </div>
                             <time>{new Date(v.created_at).toLocaleString("fr-FR")}</time>
                           </div>
