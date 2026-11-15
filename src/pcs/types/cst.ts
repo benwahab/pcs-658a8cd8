@@ -124,6 +124,14 @@ export type CstMediaItem = Pick<
     | "region_id"
   > | null;
   preview_url: string | null;
+  nearby_reports: {
+    id: string;
+    reference_code: string;
+    title: string;
+    status: string;
+    created_at: string;
+    distance_m: number;
+  }[];
 };
 
 // cst-video-archives `list`
