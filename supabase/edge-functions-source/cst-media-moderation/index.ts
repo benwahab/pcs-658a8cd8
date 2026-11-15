@@ -82,7 +82,17 @@ Deno.serve(async (req) => {
     if (error) return json({ error: "Impossible de charger la file de modération." }, 500);
     const filtered = data ?? [];
     const items = [];
-    const nearbyByReport = new Map<string, unknown[]>();
+    const nearbyByReport = new Map<
+      string,
+      {
+        id: string;
+        reference_code: string;
+        title: string;
+        status: string;
+        created_at: string;
+        distance_m: number;
+      }[]
+    >();
     for (const media of filtered) {
       const report = media.reports ?? null;
       let nearbyReports: unknown[] = [];
@@ -97,7 +107,7 @@ Deno.serve(async (req) => {
           }
           let scopedNearby = nearbyError ? [] : (nearby ?? []);
           if (isModerator && scopedNearby.length) {
-            const nearbyIds = scopedNearby.map((item: { id: string }) => item.id);
+            const nearbyIds = scopedNearby.map((item) => item.id);
             const { data: allowedReports, error: scopeError } = await admin
               .from("reports")
               .select("id")
@@ -108,7 +118,7 @@ Deno.serve(async (req) => {
               scopedNearby = [];
             } else {
               const allowedIds = new Set((allowedReports ?? []).map((item) => item.id));
-              scopedNearby = scopedNearby.filter((item: { id: string }) => allowedIds.has(item.id));
+              scopedNearby = scopedNearby.filter((item) => allowedIds.has(item.id));
             }
           }
           nearbyByReport.set(report.id, scopedNearby);
