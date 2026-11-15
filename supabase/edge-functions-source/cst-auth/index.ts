@@ -6,6 +6,25 @@ const cors = {
     "authorization, x-client-info, apikey, content-type, x-pcs-trace-id, traceparent",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
+// Rows as returned at runtime by the two queries of `list_professional_accounts`
+// (supabase-js cannot infer to-one embeds without generated types, hence the explicit shapes).
+type MairieAccountRow = {
+  id: string;
+  name: string;
+  account_user_id: string;
+  is_active: boolean;
+  approval_status: string;
+  phone: string | null;
+  communes: { name: string } | null;
+  regions: { name: string } | null;
+};
+type OrganizationAccountRow = {
+  id: string;
+  user_id: string;
+  is_active: boolean;
+  organizations: { id: string; name: string; code: string };
+  organization_units: { id: string; name: string; unit_type: string } | null;
+};
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -83,21 +102,20 @@ Deno.serve(async (req) => {
       ]);
       if (mairieResult.error || orgResult.error)
         return json({ error: "Impossible de charger les comptes professionnels." }, 500);
-      const mairieIds = (mairieResult.data ?? [])
-        .map((m: any) => m.account_user_id)
-        .filter(Boolean);
-      const orgRows = (orgResult.data ?? []).filter((r: any) =>
+      const mairieRows = (mairieResult.data ?? []) as unknown as MairieAccountRow[];
+      const mairieIds = mairieRows.map((m) => m.account_user_id).filter(Boolean);
+      const orgRows = ((orgResult.data ?? []) as unknown as OrganizationAccountRow[]).filter((r) =>
         ["NIGELEC", "NDE"].includes(r.organizations?.code),
       );
-      const userIds = [...new Set([...mairieIds, ...orgRows.map((r: any) => r.user_id)])];
+      const userIds = [...new Set([...mairieIds, ...orgRows.map((r) => r.user_id)])];
       const { data: authUsers, error: authUsersError } = userIds.length
         ? await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
         : { data: { users: [] }, error: null };
       if (authUsersError)
         return json({ error: "Impossible de lire les identités des comptes professionnels." }, 500);
-      const emailById = new Map((authUsers?.users ?? []).map((u: any) => [u.id, u.email ?? ""]));
+      const emailById = new Map((authUsers?.users ?? []).map((u) => [u.id, u.email ?? ""]));
       const accounts = [
-        ...(mairieResult.data ?? []).map((m: any) => ({
+        ...mairieRows.map((m) => ({
           key: "mairie:" + m.id,
           type: "mairie",
           entity_id: m.id,
@@ -110,7 +128,7 @@ Deno.serve(async (req) => {
           is_active: m.is_active,
           approval_status: m.approval_status,
         })),
-        ...orgRows.map((r: any) => ({
+        ...orgRows.map((r) => ({
           key: "organization:" + r.id,
           type: r.organizations.code.toLowerCase(),
           entity_id: r.id,
@@ -162,7 +180,8 @@ Deno.serve(async (req) => {
         if (
           error ||
           !record ||
-          record.organizations?.code !== (type === "nigelec" ? "NIGELEC" : "NDE")
+          (record.organizations as unknown as { code?: string } | null)?.code !==
+            (type === "nigelec" ? "NIGELEC" : "NDE")
         )
           return json({ error: "Compte NIGELEC/NDE actif introuvable." }, 404);
       }

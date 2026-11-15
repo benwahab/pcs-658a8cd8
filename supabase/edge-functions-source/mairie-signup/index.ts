@@ -76,7 +76,10 @@ Deno.serve(async (req) => {
       .eq("is_active", true)
       .single();
     if (ce || !commune) return json({ error: "Commune/localité invalide pour cette région" }, 400);
-    if (commune.regions?.name === "Niamey" && commune.name !== "VILLE DE NIAMEY")
+    if (
+      (commune.regions as unknown as { name?: string } | null)?.name === "Niamey" &&
+      commune.name !== "VILLE DE NIAMEY"
+    )
       return json({ error: "Pour Niamey, la localité unique est Ville de Niamey." }, 400);
     const { data: existing, error: existingError } = await db
       .from("mairies")
@@ -134,8 +137,15 @@ Deno.serve(async (req) => {
       await db.auth.admin.deleteUser(uid);
       return json({ error: "Attribution du rôle mairie impossible." }, 500);
     }
-    let mairie: any = null;
-    let mairieError: any = null;
+    let mairie: {
+      id: string;
+      name: string;
+      region_id: string;
+      commune_id: string;
+      is_active: boolean;
+      approval_status: string;
+    } | null = null;
+    let mairieError: { message: string } | null = null;
     if (canReplace) {
       const result = await db
         .from("mairies")

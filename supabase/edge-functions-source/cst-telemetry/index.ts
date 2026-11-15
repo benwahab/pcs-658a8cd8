@@ -18,6 +18,8 @@ async function hash(value: string) {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
+// Untrusted client payload: every field is validated/coerced below.
+type TelemetryEvent = Record<string, unknown>;
 function cleanEndpoint(value: unknown) {
   const s = String(value ?? "").slice(0, 240);
   try {
@@ -58,7 +60,7 @@ Deno.serve(async (req) => {
     if (user?.id) userHash = await hash("user:" + user.id);
   }
   const rows = events
-    .map((e: any) => ({
+    .map((e: TelemetryEvent) => ({
       trace_id: String(e.trace_id ?? "")
         .replace(/[^a-zA-Z0-9_-]/g, "")
         .slice(0, 80),
@@ -74,9 +76,9 @@ Deno.serve(async (req) => {
       error_class: e.error_class ? String(e.error_class).slice(0, 120) : null,
       metadata: typeof e.metadata === "object" && e.metadata ? e.metadata : {},
     }))
-    .filter((e: any) => e.trace_id.length >= 8);
+    .filter((e: { trace_id: string }) => e.trace_id.length >= 8);
   if (rows.length) await admin.from("cst_request_events").insert(rows);
-  const frontRows = frontendEvents.map((e: any) => ({
+  const frontRows = frontendEvents.map((e: TelemetryEvent) => ({
     occurred_at: new Date(Number(e.occurred_at) || Date.now()).toISOString(),
     event_type: String(e.event_type ?? "unknown").slice(0, 80),
     message: e.message ? String(e.message).slice(0, 1000) : null,

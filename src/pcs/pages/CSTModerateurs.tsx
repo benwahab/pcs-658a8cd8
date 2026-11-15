@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@/pcs/router";
 import { supabase } from "@/pcs/lib/supabase";
+import type { Tables } from "@/integrations/supabase/types";
+import type { CstModerator } from "../types/cst";
 
-async function cst(body: Record<string, unknown>) {
+async function cst(body: Record<string, unknown>): Promise<{ moderators?: CstModerator[] }> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase.functions.invoke("cst-auth", { body });
   if (error || data?.error) throw new Error(data?.error ?? "Service CST indisponible.");
-  return data as any;
+  return data;
 }
 
 export default function CSTModerateurs() {
   const nav = useNavigate();
-  const [regions, setRegions] = useState<any[]>([]);
-  const [moderators, setModerators] = useState<any[]>([]);
+  const [regions, setRegions] = useState<Pick<Tables<"regions">, "id" | "name" | "code">[]>([]);
+  const [moderators, setModerators] = useState<CstModerator[]>([]);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,7 +72,7 @@ export default function CSTModerateurs() {
       setBusy(false);
     }
   }
-  async function toggle(m: any) {
+  async function toggle(m: CstModerator) {
     setBusy(true);
     setError("");
     try {

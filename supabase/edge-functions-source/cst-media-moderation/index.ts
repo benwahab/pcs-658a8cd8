@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
           500,
         );
       const coveredRegionIds = [
-        ...new Set((covered ?? []).map((row: any) => row.region_id).filter(Boolean)),
+        ...new Set((covered ?? []).map((row) => row.region_id).filter(Boolean)),
       ];
       if (coveredRegionIds.length) {
         queue = queue.not("reports.region_id", "in", "(" + coveredRegionIds.join(",") + ")");

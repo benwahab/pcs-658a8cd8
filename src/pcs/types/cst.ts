@@ -166,3 +166,8 @@ export type CstStatRow = Pick<Tables<"reports">, "id" | "created_at" | "status">
 };
 
 export type CstAlert = { severity: "critical" | "warning"; title: string; detail: string };
+
+// cst-auth `list_moderators`: "user_id,email,full_name,region_id,is_active,created_at,updated_at,regions(id,name,code)"
+export type CstModerator = Tables<"moderator_profiles"> & {
+  regions: Pick<Tables<"regions">, "id" | "name" | "code"> | null;
+};

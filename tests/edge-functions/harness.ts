@@ -11,7 +11,7 @@ export async function loadFunction(path: string): Promise<Handler> {
     SUPABASE_SERVICE_ROLE_KEY: "service",
     SUPABASE_ANON_KEY: "anon",
   };
-  (globalThis as any).Deno = {
+  (globalThis as { Deno?: unknown }).Deno = {
     serve: (h: Handler) => {
       handler = h;
     },

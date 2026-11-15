@@ -75,19 +75,33 @@ Deno.serve(async (req) => {
       .order("occurred_at", { ascending: false })
       .limit(500),
   ]);
-  const windowEvents = (events ?? []).filter(
-    (e: any) => new Date(e.occurred_at) >= new Date(since),
-  );
-  const lat = windowEvents.map((e: any) => e.latency_ms).filter((v: any) => Number.isFinite(v));
+  const windowEvents = (events ?? []).filter((e) => new Date(e.occurred_at) >= new Date(since));
+  const lat = windowEvents.map((e) => e.latency_ms).filter((v) => Number.isFinite(v));
   const avg = lat.length
     ? Math.round(lat.reduce((a: number, b: number) => a + b, 0) / lat.length)
     : null;
-  const uniqueUsers = new Set((activeUsers ?? []).map((x: any) => x.user_hash).filter(Boolean));
-  const errors = windowEvents.filter((e: any) => Number(e.status_code) >= 500).length;
+  // NB (audit) : la 4e requête ci-dessus renvoie ses lignes dans `data`, pas dans `count` ;
+  // `activeUsers` vaut donc toujours null et `active_users` reste à 0. Comportement conservé tel quel.
+  const uniqueUsers = new Set(
+    ((activeUsers ?? []) as unknown as { user_hash: string | null }[])
+      .map((x) => x.user_hash)
+      .filter(Boolean),
+  );
+  const errors = windowEvents.filter((e) => Number(e.status_code) >= 500).length;
   const errorRate = windowEvents.length
     ? Number(((errors / windowEvents.length) * 100).toFixed(2))
     : 0;
-  const apiMap = new Map<string, any>();
+  const apiMap = new Map<
+    string,
+    {
+      method: string;
+      endpoint: string;
+      requests: number;
+      errors: number;
+      totalLatency: number;
+      last_activity: string;
+    }
+  >();
   for (const e of endpoints ?? []) {
     const k = e.method + " " + e.endpoint;
     const x = apiMap.get(k) ?? {

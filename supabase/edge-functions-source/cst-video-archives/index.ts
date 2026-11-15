@@ -53,7 +53,16 @@ Deno.serve(async (req) => {
     if (error) return json({ error: "Impossible de charger les archives vidéo." }, 500);
     const items = [];
     for (const row of data ?? []) {
-      const media = (row as any).report_media;
+      const media = (
+        row as unknown as {
+          report_media?: {
+            storage_path?: string;
+            media_type: string;
+            file_size: number | null;
+            created_at: string;
+          };
+        }
+      ).report_media;
       if (!media?.storage_path) continue;
       const { data: signed, error: signedError } = await admin.storage
         .from("report-media")
@@ -64,7 +73,7 @@ Deno.serve(async (req) => {
         file_size: media.file_size,
         media_created_at: media.created_at,
         preview_url: signedError ? null : (signed?.signedUrl ?? null),
-        report: (row as any).reports,
+        report: (row as unknown as { reports: unknown }).reports,
         report_media: undefined,
         reports: undefined,
       });
@@ -106,12 +115,13 @@ Deno.serve(async (req) => {
     if (dryRun)
       return json({
         dry_run: true,
-        candidates: (expired ?? []).map((x: any) => ({ id: x.id, expires_at: x.expires_at })),
+        candidates: (expired ?? []).map((x) => ({ id: x.id, expires_at: x.expires_at })),
         count: expired?.length ?? 0,
       });
     const results = [];
     for (const row of expired ?? []) {
-      const path = (row as any).report_media?.storage_path;
+      const path = (row as unknown as { report_media?: { storage_path?: string } }).report_media
+        ?.storage_path;
       if (!path) {
         results.push({ id: row.id, outcome: "failed" });
         continue;

@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       const paths = [
         ...new Set(
           (report.report_media ?? [])
-            .map((m: any) => m.storage_path)
+            .map((m) => m.storage_path)
             .filter((p: unknown): p is string => typeof p === "string" && p.length > 0),
         ),
       ];

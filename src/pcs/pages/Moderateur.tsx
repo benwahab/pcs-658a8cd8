@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@/pcs/router";
 import { supabase } from "@/pcs/lib/supabase";
+import type { CstMediaItem } from "../types/cst";
 
-async function moderation(body: Record<string, unknown> = { action: "list" }) {
+async function moderation(
+  body: Record<string, unknown> = { action: "list" },
+): Promise<{ items?: CstMediaItem[]; region?: { name?: string } | null }> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase.functions.invoke("cst-media-moderation", { body });
   if (error) {
@@ -11,12 +14,12 @@ async function moderation(body: Record<string, unknown> = { action: "list" }) {
     throw e;
   }
   if (data?.error) throw new Error(data.error);
-  return data as any;
+  return data;
 }
 
 export default function Moderateur() {
   const nav = useNavigate();
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<CstMediaItem[]>([]);
   const [region, setRegion] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
