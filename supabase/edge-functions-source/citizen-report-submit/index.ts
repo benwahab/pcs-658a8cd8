@@ -417,11 +417,6 @@ Deno.serve(async (req) => {
       .select("id,reference_code")
       .single();
     if (reportError) {
-      if (
-        reportError.code === "23505" &&
-        /20 mètres|déjà été signalé/i.test(reportError.message || "")
-      )
-        return json({ error: "Un signalement existe déjà à moins de 20 mètres de cette position. Pour éviter les doublons, votre envoi a été bloqué. Si votre vidéo concerne le même problème, vous ne pouvez pas l’ajouter depuis ce formulaire." }, 409);
       console.error("citizen-report-submit report insert", reportError);
       return json({ error: "Impossible d’enregistrer le signalement." }, 500);
     }
