@@ -22,7 +22,6 @@ function LazyFeedVideo({
   const ref = useRef<HTMLVideoElement | null>(null);
   const [active, setActive] = useState(false);
   const [buffering, setBuffering] = useState(false);
-  const [paused, setPaused] = useState(true);
   const [autoplayAllowed, setAutoplayAllowed] = useState(true);
   const [slowNetwork, setSlowNetwork] = useState(false);
 
@@ -168,15 +167,9 @@ function LazyFeedVideo({
       <video
         ref={ref}
         onWaiting={() => setBuffering(true)}
-        onPlaying={() => {
-          setBuffering(false);
-          setPaused(false);
-        }}
+        onPlaying={() => setBuffering(false)}
         onCanPlay={() => setBuffering(false)}
-        onPause={() => {
-          setPaused(true);
-          setBuffering(false);
-        }}
+        onPause={() => setBuffering(false)}
         onError={() => onError?.(src)}
         src={src}
         poster={poster}
@@ -190,18 +183,6 @@ function LazyFeedVideo({
         disablePictureInPicture
       />
       {buffering && <span className="feedVideoSpinner" aria-hidden="true" />}
-      {paused && !buffering && !autoplayAllowed && (
-        <button
-          type="button"
-          className="videoPlayFallback"
-          aria-label="Lire la vidéo"
-          onClick={() => {
-            void ref.current?.play().catch(() => undefined);
-          }}
-        >
-          <span>▶</span>
-        </button>
-      )}
     </div>
   );
 }
