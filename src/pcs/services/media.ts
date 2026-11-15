@@ -15,7 +15,7 @@ export async function compressCitizenPhoto(file: File): Promise<File> {
   let bitmap: ImageBitmap | null = null;
   try {
     bitmap = await createImageBitmap(file);
-    const maxDimension = 1280;
+    const maxDimension = 1920;
     const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
     if (scale === 1 && file.type === "image/webp" && file.size <= 700 * 1024) {
       return file;
@@ -29,7 +29,7 @@ export async function compressCitizenPhoto(file: File): Promise<File> {
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
 
     const blob = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob(resolve, "image/webp", 0.74);
+      canvas.toBlob(resolve, "image/webp", 0.86);
     });
     // Some browsers silently fall back to PNG when WebP encoding is unsupported.
     if (!blob || blob.type !== "image/webp" || blob.size === 0 || blob.size >= file.size)
