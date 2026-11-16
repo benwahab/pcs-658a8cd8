@@ -296,7 +296,7 @@ export default function AgentTerrain() {
             setVideo(null);
             setOfflinePending((v) => v + 1);
             setError(
-              "Vidéo et position enregistrées hors connexion. Elles seront transmises automatiquement dès que la connexion revient.",
+              "Preuve (photo ou vidéo) et position enregistrées hors connexion. Elles seront transmises automatiquement dès que la connexion revient.",
             );
             return;
           }
@@ -327,7 +327,7 @@ export default function AgentTerrain() {
             setVideoId(null);
             setVideo(null);
             setOfflinePending((v) => v + 1);
-            setError("Connexion perdue : vidéo et position mises en attente de synchronisation.");
+            setError("Connexion perdue : preuve et position mises en attente de synchronisation.");
           } else {
             setError(e instanceof Error ? e.message : "Validation impossible");
           }
@@ -545,7 +545,7 @@ export default function AgentTerrain() {
                               event.target.value = "";
                               if (!file) return;
                               if (file.size <= 0) {
-                                setVideoError("Le fichier vidéo est vide.");
+                                setVideoError("Le fichier de résolution est vide.");
                                 return;
                               }
                               if (
