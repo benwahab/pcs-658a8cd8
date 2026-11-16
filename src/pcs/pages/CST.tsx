@@ -516,6 +516,7 @@ export function CSTDashboard() {
   const [data, setData] = useState<CstHealth | null>(null);
   const [operations, setOperations] = useState<CstOperations | null>(null);
   const [error, setError] = useState("");
+  const [healthError, setHealthError] = useState("");
   const [last, setLast] = useState("");
   const [traceFilter, setTraceFilter] = useState("");
   const [mediaQueue, setMediaQueue] = useState<CstMediaItem[]>([]);
@@ -761,6 +762,7 @@ export function CSTDashboard() {
         const h = await health();
         if (active) {
           setData(h);
+          setHealthError("");
           setLast(new Date().toLocaleTimeString("fr-FR"));
           setError((previous) =>
             previous === "Votre session CST a expiré. Reconnectez-vous." ||
@@ -776,7 +778,8 @@ export function CSTDashboard() {
           nav("/cst");
           return;
         }
-        if (active) setError(e instanceof Error ? e.message : "Supervision indisponible.");
+        if (active)
+          setHealthError(e instanceof Error ? e.message : "Supervision indisponible.");
       } finally {
         healthRequestInFlight = false;
       }
@@ -889,7 +892,7 @@ export function CSTDashboard() {
   }
   const db = data?.database;
   const m: Partial<CstHealth["metrics"]> = data?.metrics ?? {};
-  const global = error ? "degraded" : (db?.status ?? "offline");
+  const global = healthError ? "degraded" : (db?.status ?? "offline");
   const requests = useMemo(() => data?.live_requests ?? [], [data]);
   const frontend = data?.frontend_events ?? [];
   const traces = useMemo(
