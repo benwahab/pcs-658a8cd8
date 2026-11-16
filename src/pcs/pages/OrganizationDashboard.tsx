@@ -153,7 +153,7 @@ export default function OrganizationDashboard() {
   const central = membership?.unit?.unit_type === "central";
   const currentMembership = membership!;
   return (
-    <section className="organizationDashboard">
+    <section className={central ? "organizationDashboard" : "organizationDashboard agencyWorkspace"}>
       <aside className="organizationSidebar">
         <div className="organizationBrand">
           <span>PCS</span>
