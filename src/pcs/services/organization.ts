@@ -104,10 +104,9 @@ export async function listOrganizationTransfers(): Promise<OrganizationTransfer[
   if (!ids.length) return rows;
   const { data: reports, error: re } = await supabase
     .from("public_reports")
-    .select("id,reference_code,title,status,priority,latitude,longitude,location_label,created_at")
+    .select("id,reference_code,title,status,priority,location_label,created_at")
     .in("id", ids);
   if (re) throw re;
-  // The generated public_reports view type has no latitude/longitude, so Supabase types this select as an error type.
   const byId = new Map<string | null, PublicReportSummary>(
     ((reports ?? []) as unknown as PublicReportSummary[]).map((r) => [r.id, r]),
   );
@@ -209,10 +208,9 @@ export async function listAgencyMissions(unitId: string): Promise<AgencyMission[
   if (!ids.length) return rows;
   const { data: reports, error: re } = await supabase
     .from("public_reports")
-    .select("id,reference_code,title,status,priority,latitude,longitude,location_label,created_at")
+    .select("id,reference_code,title,status,priority,location_label,created_at")
     .in("id", ids);
   if (re) throw re;
-  // The generated public_reports view type has no latitude/longitude, so Supabase types this select as an error type.
   const byId = new Map<string | null, PublicReportSummary>(
     ((reports ?? []) as unknown as PublicReportSummary[]).map((r) => [r.id, r]),
   );
