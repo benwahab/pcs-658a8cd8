@@ -53,7 +53,7 @@ export default function AgentTerrain() {
       const { error: signOutError } = await supabase.auth.signOut();
       if (signOutError) throw signOutError;
       if (agentUserId) clearCachedAgentMissions(agentUserId);
-      navigate("/");
+      navigate("/connexion-operationnelle?mode=agent");
     } catch (e) {
       setError(e instanceof Error ? e.message : "La déconnexion a échoué. Réessayez.");
     } finally {
