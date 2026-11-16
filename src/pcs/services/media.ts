@@ -271,7 +271,19 @@ export async function uploadResolutionVideo(
     throw new Error("Coordonnées GPS invalides.");
   }
 
-  const extension = file.name.split(".").pop()?.toLowerCase() || "mp4";
+  const suppliedExtension = file.name.includes(".")
+    ? file.name.split(".").pop()?.toLowerCase()
+    : undefined;
+  const extensionByMime: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/quicktime": "mov",
+  };
+  const extension = suppliedExtension || extensionByMime[file.type];
+  if (!extension) throw new Error("Impossible de déterminer le format du média de résolution.");
   const path = reportId + "/resolution-" + crypto.randomUUID() + "." + extension;
 
   const { error } = await supabase.storage.from("report-media").upload(path, file, {
