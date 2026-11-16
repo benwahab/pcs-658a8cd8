@@ -7,6 +7,14 @@ const json = (body: unknown, status = 200) =>
     headers: { "content-type": "application/json" },
   });
 
+const normalizePhone = (value: string) => {
+  const cleaned = value.replace(/[^0-9+]/g, "").trim();
+  const digits = cleaned.replace(/\\D/g, "");
+  if (digits.length === 8) return "+227" + digits;
+  if (digits.length === 11 && digits.startsWith("227")) return "+" + digits;
+  return cleaned;
+};
+
 Deno.serve(async (req) => {
   try {
     if (req.method !== "POST") return json({ error: "Méthode non autorisée" }, 405);
@@ -48,7 +56,7 @@ Deno.serve(async (req) => {
     if (!agency) return json({ error: "Seul le responsable d'une centrale ou d'une agence active peut créer ses agents terrain." }, 403);
 
     const body = await req.json();
-    for (const field of ["first_name", "last_name", "matricule", "qualification", "password"]) {
+    for (const field of ["first_name", "last_name", "matricule", "qualification", "phone", "password"]) {
       if (!body[field] || String(body[field]).trim() === "")
         return json({ error: "Champs obligatoires manquants" }, 400);
     }
@@ -56,8 +64,10 @@ Deno.serve(async (req) => {
       return json({ error: "Le mot de passe doit contenir au moins 8 caractères" }, 400);
 
     const matricule = String(body.matricule).trim();
-    const phone = body.phone ? String(body.phone).trim() : null;
-    const phoneNormalized = phone ? phone.replace(/[^0-9+]/g, "") : null;
+    const phone = normalizePhone(String(body.phone));
+    if (!/^\\+227\\d{8}$/.test(phone))
+      return json({ error: "Le numéro doit être un numéro nigérien valide à 8 chiffres." }, 400);
+    const phoneNormalized = phone;
 
     const { data: duplicateMatricule, error: duplicateMatriculeError } = await db
       .from("field_agents")
