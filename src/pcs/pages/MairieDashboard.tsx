@@ -153,15 +153,9 @@ export default function MairieDashboard() {
       });
       if (reviewError) throw reviewError;
       if (!approve) {
-        const { error: removeError } = await supabase.storage
-          .from("report-media")
-          .remove([item.storage_path]);
-        if (removeError) throw removeError;
-        setSuccess("La vidéo de résolution a été supprimée et ne sera pas publiée.");
+        setSuccess("La résolution a été rejetée. Le signalement reste en traitement et l'agent pourra transmettre une nouvelle preuve.");
       } else {
-        setSuccess(
-          "La vidéo de résolution a été approuvée et ajoutée aux médias publics du signalement.",
-        );
+        setSuccess("La résolution a été approuvée. Le signalement est maintenant officiellement résolu.");
       }
       await load();
     } catch (e) {
@@ -645,10 +639,9 @@ export default function MairieDashboard() {
           <section className="mairiePanel" id="videos-resolution">
             <div className="panelHead">
               <div>
-                <h2>Vidéos de résolution à examiner</h2>
+                <h2>Preuves de résolution à examiner</h2>
                 <p>
-                  Les vidéos envoyées par les agents attendent la décision de cette mairie. Elles ne
-                  sont publiques qu’après approbation.
+                  Les photos et vidéos envoyées par les agents de cette mairie attendent votre décision. Le signalement ne sera clôturé qu'après votre approbation.
                 </p>
               </div>
               <span className="statusPill amber">{resolutionVideos.length} en attente</span>
@@ -659,7 +652,7 @@ export default function MairieDashboard() {
               </div>
             )}
             {resolutionVideos.length === 0 ? (
-              <div className="mairieEmpty">Aucune vidéo de résolution en attente.</div>
+              <div className="mairieEmpty">Aucune preuve de résolution en attente.</div>
             ) : (
               <div
                 style={{
@@ -680,22 +673,30 @@ export default function MairieDashboard() {
                   >
                     <strong>
                       {item.reports?.reference_code ?? "Signalement"} ·{" "}
-                      {item.reports?.title ?? "Vidéo de résolution"}
+                      {item.reports?.title ?? "Preuve de résolution"}
                     </strong>
                     {item.previewUrl ? (
-                      <video
-                        src={item.previewUrl}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        style={{
-                          width: "100%",
-                          maxHeight: 300,
-                          marginTop: 10,
-                          borderRadius: 8,
-                          background: "#111",
-                        }}
-                      />
+                      item.media_type.startsWith("image/") ? (
+                        <img
+                          src={item.previewUrl}
+                          alt="Preuve photo de résolution"
+                          style={{ width: "100%", maxHeight: 300, objectFit: "contain", marginTop: 10, borderRadius: 8 }}
+                        />
+                      ) : (
+                        <video
+                          src={item.previewUrl}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          style={{
+                            width: "100%",
+                            maxHeight: 300,
+                            marginTop: 10,
+                            borderRadius: 8,
+                            background: "#111",
+                          }}
+                        />
+                      )
                     ) : (
                       <p>Prévisualisation indisponible. Actualisez pour réessayer.</p>
                     )}
@@ -712,19 +713,17 @@ export default function MairieDashboard() {
                         disabled={reviewBusy === item.id}
                         onClick={() => reviewResolutionVideo(item, true)}
                       >
-                        {reviewBusy === item.id ? "Traitement…" : "Approuver et publier"}
+                        {reviewBusy === item.id ? "Traitement…" : "Approuver la résolution"}
                       </button>
                       <button
                         className="mairieButton secondary"
                         disabled={reviewBusy === item.id}
                         onClick={() => {
-                          if (
-                            window.confirm("Supprimer définitivement cette vidéo de résolution ?")
-                          )
+                          if (window.confirm("Rejeter cette preuve de résolution ? Le signalement restera en traitement."))
                             void reviewResolutionVideo(item, false);
                         }}
                       >
-                        Supprimer
+                        Rejeter la résolution
                       </button>
                     </div>
                   </article>
