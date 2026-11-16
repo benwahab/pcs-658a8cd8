@@ -356,6 +356,189 @@ export default function AgentTerrain() {
 
   return (
     <section className="agentFeed">
+      <style>{`
+        .agentFeed {
+          width: 100%;
+          max-width: 920px;
+          min-height: 100%;
+          margin: 0 auto;
+          padding: 18px clamp(12px, 3vw, 26px) 32px;
+          color: #21152f;
+          box-sizing: border-box;
+        }
+        .agentFeed .agentFeedTop {
+          position: sticky;
+          top: 0;
+          z-index: 20;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          margin: 0 0 18px;
+          border: 1px solid #e8e1f0;
+          border-radius: 18px;
+          background: rgba(255,255,255,.96);
+          box-shadow: 0 8px 24px rgba(42, 18, 66, .07);
+          backdrop-filter: blur(12px);
+        }
+        .agentFeed .agentFeedTop > div { flex: 1; min-width: 0; }
+        .agentFeed .agentFeedTop strong {
+          display: block; color: #29143d; font-size: 17px; font-weight: 800;
+        }
+        .agentFeed .agentFeedTop small {
+          display: block; margin-top: 3px; color: #786b86; font-size: 12px;
+        }
+        .agentFeed .agentRefresh,
+        .agentFeed .agentLogout {
+          min-height: 42px; border-radius: 12px; font-weight: 750;
+        }
+        .agentFeed .agentRefresh {
+          width: 42px; border: 1px solid #e4d9ef; background: #f7f2fb;
+          color: #582a78; font-size: 22px;
+        }
+        .agentFeed .agentLogout {
+          padding: 0 12px !important; border: 1px solid #f2caca !important;
+          background: #fff7f7 !important; color: #a52828 !important;
+          font-size: 13px;
+        }
+        .agentFeed .agentFeedError {
+          display: flex; align-items: flex-start; gap: 12px;
+          padding: 13px 15px; margin: 0 0 16px;
+          border: 1px solid #f3d1d1; border-radius: 14px;
+          background: #fff7f7; color: #9f2626; font-size: 13px; line-height: 1.5;
+        }
+        .agentFeed .agentFeedError button {
+          margin-left: auto; border: 0; background: transparent; color: inherit;
+          font-size: 20px; line-height: 1;
+        }
+        .agentFeed .agentMissionViewport { width: 100%; }
+        .agentFeed .agentMissionSlide .missionContent {
+          position: relative; z-index: 1; width: 100%; box-sizing: border-box;
+          padding: clamp(16px, 3vw, 26px);
+          border: 1px solid #e9e1f1; border-radius: 22px;
+          background: #fff; color: #261833;
+          box-shadow: 0 14px 38px rgba(43, 19, 66, .09);
+        }
+        .agentFeed .missionBackdrop { pointer-events: none; }
+        .agentFeed .missionMeta {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+        }
+        .agentFeed .missionMeta > span:first-child {
+          color: #76558d; font-size: 12px; font-weight: 800;
+          letter-spacing: .045em;
+        }
+        .agentFeed .statusPill {
+          display: inline-flex; align-items: center; min-height: 27px;
+          padding: 4px 11px; border-radius: 999px; font-size: 11px;
+          font-weight: 800; line-height: 1.2;
+        }
+        .agentFeed .statusPill.amber { background: #fff4d9; color: #8a5b00; }
+        .agentFeed .statusPill.violet { background: #f0e8fa; color: #60318a; }
+        .agentFeed .statusPill.slate { background: #eef0f4; color: #596273; }
+        .agentFeed .missionContent > h1 {
+          margin: 0 0 16px; color: #241331; font-size: clamp(21px, 4vw, 28px);
+          font-weight: 850; line-height: 1.2; overflow-wrap: anywhere;
+        }
+        .agentFeed .missionLocation {
+          display: flex; align-items: flex-start; gap: 12px;
+          padding: 13px 14px; border: 1px solid #eee7f4;
+          border-radius: 15px; background: #faf8fc;
+        }
+        .agentFeed .missionLocation > span {
+          display: grid; place-items: center; flex: 0 0 34px; height: 34px;
+          border-radius: 11px; background: #efe7f7; color: #63358a; font-size: 19px;
+        }
+        .agentFeed .missionLocation strong {
+          display: block; color: #352443; font-size: 13px; line-height: 1.4;
+        }
+        .agentFeed .missionLocation small {
+          display: block; margin-top: 3px; color: #84788e; font-size: 11px;
+        }
+        .agentFeed .agentOriginalMedia {
+          display: grid !important; gap: 10px !important; margin: 18px 0 !important;
+          padding: 14px; border: 1px solid #ece4f2; border-radius: 17px;
+          background: #fcfbfd;
+        }
+        .agentFeed .agentOriginalMedia > strong {
+          color: #352443; font-size: 13px; font-weight: 800;
+        }
+        .agentFeed .agentOriginalMedia img,
+        .agentFeed .agentOriginalMedia video {
+          display: block; width: 100%; max-height: 42vh; border-radius: 13px;
+          object-fit: contain; background: #17121d;
+        }
+        .agentFeed .missionContent > p {
+          color: #746b7d; font-size: 13px; line-height: 1.5;
+        }
+        .agentFeed .missionActions {
+          display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px;
+        }
+        .agentFeed .feedActionButton {
+          display: inline-flex; align-items: center; justify-content: center;
+          min-height: 46px; padding: 10px 15px; border: 1px solid #ded3e8;
+          border-radius: 13px; background: #fff; color: #51336a;
+          font-size: 13px; font-weight: 800; line-height: 1.3;
+          box-shadow: 0 3px 10px rgba(48, 24, 67, .04);
+        }
+        .agentFeed .feedActionButton.primary {
+          border-color: #5b2b7c; background: #5b2b7c; color: #fff;
+          box-shadow: 0 6px 16px rgba(91, 43, 124, .18);
+        }
+        .agentFeed .feedActionButton:disabled {
+          opacity: .55; cursor: not-allowed; box-shadow: none;
+        }
+        .agentFeed .agentActionSheet {
+          display: grid; gap: 10px; margin-top: 16px; padding: 16px;
+          border: 1px solid #e8dff0; border-radius: 17px; background: #f9f6fc;
+        }
+        .agentFeed .agentActionSheet > strong {
+          color: #38214c; font-size: 14px; font-weight: 850;
+        }
+        .agentFeed .agentActionSheet p {
+          margin: 0; color: #6e6378; font-size: 13px; line-height: 1.55;
+        }
+        .agentFeed .agentActionSheet input,
+        .agentFeed .agentActionSheet button { max-width: 100%; }
+        .agentFeed .missionRail {
+          display: flex; align-items: center; justify-content: center;
+          gap: 8px; margin: 14px auto 0;
+        }
+        .agentFeed .missionRail button {
+          display: flex; align-items: center; gap: 6px; min-height: 38px;
+          padding: 7px 12px; border: 1px solid #e7deee; border-radius: 12px;
+          background: #fff; color: #65427c; font-weight: 750;
+        }
+        .agentFeed .missionRail button small { font-size: 10px; }
+        .agentFeed .missionRail button.railActive {
+          border-color: #5b2b7c; background: #f2eafa; color: #4e246e;
+        }
+        .agentFeed .missionPager {
+          border: 1px solid #e6dced; border-radius: 50%; background: #fff;
+          color: #5b2b7c; box-shadow: 0 5px 16px rgba(43,19,66,.1);
+        }
+        .agentFeed .agentEmpty {
+          max-width: 520px; margin: 48px auto; padding: 34px 22px;
+          border: 1px solid #e9e1f1; border-radius: 22px; background: #fff;
+          text-align: center; box-shadow: 0 12px 32px rgba(43,19,66,.07);
+        }
+        .agentFeed .agentEmpty > span {
+          display: inline-grid; place-items: center; width: 54px; height: 54px;
+          border-radius: 17px; background: #f0e8f8; color: #5b2b7c; font-size: 25px;
+        }
+        .agentFeed .agentEmpty h1 { margin: 14px 0 6px; color: #2c1a3a; font-size: 22px; }
+        .agentFeed .agentEmpty p { margin: 0; color: #786e81; font-size: 13px; line-height: 1.5; }
+        @media (max-width: 600px) {
+          .agentFeed { padding: 10px 10px 24px; }
+          .agentFeed .agentFeedTop { gap: 7px; padding: 10px; margin-bottom: 12px; }
+          .agentFeed .agentFeedTop strong { font-size: 15px; }
+          .agentFeed .agentLogout { padding: 0 9px !important; font-size: 11px; }
+          .agentFeed .missionActions { display: grid; grid-template-columns: 1fr; }
+          .agentFeed .missionActions .feedActionButton { width: 100%; }
+          .agentFeed .agentActionSheet .feedActionButton { width: 100%; }
+          .agentFeed .missionRail button { padding: 7px 9px; }
+        }
+      `}</style>
       <header className="agentFeedTop">
         <div>
           <strong>Mes missions</strong>
