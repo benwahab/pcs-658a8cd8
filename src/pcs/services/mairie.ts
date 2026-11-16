@@ -154,18 +154,46 @@ export async function listMyMissions() {
     .in("id", ids);
   if (re) throw re;
   const byId = new Map((reports ?? []).map((r) => [r.id, r] as const));
-  const { data: pendingMedia, error: pendingMediaError } = await supabase
-    .from("report_media")
-    .select("report_id")
-    .in("report_id", ids)
-    .eq("media_role", "resolution_video")
-    .eq("moderation_status", "pending");
+  const [{ data: pendingMedia, error: pendingMediaError }, { data: originalMedia, error: originalMediaError }] =
+    await Promise.all([
+      supabase
+        .from("report_media")
+        .select("report_id")
+        .in("report_id", ids)
+        .eq("media_role", "resolution_video")
+        .eq("moderation_status", "pending"),
+      // Only CST-approved citizen media may be shown to field agents.
+      supabase
+        .from("report_media")
+        .select("id,report_id,storage_path,media_type,created_at")
+        .in("report_id", ids)
+        .neq("media_role", "resolution_video")
+        .eq("moderation_status", "approved")
+        .order("created_at", { ascending: true }),
+    ]);
   if (pendingMediaError) throw pendingMediaError;
+  if (originalMediaError) throw originalMediaError;
   const pendingIds = new Set((pendingMedia ?? []).map((item) => item.report_id));
+  const mediaWithUrls = await Promise.all(
+    (originalMedia ?? []).map(async (item) => {
+      const { data, error: urlError } = await supabase!.storage
+        .from("report-media")
+        .createSignedUrl(item.storage_path, 900);
+      if (urlError) console.error("[PCS][AgentTerrain] Média du signalement indisponible :", item.id, urlError);
+      return { ...item, previewUrl: data?.signedUrl ?? null };
+    }),
+  );
+  const mediaByReport = new Map<string, typeof mediaWithUrls>();
+  for (const item of mediaWithUrls) {
+    const list = mediaByReport.get(item.report_id) ?? [];
+    list.push(item);
+    mediaByReport.set(item.report_id, list);
+  }
   return rows
     .map((r) => ({
       ...r,
       reports: byId.get(r.report_id) ?? null,
+      original_media: mediaByReport.get(r.report_id) ?? [],
       resolution_pending: pendingIds.has(r.report_id),
     }))
     .filter((r): r is typeof r & { reports: NonNullable<typeof r.reports> } => !!r.reports);
