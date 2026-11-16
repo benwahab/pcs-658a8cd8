@@ -430,6 +430,40 @@ export default function AgentTerrain() {
                         <small>Position du signalement</small>
                       </div>
                     </div>
+                    {!!m.original_media?.length && (
+                      <div className="agentOriginalMedia" style={{ display: "grid", gap: 10, margin: "14px 0" }}>
+                        <strong>Pièces jointes du signalement</strong>
+                        {m.original_media.map((media) => (
+                          media.previewUrl ? (
+                            media.media_type.startsWith("video") ? (
+                              <video
+                                key={media.id}
+                                src={media.previewUrl}
+                                controls
+                                playsInline
+                                preload="metadata"
+                                style={{ width: "100%", maxHeight: "42vh", borderRadius: 12, background: "#111", objectFit: "contain" }}
+                              />
+                            ) : (
+                              <img
+                                key={media.id}
+                                src={media.previewUrl}
+                                alt="Photo du signalement"
+                                loading="lazy"
+                                style={{ width: "100%", maxHeight: "42vh", borderRadius: 12, objectFit: "contain", background: "#f1f5f9" }}
+                              />
+                            )
+                          ) : (
+                            <p key={media.id}>Un média du signalement n’a pas pu être chargé.</p>
+                          )
+                        ))}
+                      </div>
+                    )}
+                    {!m.original_media?.length && (
+                      <p style={{ margin: "12px 0", color: "#64748b", fontSize: 13 }}>
+                        Aucune photo ou vidéo approuvée n’est disponible pour ce signalement.
+                      </p>
+                    )}
                     <div className="missionActions">
                       {m.reports?.latitude != null && (
                         <button
@@ -439,7 +473,7 @@ export default function AgentTerrain() {
                           ⌖ Itinéraire
                         </button>
                       )}
-                      {s === "verification" && (
+                      {!["in_progress", "resolved", "rejected"].includes(s ?? "") && (
                         <button
                           className="feedActionButton primary"
                           disabled={busy}
