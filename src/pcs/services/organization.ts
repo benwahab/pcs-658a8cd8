@@ -143,6 +143,31 @@ export type OrganizationResolutionMedia = {
   previewUrl: string | null;
 };
 
+export type OrganizationReportMedia = {
+  id: string;
+  report_id: string;
+  storage_path: string;
+  media_type: string;
+  media_role: string;
+  previewUrl: string | null;
+};
+
+export async function listOrganizationReportMedia(reportIds: string[]): Promise<OrganizationReportMedia[]> {
+  if (!supabase) throw new Error("Supabase non configuré.");
+  if (!reportIds.length) return [];
+  const { data, error } = await supabase
+    .from("public_report_media")
+    .select("id,report_id,storage_path,media_type,media_role")
+    .in("report_id", reportIds);
+  if (error) throw error;
+  return Promise.all((data ?? []).map(async (item) => {
+    const { data: signed, error: signedError } = await supabase!
+      .storage.from("report-media").createSignedUrl(item.storage_path, 900);
+    if (signedError) console.error("[PCS][OrganizationDashboard] Média du signalement inaccessible :", item.id, signedError);
+    return { ...item, previewUrl: signed?.signedUrl ?? null };
+  }));
+}
+
 export async function listPendingOrganizationResolutionMedia(): Promise<OrganizationResolutionMedia[]> {
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase
