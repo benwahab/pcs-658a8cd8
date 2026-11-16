@@ -108,7 +108,10 @@ export default function OrganizationDashboard() {
   }, []);
   async function logout() {
     await supabase?.auth.signOut();
-    nav("/");
+    const organizationName = membership?.organization?.name?.toLocaleLowerCase() ?? "";
+    const loginPath = organizationName.includes("nde") ? "/connexion-nde" : "/connexion-nigelec";
+    const accountType = membership?.unit?.unit_type === "central" ? "central" : "agency";
+    nav(`${loginPath}?type=${accountType}`);
   }
   async function reviewResolutionMedia(mediaId: string, approve: boolean) {
     await act(() =>
