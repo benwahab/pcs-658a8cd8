@@ -672,18 +672,66 @@ export default function OrganizationDashboard() {
               <h2>Créer un agent terrain</h2>
               <p>Vous créez ici les comptes des agents rattachés à votre agence. Vous pourrez ensuite leur affecter les missions reçues.</p>
               <div className="form">
-                <input placeholder="Prénom" value={agentForm.first_name} onChange={(event) => setAgentForm({ ...agentForm, first_name: event.target.value })} />
-                <input placeholder="Nom" value={agentForm.last_name} onChange={(event) => setAgentForm({ ...agentForm, last_name: event.target.value })} />
-                <input placeholder="Matricule" value={agentForm.matricule} onChange={(event) => setAgentForm({ ...agentForm, matricule: event.target.value })} />
-                <input placeholder="Qualification" value={agentForm.qualification} onChange={(event) => setAgentForm({ ...agentForm, qualification: event.target.value })} />
-                <input placeholder="Téléphone" value={agentForm.phone} onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })} />
-                <input type="password" minLength={8} placeholder="Mot de passe" value={agentForm.password} onChange={(event) => setAgentForm({ ...agentForm, password: event.target.value })} />
+                <label>
+                  Prénom
+                  <input required value={agentForm.first_name} onChange={(event) => setAgentForm({ ...agentForm, first_name: event.target.value })} placeholder="Prénom de l'agent" />
+                </label>
+                <label>
+                  Nom
+                  <input required value={agentForm.last_name} onChange={(event) => setAgentForm({ ...agentForm, last_name: event.target.value })} placeholder="Nom de l'agent" />
+                </label>
+                <label>
+                  Matricule
+                  <input required value={agentForm.matricule} onChange={(event) => setAgentForm({ ...agentForm, matricule: event.target.value })} placeholder="Matricule" />
+                </label>
+                <label>
+                  Qualification / métier
+                  <input required value={agentForm.qualification} onChange={(event) => setAgentForm({ ...agentForm, qualification: event.target.value })} placeholder="Qualification" />
+                </label>
+                <label>
+                  Téléphone *
+                  <input required value={agentForm.phone} onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })} placeholder="Numéro de téléphone de connexion" />
+                </label>
+                <PasswordField
+                  label="Mot de passe"
+                  value={agentForm.password}
+                  onChange={(value) => setAgentForm({ ...agentForm, password: value })}
+                  visible={showAgentPassword}
+                  onToggle={() => setShowAgentPassword((value) => !value)}
+                />
+                <PasswordField
+                  label="Confirmer le mot de passe"
+                  value={confirmAgentPassword}
+                  onChange={setConfirmAgentPassword}
+                  confirmation
+                  visible={showAgentPassword}
+                  onToggle={() => setShowAgentPassword((value) => !value)}
+                />
+                {confirmAgentPassword.length > 0 && agentForm.password !== confirmAgentPassword && (
+                  <p className="error">Les deux mots de passe ne correspondent pas.</p>
+                )}
                 <button
                   className="button primary"
-                  disabled={busy || !agentForm.first_name.trim() || !agentForm.last_name.trim() || !agentForm.matricule.trim() || !agentForm.qualification.trim() || agentForm.password.length < 8}
+                  disabled={busy || !agentForm.first_name.trim() || !agentForm.last_name.trim() || !agentForm.matricule.trim() || !agentForm.qualification.trim() || !agentForm.phone.trim() || agentForm.password.length < 8 || agentForm.password !== confirmAgentPassword}
                   onClick={() => act(async () => {
-                    await createAgencyAgent({ ...agentForm });
+                    setSuccess("");
+                    const initialPassword = agentForm.password;
+                    const createdAgent = await createAgencyAgent({ ...agentForm });
+                    try {
+                      downloadOrganizationAgentCredentialPdf(
+                        createdAgent,
+                        { name: membership.organization.name, code: membership.organization.code },
+                        { name: membership.unit?.name ?? "Unité", code: membership.unit?.code ?? "", unit_type: membership.unit?.unit_type ?? "agency" },
+                        initialPassword,
+                      );
+                      setSuccess("Le compte agent a été créé et sa fiche PDF avec les informations et le mot de passe initial a été téléchargée. Remettez-la directement à l'agent.");
+                    } catch (pdfError) {
+                      console.error("[PCS][OrganizationDashboard] Échec du PDF agent :", pdfError);
+                      setError("Le compte agent a été créé, mais le téléchargement du PDF a échoué. Ne fermez pas cette page avant d'avoir récupéré les identifiants.");
+                    }
                     setAgentForm({ first_name: "", last_name: "", matricule: "", qualification: "", phone: "", password: "" });
+                    setConfirmAgentPassword("");
+                    setShowAgentPassword(false);
                   })}
                 >
                   Créer l'agent terrain
