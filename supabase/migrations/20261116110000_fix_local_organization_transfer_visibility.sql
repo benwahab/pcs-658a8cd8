@@ -332,7 +332,7 @@ returns uuid
 language plpgsql
 security definer
 set search_path = 'public', 'private'
-as $
+as $$
 declare
   v_transfer public.report_organization_transfers%rowtype;
   v_is_central boolean;
