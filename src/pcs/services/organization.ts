@@ -160,7 +160,16 @@ export async function listOrganizationReportMedia(reportIds: string[]): Promise<
     .select("id,report_id,storage_path,media_type,media_role")
     .in("report_id", reportIds);
   if (error) throw error;
-  return Promise.all((data ?? []).map(async (item) => {
+  const rows = (data ?? []).filter(
+    (item): item is typeof item & {
+      id: string;
+      report_id: string;
+      storage_path: string;
+      media_type: string;
+      media_role: string;
+    } => Boolean(item.id && item.report_id && item.storage_path && item.media_type && item.media_role),
+  );
+  return Promise.all(rows.map(async (item) => {
     const { data: signed, error: signedError } = await supabase!
       .storage.from("report-media").createSignedUrl(item.storage_path, 900);
     if (signedError) console.error("[PCS][OrganizationDashboard] Média du signalement inaccessible :", item.id, signedError);
