@@ -66,12 +66,23 @@ export async function listMyAgents() {
 }
 export async function listMairieReports() {
   if (!supabase) throw new Error("Supabase non configuré.");
-  const { data, error } = await supabase
-    .from("reports")
-    .select("*,categories(name),regions(name)")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data ?? [];
+  const [{ data: reports, error: reportsError }, { data: transfers, error: transfersError }] =
+    await Promise.all([
+      supabase
+        .from("reports")
+        .select("*,categories(name),regions(name)")
+        .order("created_at", { ascending: false }),
+      // The mairie's RLS scope exposes only its own outgoing transfers.
+      // Pending and accepted transfers leave the mairie work queue; declined ones return.
+      supabase
+        .from("report_organization_transfers")
+        .select("report_id,status")
+        .in("status", ["pending", "accepted"]),
+    ]);
+  if (reportsError) throw reportsError;
+  if (transfersError) throw transfersError;
+  const transferredIds = new Set((transfers ?? []).map((item) => item.report_id));
+  return (reports ?? []).filter((report) => !transferredIds.has(report.id));
 }
 export async function listMairieTransmissionTargets(): Promise<MairieTransmissionTarget[]> {
   if (!supabase) throw new Error("Supabase non configuré.");
