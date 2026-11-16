@@ -229,12 +229,12 @@ function downloadCredentialPdf(
   fileName: string,
 ): void {
   let commands = "";
-  commands += "0.18 0.08 0.36 rg 0 742 595 100 re f\\n";
+  commands += "0.18 0.08 0.36 rg 0 742 595 100 re f\n";
   commands += textCommand("PLATEFORME CITOYENNE DE SIGNALEMENT", 42, 802, 11, "F2", "1 1 1");
   commands += textCommand(title, 42, 772, 18, "F2", "1 1 1");
   commands += textCommand("DOCUMENT CONFIDENTIEL A REMETTRE PERSONNELLEMENT AU TITULAIRE", 42, 754, 8, "F2", "0.91 0.86 1");
   commands += textCommand("INFORMATIONS DU COMPTE", 42, 708, 11, "F2", "0.30 0.18 0.48");
-  commands += "0.83 0.79 0.89 RG 42 699 m 553 699 l S\\n";
+  commands += "0.83 0.79 0.89 RG 42 699 m 553 699 l S\n";
 
   let y = 674;
   for (const [label, value] of rows) {
@@ -247,7 +247,7 @@ function downloadCredentialPdf(
   }
 
   const boxY = Math.max(105, y - 94);
-  commands += `0.95 0.93 0.98 rg 35 ${boxY} 525 88 re f\\n`;
+  commands += `0.95 0.93 0.98 rg 35 ${boxY} 525 88 re f\n`;
   commands += textCommand("IDENTIFIANTS DE CONNEXION", 48, boxY + 69, 11, "F2", "0.30 0.18 0.48");
   commands += textCommand(loginLabel, 48, boxY + 49, 8, "F2", "0.43 0.39 0.49");
   commands += textCommand(login || "Non renseigné", 48, boxY + 33, 10, "F2");
@@ -276,7 +276,7 @@ export function downloadOrganizationAgentCredentialPdf(
   password: string,
 ): void {
   const fullName = [agent.first_name, agent.last_name].filter(Boolean).join(" ").trim() || "Agent terrain";
-  const safeName = fullName.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-|-$/g, "");
+  const safeName = fullName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-|-$/g, "");
   downloadCredentialPdf(
     "FICHE DE COMPTE - AGENT TERRAIN",
     [
@@ -300,7 +300,7 @@ export function downloadAgencyCredentialPdf(
   centralUnitName: string,
   password: string,
 ): void {
-  const safeName = agency.name.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-|-$/g, "");
+  const safeName = agency.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-|-$/g, "");
   downloadCredentialPdf(
     "FICHE DE COMPTE - AGENCE",
     [
