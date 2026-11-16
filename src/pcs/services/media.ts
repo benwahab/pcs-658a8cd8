@@ -242,15 +242,18 @@ export async function uploadResolutionVideo(
     throw new Error("Supabase n’est pas configuré.");
   }
 
-  if (!ALLOWED_VIDEOS.includes(file.type as (typeof ALLOWED_VIDEOS)[number])) {
-    throw new Error("Vidéo MP4, WebM ou MOV requise.");
+  const allowedResolutionTypes = [
+    ...ALLOWED_VIDEOS,
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+  ];
+  if (!allowedResolutionTypes.includes(file.type)) {
+    throw new Error("Format accepté : photo JPG, PNG, WEBP ou vidéo MP4, WebM, MOV.");
   }
 
   if (file.size <= 0) {
-    throw new Error("La vidéo est vide.");
-  }
-  if (file.size > MAX_VIDEO_SIZE_BYTES) {
-    throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
+    throw new Error("Le fichier de résolution est vide.");
   }
 
   if (accuracyM == null || !Number.isFinite(accuracyM) || accuracyM < 0 || accuracyM > 20) {
