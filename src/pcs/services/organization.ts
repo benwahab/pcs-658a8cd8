@@ -131,6 +131,45 @@ export async function declineOrganizationTransfer(id: string, note: string) {
   if (error) throw error;
   return data;
 }
+
+export type OrganizationResolutionMedia = {
+  id: string;
+  report_id: string;
+  storage_path: string;
+  media_type: string;
+  file_size: number | null;
+  created_at: string;
+  reports: { reference_code: string | null; title: string | null } | null;
+  previewUrl: string | null;
+};
+
+export async function listPendingOrganizationResolutionMedia(): Promise<OrganizationResolutionMedia[]> {
+  if (!supabase) throw new Error("Supabase non configuré.");
+  const { data, error } = await supabase
+    .from("report_media")
+    .select("id,report_id,storage_path,media_type,file_size,created_at,reports!inner(reference_code,title)")
+    .eq("media_role", "resolution_video")
+    .eq("moderation_status", "pending")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return Promise.all((data ?? []).map(async (item) => {
+    const { data: signed, error: signedError } = await supabase!
+      .storage.from("report-media").createSignedUrl(item.storage_path, 900);
+    if (signedError) console.error("[PCS][OrganizationDashboard] Preuve de résolution inaccessible :", item.id, signedError);
+    return { ...item, reports: item.reports as OrganizationResolutionMedia["reports"], previewUrl: signed?.signedUrl ?? null };
+  }));
+}
+
+export async function reviewOrganizationResolutionMedia(mediaId: string, approve: boolean, note?: string) {
+  if (!supabase) throw new Error("Supabase non configuré.");
+  const { data, error } = await supabase.rpc("organization_review_resolution_media", {
+    p_media_id: mediaId,
+    p_approve: approve,
+    p_note: note?.trim() || undefined,
+  });
+  if (error) throw error;
+  return data;
+}
 export async function listOrganizationUnits(
   organizationId: string,
   centralUnitId?: string | null,
