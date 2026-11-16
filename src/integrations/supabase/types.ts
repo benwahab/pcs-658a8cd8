@@ -2311,6 +2311,10 @@ export type Database = {
         Args: { p_approve: boolean; p_media_id: string };
         Returns: undefined;
       };
+      organization_review_resolution_media: {
+        Args: { p_approve: boolean; p_media_id: string; p_note?: string };
+        Returns: undefined;
+      };
       mairie_transmit_report: {
         Args: {
           p_note?: string;
