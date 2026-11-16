@@ -526,66 +526,6 @@ export default function AgentTerrain() {
           .agentFeed .missionRail button { padding: 7px 9px; }
         }
 
-        /* Palette PCS : surfaces violet profond, sans panneaux blancs. */
-        .agentFeed { color: #f4edf9; }
-        .agentFeed .agentFeedTop {
-          background: rgba(39, 23, 53, .97) !important;
-          border-color: #59416d !important;
-          box-shadow: 0 8px 24px rgba(10, 4, 18, .28) !important;
-        }
-        .agentFeed .agentFeedTop strong,
-        .agentFeed .missionContent > h1,
-        .agentFeed .missionLocation strong,
-        .agentFeed .agentOriginalMedia > strong,
-        .agentFeed .agentActionSheet > strong,
-        .agentFeed .agentEmpty h1 { color: #f7f0fc !important; }
-        .agentFeed .agentFeedTop small,
-        .agentFeed .missionLocation small,
-        .agentFeed .missionContent > p,
-        .agentFeed .agentActionSheet p,
-        .agentFeed .agentEmpty p { color: #cbbbd8 !important; }
-        .agentFeed .agentMissionSlide .missionContent,
-        .agentFeed .agentEmpty {
-          background: #2c1d3b !important;
-          color: #f4edf9 !important;
-          border-color: #59416d !important;
-          box-shadow: 0 14px 38px rgba(10, 4, 18, .3) !important;
-        }
-        .agentFeed .missionLocation,
-        .agentFeed .agentOriginalMedia,
-        .agentFeed .agentActionSheet {
-          background: #382747 !important;
-          border-color: #604875 !important;
-        }
-        .agentFeed .missionLocation > span,
-        .agentFeed .agentEmpty > span {
-          background: #523768 !important;
-          color: #f5eaff !important;
-        }
-        .agentFeed .missionMeta > span:first-child { color: #d8b9f0 !important; }
-        .agentFeed .feedActionButton {
-          background: #453052 !important;
-          border-color: #76598d !important;
-          color: #f5eaff !important;
-          box-shadow: none !important;
-        }
-        .agentFeed .feedActionButton.primary {
-          background: #704394 !important;
-          border-color: #9568b5 !important;
-          color: #fff !important;
-        }
-        .agentFeed .agentRefresh {
-          background: #49315d !important;
-          border-color: #76598d !important;
-          color: #f5eaff !important;
-        }
-        .agentFeed .agentLogout {
-          background: #4a293f !important;
-          border-color: #87506e !important;
-          color: #ffdce9 !important;
-        }
-        .agentFeed .agentOriginalMedia img { background: #21152f !important; }
-        .agentFeed .agentEmpty { color: #f4edf9 !important; }
       `}</style>
       <header className="agentFeedTop">
         <div>
