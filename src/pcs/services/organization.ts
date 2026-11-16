@@ -338,7 +338,6 @@ export async function createAgencyAgent(input: {
   qualification: string;
   phone?: string;
   password: string;
-  organization_unit_id: string;
 }) {
   if (!supabase) throw new Error("Supabase non configuré.");
   const {
