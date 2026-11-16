@@ -96,7 +96,7 @@ export async function listOrganizationTransfers(): Promise<OrganizationTransfer[
   if (!supabase) throw new Error("Supabase non configuré.");
   const { data, error } = await supabase
     .from("report_organization_transfers")
-    .select("id,report_id,organization_id,from_mairie_id,status,transmitted_at,response_note")
+    .select("id,report_id,organization_id,organization_unit_id,from_mairie_id,status,transmitted_at,response_note")
     .order("transmitted_at", { ascending: false });
   if (error) throw error;
   const rows = data ?? [],
