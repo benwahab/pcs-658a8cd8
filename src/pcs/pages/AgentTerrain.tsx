@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "@/pcs/router";
+import { useNavigate } from "@/pcs/router";
 import { supabase } from "../lib/supabase";
 import {
   listMyMissions,
@@ -7,7 +7,6 @@ import {
   resolveMissionWithVideo,
   type AgentMission,
 } from "../services/mairie";
-import BrandLogo from "../components/BrandLogo";
 import { statusLabels } from "../types";
 import { getSession, getMyRoles } from "../services/permissions";
 
@@ -54,7 +53,7 @@ export default function AgentTerrain() {
       const { error: signOutError } = await supabase.auth.signOut();
       if (signOutError) throw signOutError;
       if (agentUserId) clearCachedAgentMissions(agentUserId);
-      navigate("/connexion-operationnelle?mode=agent");
+      navigate("/");
     } catch (e) {
       setError(e instanceof Error ? e.message : "La déconnexion a échoué. Réessayez.");
     } finally {
@@ -358,9 +357,6 @@ export default function AgentTerrain() {
   return (
     <section className="agentFeed">
       <header className="agentFeedTop">
-        <Link to="/" className="feedBrand">
-          <BrandLogo className="agentBrandLogo" />
-        </Link>
         <div>
           <strong>Mes missions</strong>
           <small>
@@ -404,9 +400,6 @@ export default function AgentTerrain() {
           <span>✓</span>
           <h1>Aucune mission</h1>
           <p>Les missions attribuées par votre mairie apparaîtront ici.</p>
-          <Link className="feedPrimary" to="/">
-            Accueil
-          </Link>
         </div>
       ) : (
         missions.length > 0 && (
@@ -624,27 +617,6 @@ export default function AgentTerrain() {
           </div>
         )
       )}
-      <div className="agentFeedBottom">
-        <Link to="/agent-terrain" className="active">
-          <span>▣</span>
-          <small>Missions</small>
-        </Link>
-        <button onClick={load}>
-          <span>↻</span>
-          <small>Actualiser</small>
-        </button>
-        <Link to="/" className="feedCreate">
-          <span>⌂</span>
-        </Link>
-        <Link to="/notifications">
-          <span>♧</span>
-          <small>Alertes</small>
-        </Link>
-        <Link to="/connexion-operationnelle?mode=agent">
-          <span>♙</span>
-          <small>Compte</small>
-        </Link>
-      </div>
     </section>
   );
 }
