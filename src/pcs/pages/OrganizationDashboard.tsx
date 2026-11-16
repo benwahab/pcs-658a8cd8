@@ -151,7 +151,7 @@ export default function OrganizationDashboard() {
       </section>
     );
   const central = membership?.unit?.unit_type === "central";
-  const currentMembership = membership;
+  const currentMembership = membership!;
   return (
     <section className="organizationDashboard">
       <aside className="organizationSidebar">
