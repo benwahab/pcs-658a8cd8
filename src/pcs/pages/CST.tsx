@@ -2621,8 +2621,8 @@ export function CSTDashboard() {
                                 >
                                   <strong>⚠ Doublon potentiel à vérifier</strong>
                                   <p style={{ margin: "4px 0" }}>
-                                    {v.nearby_reports.length} autre(s) signalement(s) à moins de 20 mètres.
-                                    Vérifiez s’il s’agit du même problème.
+                                    {v.nearby_reports.length} autre(s) signalement(s) à moins de 20
+                                    mètres. Vérifiez s’il s’agit du même problème.
                                   </p>
                                   {v.nearby_reports.map((nearby) => (
                                     <p key={nearby.id} style={{ margin: "4px 0" }}>

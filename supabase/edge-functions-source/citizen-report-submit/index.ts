@@ -327,25 +327,27 @@ Deno.serve(async (req) => {
         },
         400,
       );
-    const { data: category } = await admin
-      .from("categories")
-      .select("id")
-      .eq("id", categoryId)
-      .eq("is_active", true)
-      .maybeSingle();
+    // Three independent lookups: run them concurrently (one round trip instead of three).
+    // Their results are still checked in the original order, so error precedence is unchanged.
+    const [{ data: category }, { data: commune }, { data: gpsMatches, error: gpsMatchError }] =
+      await Promise.all([
+        admin
+          .from("categories")
+          .select("id")
+          .eq("id", categoryId)
+          .eq("is_active", true)
+          .maybeSingle(),
+        admin
+          .from("communes")
+          .select("id,region_id,is_active")
+          .eq("id", communeId)
+          .eq("region_id", regionId)
+          .eq("is_active", true)
+          .maybeSingle(),
+        admin.rpc("match_citizen_gps_commune", { p_latitude: latitude, p_longitude: longitude }),
+      ]);
     if (!category) return json({ error: "Catégorie invalide." }, 400);
-    const { data: commune } = await admin
-      .from("communes")
-      .select("id,region_id,is_active")
-      .eq("id", communeId)
-      .eq("region_id", regionId)
-      .eq("is_active", true)
-      .maybeSingle();
     if (!commune) return json({ error: "Localité invalide pour cette région." }, 400);
-    const { data: gpsMatches, error: gpsMatchError } = await admin.rpc(
-      "match_citizen_gps_commune",
-      { p_latitude: latitude, p_longitude: longitude },
-    );
     if (gpsMatchError) {
       console.error("citizen-report-submit GPS territory check", gpsMatchError);
       return json({ error: "Impossible de vérifier la localité avec le GPS. Réessayez." }, 503);
@@ -420,45 +422,48 @@ Deno.serve(async (req) => {
       console.error("citizen-report-submit report insert", reportError);
       return json({ error: "Impossible d’enregistrer le signalement." }, 500);
     }
+    // Store every file concurrently. allSettled (not all) guarantees no upload is still running
+    // when we clean up after a failure, so no orphan file can be left behind.
     const uploaded: string[] = [];
-    try {
-      for (const file of photoFiles) {
-        const path = report.id + "/" + crypto.randomUUID() + "." + extOf(file.name);
-        const { error } = await admin.storage
-          .from("report-media")
-          .upload(path, file, { contentType: file.type, upsert: false });
-        if (error) throw new Error("Échec du stockage d’une photo.");
-        uploaded.push(path);
-        const { error: rowError } = await admin.from("report_media").insert({
-          report_id: report.id,
-          storage_path: path,
-          media_type: file.type,
-          file_size: file.size,
-          uploaded_by: null,
-          media_role: "citizen_evidence",
-          moderation_status: "pending",
-        });
-        if (rowError) throw new Error("Impossible d’enregistrer une photo du signalement.");
-      }
-      if (videoFile) {
-        const path = report.id + "/" + crypto.randomUUID() + "." + extOf(videoFile.name);
-        const { error } = await admin.storage
-          .from("report-media")
-          .upload(path, videoFile, { contentType: videoFile.type, upsert: false });
-        if (error) throw new Error("Échec du stockage sécurisé de la vidéo.");
-        uploaded.push(path);
-        const { error: rowError } = await admin.from("report_media").insert({
-          report_id: report.id,
-          storage_path: path,
-          media_type: videoFile.type,
-          file_size: videoFile.size,
-          uploaded_by: null,
-          media_role: "citizen_evidence",
-          moderation_status: "pending",
-        });
-        if (rowError) throw new Error("Impossible d’enregistrer la vidéo du signalement.");
-      }
-    } catch (error) {
+    const storeMedia = async (file: File, storageError: string, rowErrorMessage: string) => {
+      const path = report.id + "/" + crypto.randomUUID() + "." + extOf(file.name);
+      const { error } = await admin.storage
+        .from("report-media")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw new Error(storageError);
+      uploaded.push(path);
+      const { error: rowError } = await admin.from("report_media").insert({
+        report_id: report.id,
+        storage_path: path,
+        media_type: file.type,
+        file_size: file.size,
+        uploaded_by: null,
+        media_role: "citizen_evidence",
+        moderation_status: "pending",
+      });
+      if (rowError) throw new Error(rowErrorMessage);
+    };
+    const results = await Promise.allSettled([
+      ...photoFiles.map((file) =>
+        storeMedia(
+          file,
+          "Échec du stockage d’une photo.",
+          "Impossible d’enregistrer une photo du signalement.",
+        ),
+      ),
+      ...(videoFile
+        ? [
+            storeMedia(
+              videoFile,
+              "Échec du stockage sécurisé de la vidéo.",
+              "Impossible d’enregistrer la vidéo du signalement.",
+            ),
+          ]
+        : []),
+    ]);
+    const failed = results.find((r): r is PromiseRejectedResult => r.status === "rejected");
+    if (failed) {
+      const error = failed.reason;
       if (uploaded.length) await admin.storage.from("report-media").remove(uploaded);
       await admin.from("reports").delete().eq("id", report.id);
       console.error("citizen-report-submit media", error);

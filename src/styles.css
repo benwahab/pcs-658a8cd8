@@ -3736,6 +3736,10 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .photoLightboxNav.isPrev{left:10px}.photoLightboxNav.isNext{right:10px}
 .photoLightboxCount{position:absolute;z-index:2;top:max(24px,env(safe-area-inset-top));left:18px;color:#fff;font-weight:700;font-size:14px}
 .videoOptimizing{margin:.5rem 0;font-size:.9rem;font-weight:600;color:var(--pcs-green,#1f8a4c)}
+.uploadProgress{margin:.5rem 0}
+.uploadProgress p{margin:0 0 .35rem;font-size:.9rem;font-weight:600;color:var(--pcs-green,#1f8a4c)}
+.uploadProgressTrack{height:8px;border-radius:999px;background:#d9e3de;overflow:hidden}
+.uploadProgressFill{height:100%;border-radius:inherit;background:#0f766e;transition:width .2s ease}
 
 
 /* CST — registre des signalements compact, sans aperçu ni détail des médias. */

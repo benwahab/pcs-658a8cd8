@@ -62,6 +62,7 @@ export default function ReportForm() {
   const [videoProgress, setVideoProgress] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [gpsNoticeOpen, setGpsNoticeOpen] = useState(false);
   const returnTargetRef = useRef<{ type: "home" | "report"; reportId?: string } | null>(null);
@@ -299,20 +300,27 @@ export default function ReportForm() {
     }
 
     setSaving(true);
+    setUploadProgress(0);
 
     try {
-      await submitCitizenReport({
-        category_id: category,
-        region_id: region,
-        commune_id: commune,
-        title: title.trim(),
-        location_label: location.trim() || null,
-        latitude: coords.lat,
-        longitude: coords.lng,
-        gps_accuracy_m: coords.accuracy,
-        photos: files,
-        video,
-      });
+      await submitCitizenReport(
+        {
+          category_id: category,
+          region_id: region,
+          commune_id: commune,
+          title: title.trim(),
+          location_label: location.trim() || null,
+          latitude: coords.lat,
+          longitude: coords.lng,
+          gps_accuracy_m: coords.accuracy,
+          photos: files,
+          video,
+        },
+        (ratio) => {
+          const percent = Math.round(ratio * 100) / 100;
+          setUploadProgress((current) => (current === percent ? current : percent));
+        },
+      );
 
       setSubmitted(true);
       window.setTimeout(() => {
@@ -340,6 +348,7 @@ export default function ReportForm() {
       );
     } finally {
       setSaving(false);
+      setUploadProgress(null);
     }
   }
 
@@ -612,6 +621,28 @@ export default function ReportForm() {
           </fieldset>
 
           {error && <p className="error">{error}</p>}
+
+          {uploadProgress !== null && (
+            <div className="uploadProgress" role="status" aria-live="polite">
+              <p>
+                {uploadProgress >= 1
+                  ? "Finalisation de l’envoi…"
+                  : `Envoi des fichiers… ${Math.round(uploadProgress * 100)} %`}
+              </p>
+              <div
+                className="uploadProgressTrack"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(uploadProgress * 100)}
+              >
+                <div
+                  className="uploadProgressFill"
+                  style={{ width: `${Math.round(uploadProgress * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           <button
             data-pcs-tour="submit-report"
