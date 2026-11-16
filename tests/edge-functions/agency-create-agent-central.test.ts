@@ -25,7 +25,8 @@ describe("agency creation of its own field agents", () => {
 
   it("shows agent creation only in the agency dashboard", () => {
     expect(organizationPage).toContain("Vous créez ici les comptes des agents rattachés à votre agence.");
-    expect(organizationPage).toContain("organization_unit_id: membership!.unit_id!");
+    expect(organizationPage).toContain("createAgencyAgent({ ...agentForm })");
+    expect(organizationPage).not.toContain("organization_unit_id: membership!.unit_id!");
     expect(organizationPage).not.toContain("Agence de rattachement");
   });
 });
