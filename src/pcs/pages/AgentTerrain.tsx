@@ -701,7 +701,7 @@ export default function AgentTerrain() {
                           onClick={() => route(m.reports.latitude, m.reports.longitude)}
                           className="feedActionButton"
                         >
-                          ⌖ Itinéraire
+                          ⌖ Ouvrir l’itinéraire
                         </button>
                       )}
                       {!["in_progress", "resolved", "rejected"].includes(s ?? "") && (
