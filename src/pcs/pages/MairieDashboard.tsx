@@ -823,8 +823,8 @@ export default function MairieDashboard() {
                           >
                             <option value="">
                               {transmissionTargets.length
-                                ? "Choisir NIGELEC ou NDE…"
-                                : "Aucune structure locale configurée"}
+                                ? "Choisir la centrale NIGELEC ou NDE…"
+                                : "Aucune centrale NIGELEC ou NDE configurée"}
                             </option>
                             {transmissionTargets.map((o) => (
                               <option
