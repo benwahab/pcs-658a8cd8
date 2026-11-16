@@ -485,7 +485,7 @@ export default function AgentTerrain() {
                     )}
                     {videoId === m.id && (
                       <div className="agentActionSheet">
-                        <strong>Importer la vidéo de résolution</strong>
+                        <strong>Ajouter une photo ou une vidéo de résolution</strong>
                         {videoError && (
                           <p role="alert" style={{ color: "#b91c1c" }}>
                             {videoError}
@@ -493,19 +493,27 @@ export default function AgentTerrain() {
                         )}
                         {video && videoPreviewUrl && (
                           <>
-                            <video
-                              ref={previewRef}
-                              controls
-                              playsInline
-                              style={{
-                                width: "100%",
-                                maxHeight: "42vh",
-                                borderRadius: 12,
-                                background: "#111",
-                                objectFit: "contain",
-                              }}
-                            />
-                            <p>Vidéo prête ({(video.size / 1024 / 1024).toFixed(1)} Mo).</p>
+                            {video.type.startsWith("image/") ? (
+                              <img
+                                src={videoPreviewUrl}
+                                alt="Aperçu de la preuve de résolution"
+                                style={{ width: "100%", maxHeight: "42vh", objectFit: "contain", borderRadius: 12 }}
+                              />
+                            ) : (
+                              <video
+                                ref={previewRef}
+                                controls
+                                playsInline
+                                style={{
+                                  width: "100%",
+                                  maxHeight: "42vh",
+                                  borderRadius: 12,
+                                  background: "#111",
+                                  objectFit: "contain",
+                                }}
+                              />
+                            )}
+                            <p>{video.type.startsWith("image/") ? "Photo" : "Vidéo"} prête ({(video.size / 1024 / 1024).toFixed(1)} Mo).</p>
                           </>
                         )}
                         <div
@@ -519,13 +527,13 @@ export default function AgentTerrain() {
                               document.getElementById("agent-resolution-video-import")?.click()
                             }
                           >
-                            {video ? "Choisir une autre vidéo" : "Choisir une vidéo"}
+                            {video ? "Choisir un autre média" : "Choisir une photo ou vidéo"}
                           </button>
                           <input
                             id="agent-resolution-video-import"
                             hidden
                             type="file"
-                            accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v"
+                            accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime,.jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,.m4v"
                             onChange={(event) => {
                               const file = event.target.files?.[0] ?? null;
                               event.target.value = "";
@@ -534,16 +542,17 @@ export default function AgentTerrain() {
                                 setVideoError("Le fichier vidéo est vide.");
                                 return;
                               }
-                              if (file.size > 100 * 1024 * 1024) {
-                                setVideoError("La vidéo ne doit pas dépasser 100 Mo.");
-                                return;
-                              }
                               if (
-                                !["video/mp4", "video/webm", "video/quicktime"].includes(file.type)
+                                ![
+                                  "image/jpeg",
+                                  "image/png",
+                                  "image/webp",
+                                  "video/mp4",
+                                  "video/webm",
+                                  "video/quicktime",
+                                ].includes(file.type)
                               ) {
-                                setVideoError(
-                                  "Format vidéo non pris en charge. Utilisez MP4, WebM ou MOV.",
-                                );
+                                setVideoError("Format non pris en charge. Utilisez JPG, PNG, WEBP, MP4, WebM ou MOV.");
                                 return;
                               }
                               setVideoError("");
@@ -555,9 +564,7 @@ export default function AgentTerrain() {
                           />
                         </div>
                         <p>
-                          Formats acceptés : MP4, WebM ou MOV. Taille maximale : 100 Mo, sans limite
-                          de durée. Une position GPS précise à 20 mètres ou moins du signalement
-                          reste requise.
+                          Formats acceptés : JPG, PNG, WEBP, MP4, WebM ou MOV, sans limite de durée ni plafond de taille applicatif. Une position GPS précise à 20 mètres ou moins du signalement reste requise.
                         </p>
                         <button
                           className="feedActionButton primary"
@@ -568,7 +575,7 @@ export default function AgentTerrain() {
                             ? videoProgress !== null && videoProgress < 1
                               ? `Optimisation de la vidéo… ${Math.round(videoProgress * 100)} %`
                               : "Envoi…"
-                            : "Envoyer la vidéo de résolution"}
+                            : "Envoyer la preuve de résolution"}
                         </button>
                         <button
                           type="button"
