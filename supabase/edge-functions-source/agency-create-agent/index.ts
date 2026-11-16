@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
 
     const matricule = String(body.matricule).trim();
     const phone = normalizePhone(String(body.phone));
-    if (!/^\\+227\\d{8}$/.test(phone))
+    if (!/^\+227\d{8}$/.test(phone))
       return json({ error: "Le numéro doit être un numéro nigérien valide à 8 chiffres." }, 400);
     const phoneNormalized = phone;
 
