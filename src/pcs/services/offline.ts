@@ -2,8 +2,6 @@ const DB_NAME = "pcs-offline-v1";
 const DB_VERSION = 2;
 const STORE_VERIFICATIONS = "field-verifications";
 const STORE_RESOLUTIONS = "resolution-videos";
-const MAX_RESOLUTION_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
-
 type PendingVerification = {
   id: string;
   agentId: string;
@@ -150,9 +148,7 @@ export function getCachedAgentMissions<T = unknown>(agentId: string): T[] {
 }
 
 export async function queueResolutionVideo(item: Omit<PendingResolution, "id" | "createdAt">) {
-  if (item.video.size <= 0) throw new Error("La vidéo est vide.");
-  if (item.video.size > MAX_RESOLUTION_VIDEO_SIZE_BYTES)
-    throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
+  if (item.video.size <= 0) throw new Error("Le fichier de résolution est vide.");
   const db = await openDb();
   try {
     await new Promise<void>((resolve, reject) => {
