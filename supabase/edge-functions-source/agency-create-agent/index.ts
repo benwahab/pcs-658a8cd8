@@ -9,7 +9,7 @@ const json = (body: unknown, status = 200) =>
 
 const normalizePhone = (value: string) => {
   const cleaned = value.replace(/[^0-9+]/g, "").trim();
-  const digits = cleaned.replace(/\\D/g, "");
+  const digits = cleaned.replace(/\D/g, "");
   if (digits.length === 8) return "+227" + digits;
   if (digits.length === 11 && digits.startsWith("227")) return "+" + digits;
   return cleaned;
