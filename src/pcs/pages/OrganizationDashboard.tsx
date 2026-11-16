@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@/pcs/router";
 import { supabase } from "../lib/supabase";
 import PasswordField from "../components/PasswordField";
+import { downloadAgencyCredentialPdf, downloadOrganizationAgentCredentialPdf } from "../utils/agentCredentialPdf";
 import {
   getMyOrganizationMembership,
   listOrganizationTransfers,
@@ -51,6 +52,8 @@ export default function OrganizationDashboard() {
     phone: "",
     password: "",
   });
+  const [confirmAgentPassword, setConfirmAgentPassword] = useState("");
+  const [showAgentPassword, setShowAgentPassword] = useState(false);
   const [agencyForm, setAgencyForm] = useState({
     name: "",
     code: "",
@@ -261,6 +264,7 @@ export default function OrganizationDashboard() {
           )}
         </section>
         {error && <div className="card error">{error}</div>}
+        {success && <div className="card" role="status">{success}</div>}
         {central ? (
           <>
             <div className="card" id="org-transfers">
@@ -409,18 +413,66 @@ export default function OrganizationDashboard() {
               <h2>Créer un agent terrain de la centrale</h2>
               <p>Les agents créés ici sont rattachés uniquement à cette centrale, indépendamment de ses agences.</p>
               <div className="form">
-                <input placeholder="Prénom" value={agentForm.first_name} onChange={(event) => setAgentForm({ ...agentForm, first_name: event.target.value })} />
-                <input placeholder="Nom" value={agentForm.last_name} onChange={(event) => setAgentForm({ ...agentForm, last_name: event.target.value })} />
-                <input placeholder="Matricule" value={agentForm.matricule} onChange={(event) => setAgentForm({ ...agentForm, matricule: event.target.value })} />
-                <input placeholder="Qualification" value={agentForm.qualification} onChange={(event) => setAgentForm({ ...agentForm, qualification: event.target.value })} />
-                <input placeholder="Téléphone" value={agentForm.phone} onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })} />
-                <input type="password" minLength={8} placeholder="Mot de passe" value={agentForm.password} onChange={(event) => setAgentForm({ ...agentForm, password: event.target.value })} />
+                <label>
+                  Prénom
+                  <input required value={agentForm.first_name} onChange={(event) => setAgentForm({ ...agentForm, first_name: event.target.value })} placeholder="Prénom de l'agent" />
+                </label>
+                <label>
+                  Nom
+                  <input required value={agentForm.last_name} onChange={(event) => setAgentForm({ ...agentForm, last_name: event.target.value })} placeholder="Nom de l'agent" />
+                </label>
+                <label>
+                  Matricule
+                  <input required value={agentForm.matricule} onChange={(event) => setAgentForm({ ...agentForm, matricule: event.target.value })} placeholder="Matricule" />
+                </label>
+                <label>
+                  Qualification / métier
+                  <input required value={agentForm.qualification} onChange={(event) => setAgentForm({ ...agentForm, qualification: event.target.value })} placeholder="Qualification" />
+                </label>
+                <label>
+                  Téléphone
+                  <input value={agentForm.phone} onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })} placeholder="Numéro de téléphone" />
+                </label>
+                <PasswordField
+                  label="Mot de passe"
+                  value={agentForm.password}
+                  onChange={(value) => setAgentForm({ ...agentForm, password: value })}
+                  visible={showAgentPassword}
+                  onToggle={() => setShowAgentPassword((value) => !value)}
+                />
+                <PasswordField
+                  label="Confirmer le mot de passe"
+                  value={confirmAgentPassword}
+                  onChange={setConfirmAgentPassword}
+                  confirmation
+                  visible={showAgentPassword}
+                  onToggle={() => setShowAgentPassword((value) => !value)}
+                />
+                {confirmAgentPassword.length > 0 && agentForm.password !== confirmAgentPassword && (
+                  <p className="error">Les deux mots de passe ne correspondent pas.</p>
+                )}
                 <button
                   className="button primary"
-                  disabled={busy || !agentForm.first_name.trim() || !agentForm.last_name.trim() || !agentForm.matricule.trim() || !agentForm.qualification.trim() || agentForm.password.length < 8}
+                  disabled={busy || !agentForm.first_name.trim() || !agentForm.last_name.trim() || !agentForm.matricule.trim() || !agentForm.qualification.trim() || agentForm.password.length < 8 || agentForm.password !== confirmAgentPassword}
                   onClick={() => act(async () => {
-                    await createAgencyAgent({ ...agentForm });
+                    setSuccess("");
+                    const initialPassword = agentForm.password;
+                    const createdAgent = await createAgencyAgent({ ...agentForm });
+                    try {
+                      downloadOrganizationAgentCredentialPdf(
+                        createdAgent,
+                        { name: membership.organization.name, code: membership.organization.code },
+                        { name: membership.unit?.name ?? "Unité", code: membership.unit?.code ?? "", unit_type: membership.unit?.unit_type ?? "agency" },
+                        initialPassword,
+                      );
+                      setSuccess("Le compte agent a été créé et sa fiche PDF avec les informations et le mot de passe initial a été téléchargée. Remettez-la directement à l'agent.");
+                    } catch (pdfError) {
+                      console.error("[PCS][OrganizationDashboard] Échec du PDF agent :", pdfError);
+                      setError("Le compte agent a été créé, mais le téléchargement du PDF a échoué. Ne fermez pas cette page avant d'avoir récupéré les identifiants.");
+                    }
                     setAgentForm({ first_name: "", last_name: "", matricule: "", qualification: "", phone: "", password: "" });
+                    setConfirmAgentPassword("");
+                    setShowAgentPassword(false);
                   })}
                 >
                   Créer l'agent terrain
@@ -497,12 +549,26 @@ export default function OrganizationDashboard() {
                   }
                   onClick={() =>
                     act(async () => {
-                      await createOrganizationAgency({
+                      setSuccess("");
+                      const initialPassword = agencyForm.admin_password;
+                      const createdAgency = await createOrganizationAgency({
                         organization_id: membership.organization_id,
                         name: agencyForm.name,
                         code: agencyForm.code,
-                        admin_password: agencyForm.admin_password,
+                        admin_password: initialPassword,
                       });
+                      try {
+                        downloadAgencyCredentialPdf(
+                          createdAgency.agency,
+                          { name: membership.organization.name, code: membership.organization.code },
+                          membership.unit?.name ?? "Centrale",
+                          initialPassword,
+                        );
+                        setSuccess("Le compte d'agence a été créé et sa fiche PDF avec le code et le mot de passe initial a été téléchargée. Remettez-la directement au responsable de l'agence.");
+                      } catch (pdfError) {
+                        console.error("[PCS][OrganizationDashboard] Échec du PDF agence :", pdfError);
+                        setError("L'agence a été créée, mais le téléchargement du PDF a échoué. Conservez le code et le mot de passe pour les remettre au responsable.");
+                      }
                       setAgencyForm({
                         name: "",
                         code: "",
