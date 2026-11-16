@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
         full_name: fullName,
         role: "agent_terrain",
         organization_id: membership.organization_id,
-        organization_unit_id: agency.id,
+        organization_unit_id: membership.unit_id,
       },
     });
     if (createError || !created.user)
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
           user_id: agentUserId,
           mairie_id: null,
           organization_id: membership.organization_id,
-          organization_unit_id: agency.id,
+          organization_unit_id: membership.unit_id,
           first_name: String(body.first_name).trim(),
           last_name: String(body.last_name).trim(),
           matricule,
