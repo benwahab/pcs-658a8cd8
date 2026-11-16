@@ -14,6 +14,8 @@ import {
   createAgencyAgent,
   createOrganizationAgency,
   listOrganizationUnitAssignments,
+  listPendingOrganizationResolutionMedia,
+  reviewOrganizationResolutionMedia,
   uploadOrganizationLogo,
 } from "../services/organization";
 import type { OrganizationMembership } from "../services/organization";
@@ -29,6 +31,7 @@ export default function OrganizationDashboard() {
   const nav = useNavigate();
   const [membership, setMembership] = useState<OrganizationMembership | null>(null),
     [transfers, setTransfers] = useState<OrganizationTransfer[]>([]),
+    [resolutionMedia, setResolutionMedia] = useState<Awaited<ReturnType<typeof listPendingOrganizationResolutionMedia>>>([]),
     [units, setUnits] = useState<OrganizationUnitListItem[]>([]),
     [missions, setMissions] = useState<AgencyMission[]>([]),
     [agencyMissions, setAgencyMissions] = useState<OrganizationUnitAssignment[]>([]),
@@ -59,12 +62,14 @@ export default function OrganizationDashboard() {
       setOrganizationLogo(m?.organization?.logo_url ?? "");
       if (!m) throw new Error("Compte organisationnel non habilité.");
       if (m.unit?.unit_type === "central" && m.organization_id && m.unit_id) {
-        const [t, u, am] = await Promise.all([
+        const [t, u, am, rm] = await Promise.all([
           listOrganizationTransfers(),
           listOrganizationUnits(m.organization_id, m.unit_id),
           listOrganizationUnitAssignments(m.organization_id),
+          listPendingOrganizationResolutionMedia(),
         ]);
         setTransfers(t);
+        setResolutionMedia(rm);
         setUnits(u.filter((x) => x.unit_type === "agency"));
         setAgencyMissions(am);
       } else if (m.unit?.unit_type === "agency" && m.organization_id && m.unit_id) {
@@ -89,6 +94,15 @@ export default function OrganizationDashboard() {
   async function logout() {
     await supabase?.auth.signOut();
     nav("/");
+  }
+  async function reviewResolutionMedia(mediaId: string, approve: boolean) {
+    await act(() =>
+      reviewOrganizationResolutionMedia(
+        mediaId,
+        approve,
+        approve ? undefined : "Preuve insuffisante : une nouvelle intervention est requise.",
+      ),
+    );
   }
   async function act(fn: () => Promise<unknown>) {
     setError("");
@@ -358,6 +372,31 @@ export default function OrganizationDashboard() {
                   </article>
                 ))
               )}
+            </div>
+            <div className="card" id="org-resolution-review">
+              <h2>Résolutions à valider</h2>
+              <p>Examinez les preuves envoyées par les agents des agences. Le signalement ne devient résolu qu'après votre approbation.</p>
+              {!resolutionMedia.length ? (
+                <p>Aucune preuve de résolution en attente.</p>
+              ) : resolutionMedia.map((item) => (
+                <article className="card" key={item.id}>
+                  <strong>{item.reports?.reference_code ?? item.report_id} · {item.reports?.title ?? "Signalement"}</strong>
+                  {item.previewUrl ? (
+                    item.media_type.startsWith("image/") ? (
+                      <img src={item.previewUrl} alt="Preuve photo de résolution" style={{ width: "100%", maxHeight: 320, objectFit: "contain", borderRadius: 10, marginTop: 10 }} />
+                    ) : (
+                      <video src={item.previewUrl} controls playsInline preload="metadata" style={{ width: "100%", maxHeight: 320, borderRadius: 10, marginTop: 10, background: "#111" }} />
+                    )
+                  ) : <p>Prévisualisation indisponible. Actualisez pour réessayer.</p>}
+                  <small>{item.file_size ? (item.file_size / 1024 / 1024).toFixed(1) + " Mo" : "Taille inconnue"}</small>
+                  <div className="actions">
+                    <button className="button primary" disabled={busy} onClick={() => void reviewResolutionMedia(item.id, true)}>Approuver la résolution</button>
+                    <button className="button" disabled={busy} onClick={() => {
+                      if (window.confirm("Rejeter cette preuve ? Le signalement restera en traitement et l'agence pourra demander une nouvelle intervention.")) void reviewResolutionMedia(item.id, false);
+                    }}>Rejeter la résolution</button>
+                  </div>
+                </article>
+              ))}
             </div>
             <div className="card" id="org-agencies">
               <h2>Agences</h2>
