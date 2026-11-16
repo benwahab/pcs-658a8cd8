@@ -41,6 +41,7 @@ export default function OrganizationDashboard() {
     [agencyMissions, setAgencyMissions] = useState<OrganizationUnitAssignment[]>([]),
     [agents, setAgents] = useState<AgencyAgent[]>([]);
   const [error, setError] = useState(""),
+    [success, setSuccess] = useState(""),
     [busy, setBusy] = useState(false),
     [organizationLogo, setOrganizationLogo] = useState(""),
     [logoBusy, setLogoBusy] = useState(false);
@@ -150,6 +151,7 @@ export default function OrganizationDashboard() {
       </section>
     );
   const central = membership?.unit?.unit_type === "central";
+  const currentMembership = membership;
   return (
     <section className="organizationDashboard">
       <aside className="organizationSidebar">
@@ -461,8 +463,8 @@ export default function OrganizationDashboard() {
                     try {
                       downloadOrganizationAgentCredentialPdf(
                         createdAgent,
-                        { name: membership.organization.name, code: membership.organization.code },
-                        { name: membership.unit?.name ?? "Unité", code: membership.unit?.code ?? "", unit_type: membership.unit?.unit_type ?? "agency" },
+                        { name: currentMembership.organization.name, code: currentMembership.organization.code },
+                        { name: currentMembership.unit?.name ?? "Unité", code: currentMembership.unit?.code ?? "", unit_type: currentMembership.unit?.unit_type ?? "agency" },
                         initialPassword,
                       );
                       setSuccess("Le compte agent a été créé et sa fiche PDF avec les informations et le mot de passe initial a été téléchargée. Remettez-la directement à l'agent.");
@@ -560,7 +562,7 @@ export default function OrganizationDashboard() {
                       try {
                         downloadAgencyCredentialPdf(
                           createdAgency.agency,
-                          { name: membership.organization.name, code: membership.organization.code },
+                          { name: currentMembership.organization.name, code: currentMembership.organization.code },
                           membership.unit?.name ?? "Centrale",
                           initialPassword,
                         );
@@ -720,8 +722,8 @@ export default function OrganizationDashboard() {
                     try {
                       downloadOrganizationAgentCredentialPdf(
                         createdAgent,
-                        { name: membership.organization.name, code: membership.organization.code },
-                        { name: membership.unit?.name ?? "Unité", code: membership.unit?.code ?? "", unit_type: membership.unit?.unit_type ?? "agency" },
+                        { name: currentMembership.organization.name, code: currentMembership.organization.code },
+                        { name: currentMembership.unit?.name ?? "Unité", code: currentMembership.unit?.code ?? "", unit_type: currentMembership.unit?.unit_type ?? "agency" },
                         initialPassword,
                       );
                       setSuccess("Le compte agent a été créé et sa fiche PDF avec les informations et le mot de passe initial a été téléchargée. Remettez-la directement à l'agent.");
