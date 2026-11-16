@@ -7,7 +7,6 @@ import { listCategories, submitCitizenReport } from "../lib/reports";
 import type { Category, Region } from "../types";
 import { listAllCommunes, listRegions } from "../services/mairie";
 import {
-  MAX_VIDEO_SIZE_BYTES,
   compressCitizenPhoto,
   compressCitizenVideo,
   validateCitizenVideo,
@@ -286,11 +285,6 @@ export default function ReportForm() {
     }
 
     if (video) {
-      if (video.size > MAX_VIDEO_SIZE_BYTES) {
-        setError("La vidéo ne doit pas dépasser 100 Mo.");
-        return;
-      }
-
       try {
         await validateCitizenVideo(video);
       } catch (videoError) {
@@ -562,8 +556,8 @@ export default function ReportForm() {
                 if (!selected) return;
                 void (async () => {
                   try {
-                    if (selected.size <= 0 || selected.size > MAX_VIDEO_SIZE_BYTES)
-                      throw new Error("La vidéo doit être lisible et ne pas dépasser 100 Mo.");
+                    if (selected.size <= 0)
+                      throw new Error("La vidéo sélectionnée est vide ou illisible.");
                     if (!selected.type.startsWith("video/"))
                       throw new Error("Le fichier sélectionné n’est pas une vidéo valide.");
                     const snapshot = await snapshotSelectedFile(selected);
