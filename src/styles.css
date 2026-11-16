@@ -3755,3 +3755,123 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .cstRefV2 #report-management .cstReportActions .button{min-height:32px;padding:5px 9px;font-size:.65rem}
 @media(max-width:900px){.cstRefV2 #report-management .cstReportRow{grid-template-columns:minmax(0,1fr) auto}.cstRefV2 #report-management .cstReportDetails{grid-column:1/-1;grid-row:2}.cstRefV2 #report-management .cstReportActions{grid-column:2;grid-row:1}}
 @media(max-width:560px){.cstRefV2 #report-management .cstReportFilters{grid-template-columns:1fr 1fr}.cstRefV2 #report-management .cstReportFilters input{grid-column:1/-1}.cstRefV2 #report-management .cstReportActions .button{padding:5px 7px;font-size:.6rem}}
+
+
+/* ===== PCS — harmonisation visuelle Mairie / Nigelec / NDE =====
+   Socle commun uniquement : navigation, surfaces, espacements et contrôles.
+   Les fonctions, données et accents d'identité des organisations restent inchangés.
+*/
+:where(.mairieDashboard,.organizationDashboard){
+  min-height:100vh;
+  background:#f5f6fb!important;
+  color:#241548;
+}
+.mairieDashboard .mairieSidebar,
+.organizationDashboard .organizationSidebar{
+  width:252px;
+  background:linear-gradient(180deg,#2a0d63 0%,#2b0b5e 55%,#1d0846 100%)!important;
+  color:#fff;
+  box-shadow:8px 0 28px #24104418;
+}
+.mairieDashboard .mairieMain,
+.organizationDashboard .organizationMain{
+  min-width:0;
+  min-height:100vh;
+  background:#f5f6fb!important;
+}
+.mairieDashboard .mairieTopbar{
+  min-height:72px;
+  background:#ffffffed;
+  border-bottom:1px solid #e8e4f1;
+  box-shadow:0 3px 14px #24104408;
+}
+.mairieDashboard .mairieContent{
+  width:100%;
+  max-width:none;
+  padding:28px clamp(18px,2.4vw,42px) 48px;
+}
+.mairieDashboard .mairieWelcome,
+.organizationDashboard .orgPageHeading{
+  min-height:112px;
+  padding:20px 22px;
+  border:1px solid #e5e0ef;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 5px 18px #33205c08;
+}
+.mairieDashboard .mairieWelcome h1,
+.organizationDashboard .orgPageHeading h1{
+  color:#211548;
+  font-size:clamp(1.45rem,2vw,1.9rem);
+  letter-spacing:-.03em;
+}
+.mairieDashboard :where(.mairieStatCard,.mairiePanel),
+.organizationDashboard :where(.orgKpiCard,.organizationMain>.card){
+  border:1px solid #e5e0ef;
+  border-radius:16px;
+  box-shadow:0 5px 18px #33205c08;
+}
+.mairieDashboard .mairieStatCard.featured{
+  background:linear-gradient(135deg,#5b4691,#4e3a7f)!important;
+  border-color:#4e3a7f!important;
+}
+.mairieDashboard .mairiePanel{padding:20px}
+.mairieDashboard .mairieButton,
+.organizationDashboard .button{
+  min-height:42px;
+  border-radius:11px;
+  font-weight:750;
+}
+.mairieDashboard .mairieButton.primary,
+.organizationDashboard .button.primary,
+.organizationDashboard .orgSpace .button.primary{
+  background:linear-gradient(135deg,#5b4691,#4e3a7f)!important;
+  border-color:#4e3a7f!important;
+  color:#fff!important;
+  box-shadow:0 7px 17px #4e3a7f20;
+}
+.mairieDashboard .mairieButton.secondary,
+.organizationDashboard .button:not(.primary){
+  background:#fff;
+  color:#4e3a7f;
+  border-color:#dcd3ee;
+}
+.mairieDashboard :where(input,select,textarea),
+.organizationDashboard :where(input,select,textarea){
+  border-color:#ded9ec;
+  border-radius:10px;
+}
+.mairieDashboard :where(input,select,textarea):focus,
+.organizationDashboard :where(input,select,textarea):focus{
+  border-color:#8068b4;
+  outline-color:#b9a6e7;
+  box-shadow:0 0 0 3px #4e3a7f16;
+}
+.organizationDashboard .organizationMain{
+  padding-bottom:36px;
+}
+.organizationDashboard .orgKpiCard{
+  min-height:112px;
+  border-radius:16px;
+}
+.organizationDashboard .organizationMain>.card{
+  padding:19px;
+  border-radius:16px;
+}
+@media(max-width:760px){
+  .mairieDashboard .mairieSidebar,
+  .organizationDashboard .organizationSidebar{
+    width:100%!important;
+    min-height:0;
+    box-shadow:none;
+  }
+  .mairieDashboard .mairieWelcome,
+  .organizationDashboard .orgPageHeading{
+    min-height:0;
+    padding:16px;
+    border-radius:14px;
+  }
+  .mairieDashboard .mairieContent{
+    padding:18px 14px 34px;
+  }
+}
