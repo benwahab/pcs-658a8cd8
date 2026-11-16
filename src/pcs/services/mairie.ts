@@ -224,12 +224,12 @@ export async function resolveMissionWithVideo(
   // the public feed can play them smoothly. Light files, unsupported browsers
   // and any failure keep the original file; GPS data is passed separately and
   // is not read from the video file.
-  const resolutionFile = video.type.startsWith("video/")
+  const optimizedVideo = video.type.startsWith("video/")
     ? await compressCitizenVideo(video, onCompressProgress)
     : video;
   const mediaId = await uploadResolutionVideo(
     reportId,
-    resolutionFile,
+    optimizedVideo,
     latitude,
     longitude,
     accuracyM,
