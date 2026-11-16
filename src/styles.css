@@ -3875,3 +3875,272 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
     padding:18px 14px 34px;
   }
 }
+
+/* PCS professional dashboards — final shared layout layer */
+.mairieDashboard,
+.organizationDashboard{
+  --pro-ink:#241548;
+  --pro-muted:#746b89;
+  --pro-purple:#4e3a7f;
+  --pro-border:#e5e0ef;
+  --pro-surface:#fff;
+  --pro-canvas:#f5f6fb;
+  color:var(--pro-ink)!important;
+  background:var(--pro-canvas)!important;
+}
+.mairieDashboard{
+  display:grid!important;
+  grid-template-columns:255px minmax(0,1fr)!important;
+  align-items:stretch!important;
+  gap:0!important;
+  width:100%!important;
+  max-width:none!important;
+  min-height:100vh!important;
+  margin:0!important;
+  padding:0!important;
+}
+.mairieDashboard .mairieSidebar,
+.organizationDashboard .organizationSidebar{
+  position:sticky!important;
+  top:0!important;
+  width:255px!important;
+  min-width:255px!important;
+  height:100vh!important;
+  min-height:100vh!important;
+  box-sizing:border-box!important;
+  padding:22px 14px 18px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:14px!important;
+  overflow-y:auto!important;
+  background:linear-gradient(180deg,#241044 0%,#32105c 58%,#1b0b34 100%)!important;
+  color:#fff!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:4px 0 24px #24104412!important;
+}
+.mairieDashboard .mairieMain,
+.organizationDashboard .organizationMain{
+  min-width:0!important;
+  min-height:100vh!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 0 38px!important;
+  background:var(--pro-canvas)!important;
+  color:var(--pro-ink)!important;
+}
+.mairieDashboard .mairieTopbar{
+  position:sticky;
+  top:0;
+  z-index:10;
+  min-height:72px!important;
+  box-sizing:border-box;
+  padding:12px clamp(18px,2.5vw,38px)!important;
+  background:#ffffffed!important;
+  border:0!important;
+  border-bottom:1px solid var(--pro-border)!important;
+  border-radius:0!important;
+  box-shadow:0 3px 14px #24104408!important;
+  backdrop-filter:blur(12px);
+}
+.mairieDashboard .mairieContent{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  padding:26px clamp(18px,2.5vw,38px) 48px!important;
+}
+.mairieDashboard .mairieWelcome,
+.organizationDashboard .orgPageHeading{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  min-height:112px!important;
+  box-sizing:border-box!important;
+  padding:20px 22px!important;
+  border:1px solid var(--pro-border)!important;
+  border-radius:16px!important;
+  background:var(--pro-surface)!important;
+  box-shadow:0 5px 18px #33205c08!important;
+}
+.mairieDashboard .mairieWelcome h1,
+.organizationDashboard .orgPageHeading h1{
+  margin:0!important;
+  color:var(--pro-ink)!important;
+  font-size:clamp(1.45rem,2vw,1.9rem)!important;
+  font-weight:850!important;
+  letter-spacing:-.03em!important;
+}
+.mairieDashboard .mairieWelcome p:not(.eyebrow),
+.organizationDashboard .orgPageHeading p:not(.eyebrow){
+  color:var(--pro-muted)!important;
+}
+.mairieDashboard .mairieStats,
+.organizationDashboard .orgKpiGrid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;
+  margin:18px 0!important;
+}
+.mairieDashboard .mairieStatCard,
+.organizationDashboard .orgKpiCard,
+.mairieDashboard .mairiePanel,
+.organizationDashboard .organizationMain .card{
+  min-width:0!important;
+  box-sizing:border-box!important;
+  border:1px solid var(--pro-border)!important;
+  border-radius:15px!important;
+  background:var(--pro-surface)!important;
+  box-shadow:0 5px 18px #33205c08!important;
+  color:var(--pro-ink)!important;
+}
+.mairieDashboard .mairieStatCard,
+.organizationDashboard .orgKpiCard{
+  min-height:112px!important;
+  padding:18px!important;
+}
+.mairieDashboard .mairieStatCard.featured{
+  background:linear-gradient(135deg,#5b4691,#4e3a7f)!important;
+  border-color:#4e3a7f!important;
+  color:#fff!important;
+}
+.mairieDashboard .mairiePanel,
+.organizationDashboard .organizationMain .card{
+  padding:20px!important;
+}
+.mairieDashboard .mairiePanel h2,
+.organizationDashboard .organizationMain .card h2{
+  color:var(--pro-ink)!important;
+  font-size:1rem!important;
+  font-weight:800!important;
+}
+.mairieDashboard .mairieButton,
+.organizationDashboard .button{
+  min-height:42px!important;
+  box-sizing:border-box!important;
+  border-radius:10px!important;
+  font-weight:750!important;
+}
+.mairieDashboard .mairieButton.primary,
+.organizationDashboard .button.primary{
+  background:linear-gradient(135deg,#5b4691,#4e3a7f)!important;
+  border:1px solid #4e3a7f!important;
+  color:#fff!important;
+  box-shadow:0 7px 17px #4e3a7f20!important;
+}
+.mairieDashboard .mairieButton.secondary,
+.organizationDashboard .button:not(.primary){
+  background:#fff!important;
+  color:#4e3a7f!important;
+  border:1px solid #dcd3ee!important;
+}
+.mairieDashboard :is(input,select,textarea),
+.organizationDashboard :is(input,select,textarea){
+  min-height:40px;
+  box-sizing:border-box;
+  border:1px solid #ded9ec!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:var(--pro-ink)!important;
+}
+.mairieDashboard :is(input,select,textarea):focus,
+.organizationDashboard :is(input,select,textarea):focus{
+  border-color:#8068b4!important;
+  outline:0!important;
+  box-shadow:0 0 0 3px #4e3a7f16!important;
+}
+.mairieDashboard .mairieTable,
+.organizationDashboard table{
+  border-color:var(--pro-border)!important;
+  border-radius:12px!important;
+}
+.mairieDashboard .mairieTable th,
+.organizationDashboard table th{
+  background:#f5f1fb!important;
+  color:#625579!important;
+  font-weight:800!important;
+}
+.mairieDashboard .mairieTable td,
+.organizationDashboard table td{
+  color:#3d3450!important;
+  border-color:#eeeaf4!important;
+}
+.organizationDashboard .orgKpiGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+@media(max-width:1100px){
+  .mairieDashboard .mairieStats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .organizationDashboard .orgKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:760px){
+  .mairieDashboard,
+  .organizationDashboard{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    min-height:100vh!important;
+  }
+  .mairieDashboard .mairieSidebar,
+  .organizationDashboard .organizationSidebar{
+    position:relative!important;
+    top:auto!important;
+    width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:12px!important;
+    gap:9px!important;
+    overflow:visible!important;
+    border-radius:0 0 14px 14px!important;
+  }
+  .mairieDashboard .mairieNav,
+  .organizationDashboard .organizationSidebar nav{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    gap:7px!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    padding:2px 0 5px!important;
+    scrollbar-width:thin;
+  }
+  .mairieDashboard .mairieNav a,
+  .mairieDashboard .mairieNav button,
+  .organizationDashboard .organizationSidebar nav a{
+    flex:0 0 auto!important;
+    min-height:40px!important;
+    white-space:nowrap!important;
+  }
+  .mairieDashboard .mairieMain,
+  .organizationDashboard .organizationMain{
+    min-height:0!important;
+    padding-bottom:24px!important;
+  }
+  .mairieDashboard .mairieTopbar{
+    position:relative!important;
+    min-height:0!important;
+    padding:12px 14px!important;
+    flex-wrap:wrap!important;
+  }
+  .mairieDashboard .mairieContent{padding:16px 12px 30px!important}
+  .mairieDashboard .mairieWelcome,
+  .organizationDashboard .orgPageHeading{
+    align-items:flex-start!important;
+    flex-direction:column!important;
+    min-height:0!important;
+    padding:16px!important;
+    border-radius:13px!important;
+  }
+  .mairieDashboard .mairieStats,
+  .organizationDashboard .orgKpiGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+  }
+  .mairieDashboard .mairieStatCard,
+  .organizationDashboard .orgKpiCard{min-height:90px!important;padding:12px!important}
+  .mairieDashboard .mairiePanel,
+  .organizationDashboard .organizationMain .card{padding:14px!important}
+}
+@media(max-width:380px){
+  .mairieDashboard .mairieStats,
+  .organizationDashboard .orgKpiGrid{grid-template-columns:minmax(0,1fr)!important}
+}
