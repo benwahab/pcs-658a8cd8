@@ -261,75 +261,6 @@ export default function OrganizationDashboard() {
           )}
         </section>
         {error && <div className="card error">{error}</div>}
-        {membership?.role === "admin" && (
-          <div className="card">
-            <h2>Paramètres de l’organisation</h2>
-            <p>
-              Ajoutez le logo officiel de {membership.organization.name}. Il sera partagé avec les
-              comptes centraux et les agences de cette organisation.
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-              <div
-                style={{
-                  width: 88,
-                  height: 88,
-                  borderRadius: 16,
-                  border: "1px solid #e5e7eb",
-                  background: "#fff",
-                  display: "grid",
-                  placeItems: "center",
-                  overflow: "hidden",
-                }}
-              >
-                {organizationLogo ? (
-                  <img
-                    src={organizationLogo}
-                    alt="Logo de l’organisation"
-                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                  />
-                ) : (
-                  <span style={{ fontSize: 12, color: "#64748b" }}>Aucun logo</span>
-                )}
-              </div>
-              <div>
-                <p style={{ fontSize: 13 }}>JPG, PNG ou WEBP · 2 Mo maximum</p>
-                <label
-                  className="button"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    cursor: logoBusy ? "wait" : "pointer",
-                  }}
-                >
-                  {logoBusy ? "Envoi…" : "Ajouter / remplacer le logo"}
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    disabled={logoBusy}
-                    style={{ display: "none" }}
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      e.target.value = "";
-                      if (!file) return;
-                      setLogoBusy(true);
-                      setError("");
-                      try {
-                        const url = await uploadOrganizationLogo(membership.organization_id, file);
-                        setOrganizationLogo(url);
-                      } catch (err) {
-                        setError(
-                          err instanceof Error ? err.message : "Impossible d’enregistrer le logo.",
-                        );
-                      } finally {
-                        setLogoBusy(false);
-                      }
-                    }}
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-        )}
         {central ? (
           <>
             <div className="card" id="org-transfers">
@@ -507,7 +438,7 @@ export default function OrganizationDashboard() {
                 ))
               )}
             </div>
-            <div className="card" id="org-settings">
+            <div className="card" id="org-create-agency">
               <h2>Créer un compte d’agence</h2>
               <p>
                 Chaque agence dispose de son propre accès. Son responsable crée et gère les comptes de ses agents terrain.
@@ -711,6 +642,75 @@ export default function OrganizationDashboard() {
               )}
             </div>
           </>
+        )}
+        {membership?.role === "admin" && (
+          <div className="card" id="org-settings">
+            <h2>Paramètres de l’organisation</h2>
+            <p>
+              Ajoutez le logo officiel de {membership.organization.name}. Il sera partagé avec les
+              comptes centraux et les agences de cette organisation.
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              <div
+                style={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 16,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  display: "grid",
+                  placeItems: "center",
+                  overflow: "hidden",
+                }}
+              >
+                {organizationLogo ? (
+                  <img
+                    src={organizationLogo}
+                    alt="Logo de l’organisation"
+                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                  />
+                ) : (
+                  <span style={{ fontSize: 12, color: "#64748b" }}>Aucun logo</span>
+                )}
+              </div>
+              <div>
+                <p style={{ fontSize: 13 }}>JPG, PNG ou WEBP · 2 Mo maximum</p>
+                <label
+                  className="button"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    cursor: logoBusy ? "wait" : "pointer",
+                  }}
+                >
+                  {logoBusy ? "Envoi…" : "Ajouter / remplacer le logo"}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={logoBusy}
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!file) return;
+                      setLogoBusy(true);
+                      setError("");
+                      try {
+                        const url = await uploadOrganizationLogo(membership.organization_id, file);
+                        setOrganizationLogo(url);
+                      } catch (err) {
+                        setError(
+                          err instanceof Error ? err.message : "Impossible d’enregistrer le logo.",
+                        );
+                      } finally {
+                        setLogoBusy(false);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </section>
