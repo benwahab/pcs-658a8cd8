@@ -500,19 +500,6 @@ export default function AgentTerrain() {
         }
         .agentFeed .agentActionSheet input,
         .agentFeed .agentActionSheet button { max-width: 100%; }
-        .agentFeed .missionRail {
-          display: flex; align-items: center; justify-content: center;
-          gap: 8px; margin: 14px auto 0;
-        }
-        .agentFeed .missionRail button {
-          display: flex; align-items: center; gap: 6px; min-height: 38px;
-          padding: 7px 12px; border: 1px solid #e7deee; border-radius: 12px;
-          background: #fff; color: #65427c; font-weight: 750;
-        }
-        .agentFeed .missionRail button small { font-size: 10px; }
-        .agentFeed .missionRail button.railActive {
-          border-color: #5b2b7c; background: #f2eafa; color: #4e246e;
-        }
         .agentFeed .missionPager {
           border: 1px solid #e6dced; border-radius: 50%; background: #fff;
           color: #5b2b7c; box-shadow: 0 5px 16px rgba(43,19,66,.1);
@@ -538,6 +525,67 @@ export default function AgentTerrain() {
           .agentFeed .agentActionSheet .feedActionButton { width: 100%; }
           .agentFeed .missionRail button { padding: 7px 9px; }
         }
+
+        /* Palette PCS : surfaces violet profond, sans panneaux blancs. */
+        .agentFeed { color: #f4edf9; }
+        .agentFeed .agentFeedTop {
+          background: rgba(39, 23, 53, .97) !important;
+          border-color: #59416d !important;
+          box-shadow: 0 8px 24px rgba(10, 4, 18, .28) !important;
+        }
+        .agentFeed .agentFeedTop strong,
+        .agentFeed .missionContent > h1,
+        .agentFeed .missionLocation strong,
+        .agentFeed .agentOriginalMedia > strong,
+        .agentFeed .agentActionSheet > strong,
+        .agentFeed .agentEmpty h1 { color: #f7f0fc !important; }
+        .agentFeed .agentFeedTop small,
+        .agentFeed .missionLocation small,
+        .agentFeed .missionContent > p,
+        .agentFeed .agentActionSheet p,
+        .agentFeed .agentEmpty p { color: #cbbbd8 !important; }
+        .agentFeed .agentMissionSlide .missionContent,
+        .agentFeed .agentEmpty {
+          background: #2c1d3b !important;
+          color: #f4edf9 !important;
+          border-color: #59416d !important;
+          box-shadow: 0 14px 38px rgba(10, 4, 18, .3) !important;
+        }
+        .agentFeed .missionLocation,
+        .agentFeed .agentOriginalMedia,
+        .agentFeed .agentActionSheet {
+          background: #382747 !important;
+          border-color: #604875 !important;
+        }
+        .agentFeed .missionLocation > span,
+        .agentFeed .agentEmpty > span {
+          background: #523768 !important;
+          color: #f5eaff !important;
+        }
+        .agentFeed .missionMeta > span:first-child { color: #d8b9f0 !important; }
+        .agentFeed .feedActionButton {
+          background: #453052 !important;
+          border-color: #76598d !important;
+          color: #f5eaff !important;
+          box-shadow: none !important;
+        }
+        .agentFeed .feedActionButton.primary {
+          background: #704394 !important;
+          border-color: #9568b5 !important;
+          color: #fff !important;
+        }
+        .agentFeed .agentRefresh {
+          background: #49315d !important;
+          border-color: #76598d !important;
+          color: #f5eaff !important;
+        }
+        .agentFeed .agentLogout {
+          background: #4a293f !important;
+          border-color: #87506e !important;
+          color: #ffdce9 !important;
+        }
+        .agentFeed .agentOriginalMedia img { background: #21152f !important; }
+        .agentFeed .agentEmpty { color: #f4edf9 !important; }
       `}</style>
       <header className="agentFeedTop">
         <div>
@@ -648,7 +696,7 @@ export default function AgentTerrain() {
                       </p>
                     )}
                     <div className="missionActions">
-                      {m.reports?.latitude != null && (
+                      {m.reports?.latitude != null && m.reports?.longitude != null && (
                         <button
                           onClick={() => route(m.reports.latitude, m.reports.longitude)}
                           className="feedActionButton"
@@ -803,20 +851,6 @@ export default function AgentTerrain() {
                         </button>
                       </div>
                     )}
-                  </div>
-                  <div className="missionRail">
-                    <button
-                      onClick={() => setError("La validation est enregistrée par le backend PCS.")}
-                    >
-                      ✓<small>Traçabilité</small>
-                    </button>
-                    <button onClick={() => route(m.reports?.latitude, m.reports?.longitude)}>
-                      ⌖<small>GPS</small>
-                    </button>
-                    <button onClick={() => setIndex(i)} className="railActive">
-                      #{i + 1}
-                      <small>Mission</small>
-                    </button>
                   </div>
                 </article>
               );
