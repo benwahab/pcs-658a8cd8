@@ -41,11 +41,11 @@ Deno.serve(async (req) => {
       .select("id")
       .eq("id", membership.unit_id)
       .eq("organization_id", membership.organization_id)
-      .eq("unit_type", "agency")
+      .in("unit_type", ["central", "agency"])
       .eq("is_active", true)
       .maybeSingle();
     if (agencyError) return json({ error: agencyError.message }, 500);
-    if (!agency) return json({ error: "Seul le responsable d'une agence active peut créer ses agents terrain." }, 403);
+    if (!agency) return json({ error: "Seul le responsable d'une centrale ou d'une agence active peut créer ses agents terrain." }, 403);
 
     const body = await req.json();
     for (const field of ["first_name", "last_name", "matricule", "qualification", "password"]) {
