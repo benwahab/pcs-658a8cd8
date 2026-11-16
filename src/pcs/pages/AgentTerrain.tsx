@@ -263,7 +263,7 @@ export default function AgentTerrain() {
   }
   function resolve(m: AgentMission) {
     if (!video) {
-      setError("Ajoutez la vidéo de résolution.");
+      setError("Ajoutez une photo ou une vidéo de résolution.");
       return;
     }
     setError("");
@@ -455,7 +455,7 @@ export default function AgentTerrain() {
                           ✓ Confirmer sur place
                         </button>
                       )}
-                      {s === "in_progress" && (
+                      {s === "in_progress" && !m.resolution_pending && (
                         <button
                           className="feedActionButton primary"
                           disabled={busy}
@@ -468,6 +468,12 @@ export default function AgentTerrain() {
                         </button>
                       )}
                     </div>
+                    {m.resolution_pending && (
+                      <div className="agentActionSheet">
+                        <strong>Preuve envoyée</strong>
+                        <p>Votre photo ou vidéo est en attente de validation par l'organisme responsable. Vous pourrez transmettre une nouvelle preuve si elle est rejetée.</p>
+                      </div>
+                    )}
                     {verifyId === m.reports?.id && (
                       <div className="agentActionSheet">
                         <strong>Confirmation terrain</strong>
