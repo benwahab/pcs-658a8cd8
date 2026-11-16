@@ -105,9 +105,9 @@ begin
     select 1
     from public.report_organization_transfers
     where report_id = p_report_id
-      and status = 'pending'
+      and status in ('pending', 'accepted', 'completed')
   ) then
-    raise exception 'Une transmission est déjà en attente pour ce signalement.';
+    raise exception 'Ce signalement a déjà été transmis ou pris en charge par une organisation.';
   end if;
 
   insert into public.report_organization_transfers (
