@@ -255,16 +255,6 @@ begin
     raise exception 'La preuve doit être publiée à 20 mètres ou moins du lieu du signalement.';
   end if;
 
-  if exists (
-    select 1 from public.report_media
-    where report_id = p_report_id
-      and media_role = 'resolution_video'
-      and moderation_status = 'pending'
-      and id <> p_media_id
-  ) then
-    raise exception 'Une preuve de résolution est déjà en attente de validation.';
-  end if;
-
   return r;
 end;
 $function$;
@@ -285,7 +275,7 @@ declare
 begin
   if (select auth.uid()) is null then raise exception 'Session requise.'; end if;
 
-  select media.*, media.report_id into rm, v_report_id
+  select media, media.report_id into rm, v_report_id
   from public.report_media media
   join public.reports r on r.id = media.report_id
   join public.mairies m on m.commune_id = r.commune_id
@@ -347,7 +337,7 @@ declare
 begin
   if (select auth.uid()) is null then raise exception 'Session requise.'; end if;
 
-  select media.*, media.report_id, t.organization_id
+  select media, media.report_id, t.organization_id
     into rm, v_report_id, v_organization_id
   from public.report_media media
   join public.report_organization_transfers t on t.report_id = media.report_id
