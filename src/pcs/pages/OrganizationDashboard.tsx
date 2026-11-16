@@ -68,17 +68,19 @@ export default function OrganizationDashboard() {
       if (!m) throw new Error("Compte organisationnel non habilité.");
       if (m.unit?.unit_type === "central" && m.organization_id && m.unit_id) {
         const t = await listOrganizationTransfers();
-        const [u, am, rm, media] = await Promise.all([
+        const [u, am, rm, media, ownAgents] = await Promise.all([
           listOrganizationUnits(m.organization_id, m.unit_id),
           listOrganizationUnitAssignments(m.organization_id),
           listPendingOrganizationResolutionMedia(),
           listOrganizationReportMedia(t.map((item) => item.report_id)),
+          listAgencyAgents(m.organization_id, m.unit_id),
         ]);
         setTransfers(t);
         setResolutionMedia(rm);
         setTransferMedia(media);
         setUnits(u.filter((x) => x.unit_type === "agency"));
         setAgencyMissions(am);
+        setAgents(ownAgents);
       } else if (m.unit?.unit_type === "agency" && m.organization_id && m.unit_id) {
         const [t, ms, as] = await Promise.all([
           listOrganizationTransfers(),
@@ -468,6 +470,39 @@ export default function OrganizationDashboard() {
                       </small>
                     </div>
                     <span>{m.status}</span>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="card" id="org-create-agent">
+              <h2>Créer un agent terrain de la centrale</h2>
+              <p>Les agents créés ici sont rattachés uniquement à cette centrale, indépendamment de ses agences.</p>
+              <div className="form">
+                <input placeholder="Prénom" value={agentForm.first_name} onChange={(event) => setAgentForm({ ...agentForm, first_name: event.target.value })} />
+                <input placeholder="Nom" value={agentForm.last_name} onChange={(event) => setAgentForm({ ...agentForm, last_name: event.target.value })} />
+                <input placeholder="Matricule" value={agentForm.matricule} onChange={(event) => setAgentForm({ ...agentForm, matricule: event.target.value })} />
+                <input placeholder="Qualification" value={agentForm.qualification} onChange={(event) => setAgentForm({ ...agentForm, qualification: event.target.value })} />
+                <input placeholder="Téléphone" value={agentForm.phone} onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })} />
+                <input type="password" minLength={8} placeholder="Mot de passe" value={agentForm.password} onChange={(event) => setAgentForm({ ...agentForm, password: event.target.value })} />
+                <button
+                  className="button primary"
+                  disabled={busy || !agentForm.first_name.trim() || !agentForm.last_name.trim() || !agentForm.matricule.trim() || !agentForm.qualification.trim() || agentForm.password.length < 8}
+                  onClick={() => act(async () => {
+                    await createAgencyAgent({ ...agentForm });
+                    setAgentForm({ first_name: "", last_name: "", matricule: "", qualification: "", phone: "", password: "" });
+                  })}
+                >
+                  Créer l'agent terrain
+                </button>
+              </div>
+              <h3>Agents propres à la centrale</h3>
+              {!agents.length ? (
+                <p>Aucun agent créé par cette centrale.</p>
+              ) : (
+                agents.map((a) => (
+                  <div className="row" key={a.id}>
+                    <strong>{a.first_name} {a.last_name}</strong>
+                    <span>{a.qualification} · {a.matricule}</span>
                   </div>
                 ))
               )}
