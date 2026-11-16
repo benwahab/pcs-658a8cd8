@@ -9,6 +9,7 @@ drop policy if exists report_org_transfers_org_read on public.report_organizatio
 create policy report_org_transfers_scoped_read
 on public.report_organization_transfers
 for select
+to authenticated
 using (
   private.is_staff()
   or exists (
@@ -322,3 +323,120 @@ $$;
 
 revoke execute on function public.organization_accept_transfer(uuid, text) from public, anon;
 grant execute on function public.organization_accept_transfer(uuid, text) to authenticated;
+
+create or replace function public.organization_decline_transfer(
+  p_transfer_id uuid,
+  p_note text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = 'public', 'private'
+as $
+declare
+  v_transfer public.report_organization_transfers%rowtype;
+  v_is_central boolean;
+  v_is_local boolean;
+  v_reference text;
+  v_organization_name text;
+begin
+  if (select auth.uid()) is null then
+    raise exception 'Session requise.';
+  end if;
+  if nullif(trim(coalesce(p_note, '')), '') is null then
+    raise exception 'Un motif de refus est obligatoire.';
+  end if;
+
+  select t.*
+    into v_transfer
+  from public.report_organization_transfers t
+  where t.id = p_transfer_id
+    and t.status = 'pending'
+  for update;
+
+  if v_transfer.id is null then
+    raise exception 'Transmission introuvable ou déjà traitée.';
+  end if;
+
+  select exists (
+    select 1
+    from public.organization_users ou
+    where ou.user_id = (select auth.uid())
+      and ou.organization_id = v_transfer.organization_id
+      and ou.is_active
+      and ou.role in ('admin', 'supervisor')
+      and (
+        (
+          ou.unit_id is null
+          and exists (
+            select 1
+            from public.organization_units central_unit
+            where central_unit.organization_id = ou.organization_id
+              and central_unit.unit_type = 'central'
+              and central_unit.is_active
+          )
+        )
+        or exists (
+          select 1
+          from public.organization_units member_unit
+          where member_unit.id = ou.unit_id
+            and member_unit.organization_id = ou.organization_id
+            and member_unit.unit_type = 'central'
+            and member_unit.is_active
+        )
+      )
+  ) into v_is_central;
+
+  select exists (
+    select 1
+    from public.organization_users ou
+    join public.organization_units target_unit
+      on target_unit.id = ou.unit_id
+     and target_unit.organization_id = ou.organization_id
+    where ou.user_id = (select auth.uid())
+      and ou.organization_id = v_transfer.organization_id
+      and ou.unit_id = v_transfer.organization_unit_id
+      and ou.is_active
+      and ou.role in ('admin', 'supervisor')
+      and target_unit.unit_type = 'agency'
+      and target_unit.is_active
+  ) into v_is_local;
+
+  if not v_is_central and not v_is_local then
+    raise exception 'Accès central ou responsable de l''agence destinataire requis.';
+  end if;
+
+  update public.report_organization_transfers
+  set status = 'declined',
+      responded_by = (select auth.uid()),
+      responded_at = now(),
+      response_note = trim(p_note),
+      updated_at = now()
+  where id = p_transfer_id;
+
+  select r.reference_code, o.name
+    into v_reference, v_organization_name
+  from public.reports r
+  join public.organizations o on o.id = v_transfer.organization_id
+  where r.id = v_transfer.report_id;
+
+  insert into public.notifications(user_id, report_id, type, title, body)
+  select
+    m.account_user_id,
+    v_transfer.report_id,
+    'organization_transfer_response',
+    'Transmission refusée',
+    'La transmission du signalement ' || coalesce(v_reference, v_transfer.report_id::text) ||
+      ' a été refusée par ' || coalesce(v_organization_name, 'l’organisation') ||
+      '. Motif : ' || trim(p_note)
+  from public.mairies m
+  where m.id = v_transfer.from_mairie_id
+    and m.is_active
+    and m.account_user_id is not null;
+
+  return p_transfer_id;
+end;
+$;
+
+revoke execute on function public.organization_decline_transfer(uuid, text) from public, anon;
+grant execute on function public.organization_decline_transfer(uuid, text) to authenticated;
