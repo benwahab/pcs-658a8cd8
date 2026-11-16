@@ -154,8 +154,20 @@ export async function listMyMissions() {
     .in("id", ids);
   if (re) throw re;
   const byId = new Map((reports ?? []).map((r) => [r.id, r] as const));
+  const { data: pendingMedia, error: pendingMediaError } = await supabase
+    .from("report_media")
+    .select("report_id")
+    .in("report_id", ids)
+    .eq("media_role", "resolution_video")
+    .eq("moderation_status", "pending");
+  if (pendingMediaError) throw pendingMediaError;
+  const pendingIds = new Set((pendingMedia ?? []).map((item) => item.report_id));
   return rows
-    .map((r) => ({ ...r, reports: byId.get(r.report_id) ?? null }))
+    .map((r) => ({
+      ...r,
+      reports: byId.get(r.report_id) ?? null,
+      resolution_pending: pendingIds.has(r.report_id),
+    }))
     .filter((r): r is typeof r & { reports: NonNullable<typeof r.reports> } => !!r.reports);
 }
 export async function confirmFieldVerification(
@@ -212,10 +224,12 @@ export async function resolveMissionWithVideo(
   // the public feed can play them smoothly. Light files, unsupported browsers
   // and any failure keep the original file; GPS data is passed separately and
   // is not read from the video file.
-  const optimizedVideo = await compressCitizenVideo(video, onCompressProgress);
+  const resolutionFile = video.type.startsWith("video/")
+    ? await compressCitizenVideo(video, onCompressProgress)
+    : video;
   const mediaId = await uploadResolutionVideo(
     reportId,
-    optimizedVideo,
+    resolutionFile,
     latitude,
     longitude,
     accuracyM,
