@@ -59,6 +59,7 @@ export default function OrganizationDashboard() {
   });
   const [showAgencyPassword, setShowAgencyPassword] = useState(false);
   const [agencySelection, setAgencySelection] = useState<Record<string, string>>({});
+  const [agentAgencyUnitId, setAgentAgencyUnitId] = useState("");
   async function load() {
     try {
       const m = await getMyOrganizationMembership();
@@ -453,6 +454,39 @@ export default function OrganizationDashboard() {
                 ))
               )}
             </div>
+            <div className="card" id="org-create-agent">
+              <h2>Créer un agent terrain</h2>
+              <p>La centrale crée les comptes des agents et les rattache à leur agence. L'agence choisira ensuite l'agent chargé de chaque mission.</p>
+              {!units.length ? (
+                <p>Créez d'abord une agence avant de créer ses agents terrain.</p>
+              ) : (
+                <div className="form">
+                  <label>
+                    Agence de rattachement
+                    <select value={agentAgencyUnitId} onChange={(event) => setAgentAgencyUnitId(event.target.value)}>
+                      <option value="">Choisir une agence…</option>
+                      {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+                    </select>
+                  </label>
+                  <input placeholder="Prénom" value={agentForm.first_name} onChange={(event) => setAgentForm({ ...agentForm, first_name: event.target.value })} />
+                  <input placeholder="Nom" value={agentForm.last_name} onChange={(event) => setAgentForm({ ...agentForm, last_name: event.target.value })} />
+                  <input placeholder="Matricule" value={agentForm.matricule} onChange={(event) => setAgentForm({ ...agentForm, matricule: event.target.value })} />
+                  <input placeholder="Qualification" value={agentForm.qualification} onChange={(event) => setAgentForm({ ...agentForm, qualification: event.target.value })} />
+                  <input placeholder="Téléphone" value={agentForm.phone} onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })} />
+                  <input type="password" minLength={8} placeholder="Mot de passe" value={agentForm.password} onChange={(event) => setAgentForm({ ...agentForm, password: event.target.value })} />
+                  <button
+                    className="button primary"
+                    disabled={busy || !agentAgencyUnitId || !agentForm.first_name.trim() || !agentForm.last_name.trim() || !agentForm.matricule.trim() || !agentForm.qualification.trim() || agentForm.password.length < 8}
+                    onClick={() => act(async () => {
+                      await createAgencyAgent({ ...agentForm, organization_unit_id: agentAgencyUnitId });
+                      setAgentForm({ first_name: "", last_name: "", matricule: "", qualification: "", phone: "", password: "" });
+                    })}
+                  >
+                    Créer l'agent terrain
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="card" id="org-local-missions">
               <h2>Suivi des missions locales</h2>
               {!agencyMissions.length ? (
@@ -635,62 +669,6 @@ export default function OrganizationDashboard() {
                   </article>
                 ))
               )}
-            </div>
-            <div className="card" id="org-create-agent">
-              <h2>Créer un agent terrain</h2>
-              <div className="form">
-                <input
-                  placeholder="Prénom"
-                  value={agentForm.first_name}
-                  onChange={(e) => setAgentForm({ ...agentForm, first_name: e.target.value })}
-                />
-                <input
-                  placeholder="Nom"
-                  value={agentForm.last_name}
-                  onChange={(e) => setAgentForm({ ...agentForm, last_name: e.target.value })}
-                />
-                <input
-                  placeholder="Matricule"
-                  value={agentForm.matricule}
-                  onChange={(e) => setAgentForm({ ...agentForm, matricule: e.target.value })}
-                />
-                <input
-                  placeholder="Qualification"
-                  value={agentForm.qualification}
-                  onChange={(e) => setAgentForm({ ...agentForm, qualification: e.target.value })}
-                />
-                <input
-                  placeholder="Téléphone"
-                  value={agentForm.phone}
-                  onChange={(e) => setAgentForm({ ...agentForm, phone: e.target.value })}
-                />
-                <input
-                  type="password"
-                  minLength={8}
-                  placeholder="Mot de passe"
-                  value={agentForm.password}
-                  onChange={(e) => setAgentForm({ ...agentForm, password: e.target.value })}
-                />
-                <button
-                  className="button primary"
-                  disabled={busy}
-                  onClick={() =>
-                    act(async () => {
-                      await createAgencyAgent(agentForm);
-                      setAgentForm({
-                        first_name: "",
-                        last_name: "",
-                        matricule: "",
-                        qualification: "",
-                        phone: "",
-                        password: "",
-                      });
-                    })
-                  }
-                >
-                  Créer l'agent
-                </button>
-              </div>
             </div>
             <div className="card" id="org-active-agents">
               <h2>Agents actifs</h2>
