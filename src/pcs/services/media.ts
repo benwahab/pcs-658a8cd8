@@ -271,9 +271,6 @@ export async function uploadResolutionVideo(
     throw new Error("Coordonnées GPS invalides.");
   }
 
-  const suppliedExtension = file.name.includes(".")
-    ? file.name.split(".").pop()?.toLowerCase()
-    : undefined;
   const extensionByMime: Record<string, string> = {
     "image/jpeg": "jpg",
     "image/png": "png",
@@ -282,7 +279,7 @@ export async function uploadResolutionVideo(
     "video/webm": "webm",
     "video/quicktime": "mov",
   };
-  const extension = suppliedExtension || extensionByMime[file.type];
+  const extension = extensionByMime[file.type];
   if (!extension) throw new Error("Impossible de déterminer le format du média de résolution.");
   const path = reportId + "/resolution-" + crypto.randomUUID() + "." + extension;
 
