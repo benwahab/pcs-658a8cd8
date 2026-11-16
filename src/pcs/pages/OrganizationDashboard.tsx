@@ -15,6 +15,7 @@ import {
   createOrganizationAgency,
   listOrganizationUnitAssignments,
   listPendingOrganizationResolutionMedia,
+  listOrganizationReportMedia,
   reviewOrganizationResolutionMedia,
   uploadOrganizationLogo,
 } from "../services/organization";
@@ -32,6 +33,7 @@ export default function OrganizationDashboard() {
   const [membership, setMembership] = useState<OrganizationMembership | null>(null),
     [transfers, setTransfers] = useState<OrganizationTransfer[]>([]),
     [resolutionMedia, setResolutionMedia] = useState<Awaited<ReturnType<typeof listPendingOrganizationResolutionMedia>>>([]),
+    [transferMedia, setTransferMedia] = useState<Awaited<ReturnType<typeof listOrganizationReportMedia>>>([]),
     [units, setUnits] = useState<OrganizationUnitListItem[]>([]),
     [missions, setMissions] = useState<AgencyMission[]>([]),
     [agencyMissions, setAgencyMissions] = useState<OrganizationUnitAssignment[]>([]),
@@ -62,14 +64,16 @@ export default function OrganizationDashboard() {
       setOrganizationLogo(m?.organization?.logo_url ?? "");
       if (!m) throw new Error("Compte organisationnel non habilité.");
       if (m.unit?.unit_type === "central" && m.organization_id && m.unit_id) {
-        const [t, u, am, rm] = await Promise.all([
+        const [t, u, am, rm, media] = await Promise.all([
           listOrganizationTransfers(),
           listOrganizationUnits(m.organization_id, m.unit_id),
           listOrganizationUnitAssignments(m.organization_id),
           listPendingOrganizationResolutionMedia(),
+          listOrganizationReportMedia(t.map((item) => item.report_id)),
         ]);
         setTransfers(t);
         setResolutionMedia(rm);
+        setTransferMedia(media);
         setUnits(u.filter((x) => x.unit_type === "agency"));
         setAgencyMissions(am);
       } else if (m.unit?.unit_type === "agency" && m.organization_id && m.unit_id) {
@@ -78,9 +82,11 @@ export default function OrganizationDashboard() {
           listAgencyMissions(m.unit_id),
           listAgencyAgents(m.organization_id, m.unit_id),
         ]);
+        const media = await listOrganizationReportMedia(ms.map((item) => item.report_id));
         setTransfers(t);
         setMissions(ms);
         setAgents(as);
+        setTransferMedia(media);
       } else {
         throw new Error("Compte organisationnel incomplet : unité ou organisation manquante.");
       }
@@ -330,6 +336,17 @@ export default function OrganizationDashboard() {
                   <article className="card" key={t.id}>
                     <strong>{t.reports?.reference_code ?? t.report_id}</strong>
                     <h3>{t.reports?.title ?? "Signalement transmis"}</h3>
+                    {transferMedia.filter((media) => media.report_id === t.report_id).map((media) => (
+                      <div key={media.id} style={{ marginTop: 10 }}>
+                        {media.previewUrl ? (
+                          media.media_type.startsWith("image/") ? (
+                            <img src={media.previewUrl} alt="Photo du signalement" style={{ width: "100%", maxHeight: 280, objectFit: "contain", borderRadius: 10 }} />
+                          ) : (
+                            <video src={media.previewUrl} controls playsInline preload="metadata" style={{ width: "100%", maxHeight: 280, borderRadius: 10, background: "#111" }} />
+                          )
+                        ) : <p>Média indisponible pour le moment.</p>}
+                      </div>
+                    ))}
                     <p></p>
                     <small>Statut transmission : {t.status}</small>
                     {t.status === "pending" && (
@@ -563,6 +580,17 @@ export default function OrganizationDashboard() {
                     <strong>{m.reports?.reference_code ?? m.report_id}</strong>
                     <h3>{m.reports?.title ?? "Mission"}</h3>
                     <p>{m.reports?.location_label ?? "Localisation GPS"}</p>
+                    {transferMedia.filter((media) => media.report_id === m.report_id).map((media) => (
+                      <div key={media.id} style={{ marginTop: 10 }}>
+                        {media.previewUrl ? (
+                          media.media_type.startsWith("image/") ? (
+                            <img src={media.previewUrl} alt="Photo du signalement" style={{ width: "100%", maxHeight: 280, objectFit: "contain", borderRadius: 10 }} />
+                          ) : (
+                            <video src={media.previewUrl} controls playsInline preload="metadata" style={{ width: "100%", maxHeight: 280, borderRadius: 10, background: "#111" }} />
+                          )
+                        ) : <p>Média indisponible pour le moment.</p>}
+                      </div>
+                    ))}
                     <label>
                       Agent
                       <select
