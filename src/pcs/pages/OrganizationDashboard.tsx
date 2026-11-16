@@ -637,40 +637,65 @@ export default function OrganizationDashboard() {
               {!missions.length ? (
                 <p>Aucune mission attribuée.</p>
               ) : (
-                missions.map((m) => (
-                  <article className="card" key={m.id}>
-                    <strong>{m.reports?.reference_code ?? m.report_id}</strong>
-                    <h3>{m.reports?.title ?? "Mission"}</h3>
-                    <p>{m.reports?.location_label ?? "Localisation GPS"}</p>
-                    {transferMedia.filter((media) => media.report_id === m.report_id).map((media) => (
-                      <div key={media.id} style={{ marginTop: 10 }}>
-                        {media.previewUrl ? (
-                          media.media_type.startsWith("image/") ? (
-                            <img src={media.previewUrl} alt="Photo du signalement" style={{ width: "100%", maxHeight: 280, objectFit: "contain", borderRadius: 10 }} />
-                          ) : (
-                            <video src={media.previewUrl} controls playsInline preload="metadata" style={{ width: "100%", maxHeight: 280, borderRadius: 10, background: "#111" }} />
-                          )
-                        ) : <p>Média indisponible pour le moment.</p>}
+                missions.map((m) => {
+                  const report = m.reports;
+                  const originalMedia = transferMedia.filter((media) => media.report_id === m.report_id);
+                  const statusLabels: Record<string, string> = {
+                    submitted: "Soumis",
+                    verification: "En vérification",
+                    assigned: "Attribué",
+                    in_progress: "En cours de traitement",
+                    resolved: "Résolu",
+                    rejected: "Rejeté",
+                  };
+                  return (
+                    <article className="card" key={m.id}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                        <strong>{report?.reference_code ?? m.report_id}</strong>
+                        <span className="statusPill">{statusLabels[report?.status ?? ""] ?? report?.status ?? m.status}</span>
                       </div>
-                    ))}
-                    <label>
-                      Agent
-                      <select
-                        defaultValue=""
-                        onChange={(e) =>
-                          act(() => assignAgencyMissionToAgent(m.id, e.target.value))
-                        }
-                      >
-                        <option value="">Affecter un agent…</option>
-                        {agents.map((a) => (
-                          <option key={a.id} value={a.id}>
-                            {a.first_name} {a.last_name} — {a.matricule}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </article>
-                ))
+                      <h3>{report?.title ?? "Signalement"}</h3>
+                      <div style={{ display: "grid", gap: 7, margin: "12px 0" }}>
+                        <p><strong>Localisation :</strong> {report?.location_label ?? "Localisation GPS enregistrée"}</p>
+                        <p><strong>Priorité :</strong> {report?.priority ?? "Non précisée"}</p>
+                        <p><strong>Date du signalement :</strong> {report?.created_at ? new Date(report.created_at).toLocaleString("fr-FR") : "Non disponible"}</p>
+                        <p><strong>Mission attribuée le :</strong> {new Date(m.assigned_at).toLocaleString("fr-FR")}</p>
+                        {m.mission_note && <p><strong>Consigne de la centrale :</strong> {m.mission_note}</p>}
+                      </div>
+                      <section aria-label="Médias originaux approuvés du signalement" style={{ display: "grid", gap: 10, margin: "14px 0", padding: 12, border: "1px solid #e9e1f1", borderRadius: 12 }}>
+                        <strong>Photos et vidéos du signalement</strong>
+                        {originalMedia.length ? originalMedia.map((media) => (
+                          <div key={media.id}>
+                            {media.previewUrl ? (
+                              media.media_type.startsWith("image/") ? (
+                                <img src={media.previewUrl} alt="Photo approuvée du signalement" loading="lazy" style={{ width: "100%", maxHeight: 320, objectFit: "contain", borderRadius: 10, background: "#f7f5f9" }} />
+                              ) : (
+                                <video src={media.previewUrl} controls playsInline preload="metadata" style={{ width: "100%", maxHeight: 320, borderRadius: 10, background: "#111" }} />
+                              )
+                            ) : <p>Ce média approuvé est temporairement indisponible. Actualisez la page pour réessayer.</p>}
+                          </div>
+                        )) : <p>Aucune photo ou vidéo approuvée n'est disponible pour ce signalement.</p>}
+                      </section>
+                      <label>
+                        Affecter cette mission à un agent terrain
+                        <select
+                          defaultValue=""
+                          onChange={(e) => {
+                            const agentId = e.target.value;
+                            if (agentId) act(() => assignAgencyMissionToAgent(m.id, agentId));
+                          }}
+                        >
+                          <option value="">Choisir un agent…</option>
+                          {agents.map((a) => (
+                            <option key={a.id} value={a.id}>
+                              {a.first_name} {a.last_name} — {a.matricule}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </article>
+                  );
+                })
               )}
             </div>
             <div className="card" id="org-create-agent">
