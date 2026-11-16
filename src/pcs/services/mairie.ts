@@ -77,7 +77,7 @@ export async function listMairieReports() {
       supabase
         .from("report_organization_transfers")
         .select("report_id,status")
-        .in("status", ["pending", "accepted"]),
+        .in("status", ["pending", "accepted", "completed"]),
     ]);
   if (reportsError) throw reportsError;
   if (transfersError) throw transfersError;
