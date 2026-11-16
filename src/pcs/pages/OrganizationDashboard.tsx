@@ -650,7 +650,7 @@ export default function OrganizationDashboard() {
                   className="button primary"
                   disabled={busy || !agentForm.first_name.trim() || !agentForm.last_name.trim() || !agentForm.matricule.trim() || !agentForm.qualification.trim() || agentForm.password.length < 8}
                   onClick={() => act(async () => {
-                    await createAgencyAgent({ ...agentForm, organization_unit_id: membership!.unit_id! });
+                    await createAgencyAgent({ ...agentForm });
                     setAgentForm({ first_name: "", last_name: "", matricule: "", qualification: "", phone: "", password: "" });
                   })}
                 >
