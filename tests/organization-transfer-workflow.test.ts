@@ -14,7 +14,7 @@ describe("Mairie to NIGELEC/NDE transfer workflow", () => {
 
   it("removes pending and accepted transfers from the mairie work queue", () => {
     expect(mairieService).toContain('.from("report_organization_transfers")');
-    expect(mairieService).toContain('.in("status", ["pending", "accepted"])');
+    expect(mairieService).toContain('.in("status", ["pending", "accepted", "completed"])');
     expect(mairieService).toContain("!transferredIds.has(report.id)");
   });
 
@@ -32,9 +32,10 @@ describe("Mairie to NIGELEC/NDE transfer workflow", () => {
     expect(migration).toContain("('NIGELEC', 'NDE')");
   });
 
-  it("allows central acceptance and automatically creates the target unit assignment", () => {
+  it("allows central acceptance and refusal and automatically creates the target unit assignment", () => {
     expect(migration).toContain("v_is_central");
     expect(migration).toContain("v_is_local");
+    expect(migration).toContain("create or replace function public.organization_decline_transfer");
     expect(migration).toContain("insert into public.report_unit_assignments");
     expect(migration).toContain("v_transfer.organization_unit_id");
   });
