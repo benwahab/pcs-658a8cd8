@@ -282,7 +282,7 @@ export default function MairieDashboard() {
   }
   async function logout() {
     await supabase?.auth.signOut();
-    nav("/");
+    nav("/connexion-operationnelle");
   }
   const stats = useMemo(
     () => ({
