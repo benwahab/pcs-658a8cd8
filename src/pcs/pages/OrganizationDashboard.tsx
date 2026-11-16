@@ -7,6 +7,7 @@ import {
   listOrganizationTransfers,
   acceptOrganizationTransfer,
   declineOrganizationTransfer,
+  assignOrganizationAgency,
   listOrganizationUnits,
   listAgencyMissions,
   listAgencyAgents,
@@ -57,6 +58,7 @@ export default function OrganizationDashboard() {
     confirm_password: "",
   });
   const [showAgencyPassword, setShowAgencyPassword] = useState(false);
+  const [agencySelection, setAgencySelection] = useState<Record<string, string>>({});
   async function load() {
     try {
       const m = await getMyOrganizationMembership();
@@ -374,17 +376,40 @@ export default function OrganizationDashboard() {
                         </button>
                       </div>
                     )}
-                    {t.organization_unit_id && (
+                    {t.status === "accepted" && (
+                      <div className="actions" style={{ display: "grid", gap: 8 }}>
+                        <p>Transmission acceptée. Choisissez maintenant l'agence locale qui recevra la mission.</p>
+                        <select
+                          value={agencySelection[t.id] ?? ""}
+                          onChange={(event) =>
+                            setAgencySelection((current) => ({ ...current, [t.id]: event.target.value }))
+                          }
+                        >
+                          <option value="">Choisir une agence locale…</option>
+                          {units.map((unit) => (
+                            <option key={unit.id} value={unit.id}>
+                              {unit.name} — {unit.code}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          className="button primary"
+                          disabled={busy || !agencySelection[t.id]}
+                          onClick={() =>
+                            act(() => assignOrganizationAgency(t.id, agencySelection[t.id]))
+                          }
+                        >
+                          Attribuer à cette agence
+                        </button>
+                      </div>
+                    )}
+                    {t.status === "completed" && t.organization_unit_id && (
                       <p>
-                        Unité locale destinataire :{" "}
+                        Mission transmise à l'agence :{" "}
                         <strong>
-                          {units.find((unit) => unit.id === t.organization_unit_id)?.name ??
-                            "Agence locale"}
+                          {units.find((unit) => unit.id === t.organization_unit_id)?.name ?? "Agence locale"}
                         </strong>
                       </p>
-                    )}
-                    {t.status === "accepted" && (
-                      <p>Mission créée automatiquement dans l’unité locale destinataire.</p>
                     )}
                   </article>
                 ))
