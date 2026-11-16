@@ -104,9 +104,6 @@ export async function compressCitizenVideo(
   }
 }
 
-// Limite applicative volontaire : 100 Mo par vidéo.
-export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
-
 const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp"];
 const ALLOWED_VIDEOS = ["video/mp4", "video/webm", "video/quicktime"] as const;
 
@@ -149,9 +146,6 @@ export async function validateCitizenVideo(file: File) {
 
   if (file.size <= 0) {
     throw new Error("La vidéo est vide.");
-  }
-  if (file.size > MAX_VIDEO_SIZE_BYTES) {
-    throw new Error("La vidéo ne doit pas dépasser 100 Mo.");
   }
 
   const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
