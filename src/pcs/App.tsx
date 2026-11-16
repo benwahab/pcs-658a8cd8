@@ -176,7 +176,7 @@ export function Shell({ children }: { children: ReactNode }) {
   async function logout() {
     await supabase?.auth.signOut();
     setEmail(null);
-    navigate("/");
+    navigate("/connexion-operationnelle");
   }
 
   if (isMairie) {
