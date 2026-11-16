@@ -508,8 +508,7 @@ export default function OrganizationDashboard() {
             <div className="card" id="org-settings">
               <h2>Créer un compte d’agence</h2>
               <p>
-                Chaque agence dispose de son propre accès. Elle pourra ensuite créer et gérer ses
-                agents de terrain.
+                Chaque agence dispose de son propre accès. La centrale crée les comptes agents et les rattache à l'agence concernée.
               </p>
               <div className="form">
                 <label>
