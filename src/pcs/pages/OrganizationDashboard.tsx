@@ -64,8 +64,8 @@ export default function OrganizationDashboard() {
       setOrganizationLogo(m?.organization?.logo_url ?? "");
       if (!m) throw new Error("Compte organisationnel non habilité.");
       if (m.unit?.unit_type === "central" && m.organization_id && m.unit_id) {
-        const [t, u, am, rm, media] = await Promise.all([
-          listOrganizationTransfers(),
+        const t = await listOrganizationTransfers();
+        const [u, am, rm, media] = await Promise.all([
           listOrganizationUnits(m.organization_id, m.unit_id),
           listOrganizationUnitAssignments(m.organization_id),
           listPendingOrganizationResolutionMedia(),
