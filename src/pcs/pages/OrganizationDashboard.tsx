@@ -8,7 +8,6 @@ import {
   acceptOrganizationTransfer,
   declineOrganizationTransfer,
   listOrganizationUnits,
-  assignOrganizationAgency,
   listAgencyMissions,
   listAgencyAgents,
   assignAgencyMissionToAgent,
@@ -36,7 +35,6 @@ export default function OrganizationDashboard() {
     [agents, setAgents] = useState<AgencyAgent[]>([]);
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
-    [agencyFor, setAgencyFor] = useState<Record<string, string>>({}),
     [organizationLogo, setOrganizationLogo] = useState(""),
     [logoBusy, setLogoBusy] = useState(false);
   const [agentForm, setAgentForm] = useState({
@@ -345,30 +343,17 @@ export default function OrganizationDashboard() {
                         </button>
                       </div>
                     )}
+                    {t.organization_unit_id && (
+                      <p>
+                        Unité locale destinataire :{" "}
+                        <strong>
+                          {units.find((unit) => unit.id === t.organization_unit_id)?.name ??
+                            "Agence locale"}
+                        </strong>
+                      </p>
+                    )}
                     {t.status === "accepted" && (
-                      <div className="form">
-                        <label>
-                          Agence
-                          <select
-                            value={agencyFor[t.id] ?? ""}
-                            onChange={(e) => setAgencyFor({ ...agencyFor, [t.id]: e.target.value })}
-                          >
-                            <option value="">Choisir une agence…</option>
-                            {units.map((u) => (
-                              <option key={u.id} value={u.id}>
-                                {u.name}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <button
-                          className="button primary"
-                          disabled={busy || !agencyFor[t.id]}
-                          onClick={() => act(() => assignOrganizationAgency(t.id, agencyFor[t.id]))}
-                        >
-                          Attribuer à l'agence
-                        </button>
-                      </div>
+                      <p>Mission créée automatiquement dans l’unité locale destinataire.</p>
                     )}
                   </article>
                 ))
