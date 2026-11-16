@@ -211,3 +211,107 @@ export function downloadAgentCredentialPdf(
   anchor.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
+
+
+type OrganizationCredential = {
+  name: string;
+  code: string;
+  unitName: string;
+  unitType: string;
+};
+
+function downloadCredentialPdf(
+  title: string,
+  rows: Array<[string, string]>,
+  loginLabel: string,
+  login: string,
+  password: string,
+  fileName: string,
+): void {
+  let commands = "";
+  commands += "0.18 0.08 0.36 rg 0 742 595 100 re f\\n";
+  commands += textCommand("PLATEFORME CITOYENNE DE SIGNALEMENT", 42, 802, 11, "F2", "1 1 1");
+  commands += textCommand(title, 42, 772, 18, "F2", "1 1 1");
+  commands += textCommand("DOCUMENT CONFIDENTIEL A REMETTRE PERSONNELLEMENT AU TITULAIRE", 42, 754, 8, "F2", "0.91 0.86 1");
+  commands += textCommand("INFORMATIONS DU COMPTE", 42, 708, 11, "F2", "0.30 0.18 0.48");
+  commands += "0.83 0.79 0.89 RG 42 699 m 553 699 l S\\n";
+
+  let y = 674;
+  for (const [label, value] of rows) {
+    commands += textCommand(label.toUpperCase(), 44, y, 7, "F2", "0.43 0.39 0.49");
+    const lines = wrap(value || "Non renseigné", 68);
+    lines.slice(0, 2).forEach((line, index) => {
+      commands += textCommand(line, 44, y - 16 - index * 12, 10, "F2");
+    });
+    y -= Math.max(39, 28 + (Math.min(lines.length, 2) - 1) * 12);
+  }
+
+  const boxY = Math.max(105, y - 94);
+  commands += `0.95 0.93 0.98 rg 35 ${boxY} 525 88 re f\\n`;
+  commands += textCommand("IDENTIFIANTS DE CONNEXION", 48, boxY + 69, 11, "F2", "0.30 0.18 0.48");
+  commands += textCommand(loginLabel, 48, boxY + 49, 8, "F2", "0.43 0.39 0.49");
+  commands += textCommand(login || "Non renseigné", 48, boxY + 33, 10, "F2");
+  commands += textCommand("MOT DE PASSE INITIAL", 48, boxY + 16, 8, "F2", "0.43 0.39 0.49");
+  wrap(password, 68).slice(0, 1).forEach((line) => {
+    commands += textCommand(line, 48, boxY + 3, 10, "F2");
+  });
+  commands += textCommand("Document confidentiel : remettre directement au titulaire et conserver en lieu sûr.", 42, 65, 7, "F1", "0.38 0.35 0.42");
+  commands += textCommand("Généré le " + new Date().toLocaleDateString("fr-FR"), 42, 39, 7, "F1", "0.50 0.47 0.54");
+
+  const blob = buildPdf(commands);
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
+
+export function downloadOrganizationAgentCredentialPdf(
+  agent: AgentCredential,
+  organization: { name: string; code: string },
+  unit: { name: string; code: string; unit_type: string },
+  password: string,
+): void {
+  const fullName = [agent.first_name, agent.last_name].filter(Boolean).join(" ").trim() || "Agent terrain";
+  const safeName = fullName.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-|-$/g, "");
+  downloadCredentialPdf(
+    "FICHE DE COMPTE - AGENT TERRAIN",
+    [
+      ["Nom complet", fullName],
+      ["Matricule", agent.matricule || ""],
+      ["Qualification / métier", agent.qualification || ""],
+      ["Téléphone", agent.phone || ""],
+      ["Organisation", organization.name + " (" + organization.code + ")"],
+      ["Rattachement", unit.name + " (" + unit.code + ") - " + (unit.unit_type === "central" ? "Centrale" : "Agence")],
+    ],
+    "Identifiant : numéro de téléphone",
+    agent.phone || "",
+    password,
+    `PCS-fiche-agent-${safeName || "terrain"}.pdf`,
+  );
+}
+
+export function downloadAgencyCredentialPdf(
+  agency: { name: string; code: string },
+  organization: { name: string; code: string },
+  centralUnitName: string,
+  password: string,
+): void {
+  const safeName = agency.name.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-|-$/g, "");
+  downloadCredentialPdf(
+    "FICHE DE COMPTE - AGENCE",
+    [
+      ["Nom de l'agence", agency.name],
+      ["Code unique", agency.code],
+      ["Organisation", organization.name + " (" + organization.code + ")"],
+      ["Centrale de rattachement", centralUnitName],
+    ],
+    "Identifiant : code unique de l'agence",
+    agency.code,
+    password,
+    `PCS-fiche-agence-${safeName || "locale"}.pdf`,
+  );
+}
