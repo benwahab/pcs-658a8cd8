@@ -34,40 +34,26 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (membershipError) return json({ error: membershipError.message }, 500);
     if (!membership?.organization_id || !membership.unit_id)
-      return json({ error: "Accès centrale requis" }, 403);
+      return json({ error: "Accès agence requis" }, 403);
 
-    const { data: central, error: centralError } = await db
+    const { data: agency, error: agencyError } = await db
       .from("organization_units")
-      .select("id,organization_id,unit_type,is_active")
+      .select("id")
       .eq("id", membership.unit_id)
       .eq("organization_id", membership.organization_id)
-      .eq("unit_type", "central")
+      .eq("unit_type", "agency")
       .eq("is_active", true)
       .maybeSingle();
-    if (centralError) return json({ error: centralError.message }, 500);
-    if (!central) return json({ error: "Seule la centrale peut créer les comptes agents terrain." }, 403);
+    if (agencyError) return json({ error: agencyError.message }, 500);
+    if (!agency) return json({ error: "Seul le responsable d'une agence active peut créer ses agents terrain." }, 403);
 
     const body = await req.json();
     for (const field of ["first_name", "last_name", "matricule", "qualification", "password"]) {
       if (!body[field] || String(body[field]).trim() === "")
         return json({ error: "Champs obligatoires manquants" }, 400);
     }
-    if (!body.organization_unit_id)
-      return json({ error: "Choisissez l'agence de rattachement de l'agent." }, 400);
     if (String(body.password).length < 8)
       return json({ error: "Le mot de passe doit contenir au moins 8 caractères" }, 400);
-
-    const { data: agency, error: agencyError } = await db
-      .from("organization_units")
-      .select("id")
-      .eq("id", String(body.organization_unit_id))
-      .eq("organization_id", membership.organization_id)
-      .eq("parent_unit_id", central.id)
-      .eq("unit_type", "agency")
-      .eq("is_active", true)
-      .maybeSingle();
-    if (agencyError) return json({ error: agencyError.message }, 500);
-    if (!agency) return json({ error: "L'agence sélectionnée n'appartient pas à cette centrale ou n'est pas active." }, 403);
 
     const matricule = String(body.matricule).trim();
     const phone = body.phone ? String(body.phone).trim() : null;
