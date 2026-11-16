@@ -436,7 +436,7 @@ begin
 
   return p_transfer_id;
 end;
-$;
+$$;
 
 revoke execute on function public.organization_decline_transfer(uuid, text) from public, anon;
 grant execute on function public.organization_decline_transfer(uuid, text) to authenticated;
