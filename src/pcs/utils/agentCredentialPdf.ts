@@ -246,14 +246,14 @@ function downloadCredentialPdf(
     y -= Math.max(39, 28 + (Math.min(lines.length, 2) - 1) * 12);
   }
 
-  const boxY = Math.max(105, y - 94);
-  commands += `0.95 0.93 0.98 rg 35 ${boxY} 525 88 re f\n`;
-  commands += textCommand("IDENTIFIANTS DE CONNEXION", 48, boxY + 69, 11, "F2", "0.30 0.18 0.48");
-  commands += textCommand(loginLabel, 48, boxY + 49, 8, "F2", "0.43 0.39 0.49");
-  commands += textCommand(login || "Non renseigné", 48, boxY + 33, 10, "F2");
-  commands += textCommand("MOT DE PASSE INITIAL", 48, boxY + 16, 8, "F2", "0.43 0.39 0.49");
-  wrap(password, 68).slice(0, 1).forEach((line) => {
-    commands += textCommand(line, 48, boxY + 3, 10, "F2");
+  const boxY = Math.max(95, y - 120);
+  commands += `0.95 0.93 0.98 rg 35 ${boxY} 525 112 re f\n`;
+  commands += textCommand("IDENTIFIANTS DE CONNEXION", 48, boxY + 94, 11, "F2", "0.30 0.18 0.48");
+  commands += textCommand(loginLabel, 48, boxY + 74, 8, "F2", "0.43 0.39 0.49");
+  commands += textCommand(login || "Non renseigné", 48, boxY + 58, 10, "F2");
+  commands += textCommand("MOT DE PASSE INITIAL", 48, boxY + 38, 8, "F2", "0.43 0.39 0.49");
+  wrap(password, 68).slice(0, 2).forEach((line, index) => {
+    commands += textCommand(line, 48, boxY + 22 - index * 13, 10, "F2");
   });
   commands += textCommand("Document confidentiel : remettre directement au titulaire et conserver en lieu sûr.", 42, 65, 7, "F1", "0.38 0.35 0.42");
   commands += textCommand("Généré le " + new Date().toLocaleDateString("fr-FR"), 42, 39, 7, "F1", "0.50 0.47 0.54");
