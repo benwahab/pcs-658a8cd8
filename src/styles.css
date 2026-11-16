@@ -4144,3 +4144,98 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
   .mairieDashboard .mairieStats,
   .organizationDashboard .orgKpiGrid{grid-template-columns:minmax(0,1fr)!important}
 }
+
+
+/* PCS — espace Nigelec / NDE : cartes en pile stable, sans chevauchement.
+   Le tableau de bord Mairie conserve son agencement validé. */
+.organizationDashboard{
+  display:grid!important;
+  grid-template-columns:255px minmax(0,1fr)!important;
+  align-items:stretch!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+}
+.organizationDashboard .organizationMain{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:16px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  padding:0 24px 36px!important;
+}
+.organizationDashboard .organizationMain > *{
+  position:relative!important;
+  float:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  grid-column:auto!important;
+}
+.organizationDashboard .organizationMain > .orgPageHeading{
+  width:calc(100% + 48px)!important;
+  max-width:calc(100% + 48px)!important;
+  margin:0 -24px 2px!important;
+}
+.organizationDashboard .organizationMain > .orgKpiGrid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:14px!important;
+  width:100%!important;
+  margin:0!important;
+}
+.organizationDashboard .orgKpiCard{
+  display:flex!important;
+  align-items:center!important;
+  min-width:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  overflow-wrap:anywhere!important;
+}
+.organizationDashboard .organizationMain > .card{
+  display:block!important;
+  box-sizing:border-box!important;
+  clear:both!important;
+  overflow:visible!important;
+}
+.organizationDashboard .organizationMain > .card > .card{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:12px 0!important;
+}
+@media(max-width:1100px){
+  .organizationDashboard .organizationMain > .orgKpiGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:760px){
+  .organizationDashboard{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  .organizationDashboard .organizationMain{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:12px!important;
+    padding:0 12px 24px!important;
+  }
+  .organizationDashboard .organizationMain > .orgPageHeading{
+    width:calc(100% + 24px)!important;
+    max-width:calc(100% + 24px)!important;
+    margin:0 -12px 2px!important;
+  }
+  .organizationDashboard .organizationMain > .orgKpiGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:9px!important;
+  }
+}
+@media(max-width:380px){
+  .organizationDashboard .organizationMain > .orgKpiGrid{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
