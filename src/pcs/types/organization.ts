@@ -50,6 +50,7 @@ export type OrganizationTransfer = Pick<
   | "id"
   | "report_id"
   | "organization_id"
+  | "organization_unit_id"
   | "from_mairie_id"
   | "status"
   | "transmitted_at"
