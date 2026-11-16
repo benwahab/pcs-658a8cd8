@@ -4,12 +4,12 @@ import { describe, expect, it } from "vitest";
 
 const readSource = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
-describe("Mairie to NIGELEC/NDE transfer workflow", () => {
+describe("Mairie to NIGELEC/NDE central-to-agency workflow", () => {
   const mairieService = readSource("src/pcs/services/mairie.ts");
   const organizationService = readSource("src/pcs/services/organization.ts");
   const organizationPage = readSource("src/pcs/pages/OrganizationDashboard.tsx");
   const migration = readSource(
-    "supabase/migrations/20261116110000_fix_local_organization_transfer_visibility.sql",
+    "supabase/migrations/20261116140000_central_agency_assignment_workflow.sql",
   );
 
   it("removes pending and accepted transfers from the mairie work queue", () => {
@@ -18,26 +18,34 @@ describe("Mairie to NIGELEC/NDE transfer workflow", () => {
     expect(mairieService).toContain("!transferredIds.has(report.id)");
   });
 
-  it("loads the local destination on each organization transfer", () => {
-    expect(organizationService).toContain(
-      'select("id,report_id,organization_id,organization_unit_id,from_mairie_id,status,transmitted_at,response_note")',
-    );
-    expect(organizationPage).toContain("t.organization_unit_id");
-    expect(organizationPage).toContain("Mission créée automatiquement dans l’unité locale destinataire.");
+  it("lets the mairie transmit only to the NIGELEC or NDE central unit", () => {
+    expect(migration).toContain("central.unit_type = 'central'");
+    expect(migration).toContain("La mairie doit transmettre uniquement à la centrale NIGELEC ou NDE");
+    expect(migration).not.toContain("target_unit.unit_type = 'agency'");
   });
 
-  it("allows central NIGELEC and NDE managers to see local transfers", () => {
-    expect(migration).toContain("ou.unit_id is null");
-    expect(migration).toContain("central_unit.unit_type = 'central'");
-    expect(migration).toContain("('NIGELEC', 'NDE')");
+  it("lets the central office accept a transfer without creating an agency mission", () => {
+    const acceptStart = migration.indexOf("create or replace function public.organization_accept_transfer");
+    const assignStart = migration.indexOf("create or replace function public.organization_assign_agency");
+    expect(acceptStart).toBeGreaterThanOrEqual(0);
+    expect(assignStart).toBeGreaterThan(acceptStart);
+    expect(migration.slice(acceptStart, assignStart)).not.toContain("insert into public.report_unit_assignments");
+    expect(migration).toContain("La centrale");
   });
 
-  it("allows central acceptance and refusal and automatically creates the target unit assignment", () => {
-    expect(migration).toContain("v_is_central");
-    expect(migration).toContain("v_is_local");
-    expect(migration).toContain("create or replace function public.organization_decline_transfer");
+  it("lets the central office choose an active agency after acceptance", () => {
+    expect(organizationService).toContain("export async function assignOrganizationAgency");
+    expect(organizationPage).toContain("Attribuer à cette agence");
+    expect(organizationPage).toContain("Choisir une agence locale");
+    expect(migration).toContain("create or replace function public.organization_assign_agency");
     expect(migration).toContain("insert into public.report_unit_assignments");
-    expect(migration).toContain("v_transfer.organization_unit_id");
+    expect(migration).toContain("organization_unit_id = p_agency_unit_id");
+  });
+
+  it("leaves field-agent assignment to the receiving agency", () => {
+    expect(organizationService).toContain("agency_assign_report_to_agent");
+    expect(organizationPage).toContain("Affecter un agent…");
+    expect(organizationPage).toContain("assignAgencyMissionToAgent");
   });
 
   it("prevents retransmitting pending, accepted, or completed reports", () => {
