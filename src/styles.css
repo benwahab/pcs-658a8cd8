@@ -4239,3 +4239,93 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
     grid-template-columns:minmax(0,1fr)!important;
   }
 }
+
+
+/* PCS — espace Agence : thème clair blanc, violet réservé aux accents. */
+.organizationDashboard.agencyWorkspace{
+  background:#fff!important;
+  color:#261b3b!important;
+}
+.organizationDashboard.agencyWorkspace .organizationSidebar{
+  background:#fff!important;
+  color:#261b3b!important;
+  border-right:1px solid #ece7f4!important;
+  box-shadow:4px 0 18px #29165008!important;
+}
+.organizationDashboard.agencyWorkspace .organizationBrand{
+  border-bottom-color:#e9e2f2!important;
+}
+.organizationDashboard.agencyWorkspace .organizationBrand span{
+  color:#32105c!important;
+}
+.organizationDashboard.agencyWorkspace .organizationBrand small,
+.organizationDashboard.agencyWorkspace .organizationSidebar>p{
+  color:#76658d!important;
+}
+.organizationDashboard.agencyWorkspace .organizationSidebar nav a{
+  color:#514463!important;
+  border-color:transparent!important;
+}
+.organizationDashboard.agencyWorkspace .organizationSidebar nav a.active,
+.organizationDashboard.agencyWorkspace .organizationSidebar nav a:hover{
+  background:#f1eafb!important;
+  border-color:#e2d5f4!important;
+  color:#4e2780!important;
+}
+.organizationDashboard.agencyWorkspace .organizationSidebarFoot{
+  background:#faf8fd!important;
+  border-color:#e8e0f1!important;
+  color:#33234a!important;
+}
+.organizationDashboard.agencyWorkspace .organizationSidebarFoot small{
+  color:#76658d!important;
+}
+.organizationDashboard.agencyWorkspace .organizationMain{
+  background:#fff!important;
+  color:#261b3b!important;
+}
+.organizationDashboard.agencyWorkspace .organizationMain .citizenSpaceTop,
+.organizationDashboard.agencyWorkspace .organizationMain>.card,
+.organizationDashboard.agencyWorkspace .orgKpiCard{
+  background:#fff!important;
+  color:#261b3b!important;
+  border:1px solid #e9e4f0!important;
+  box-shadow:0 5px 18px #29165008!important;
+}
+.organizationDashboard.agencyWorkspace .organizationMain .card .card{
+  background:#fff!important;
+  color:#33234a!important;
+  border-color:#eee9f4!important;
+}
+.organizationDashboard.agencyWorkspace .organizationMain h1,
+.organizationDashboard.agencyWorkspace .organizationMain h2,
+.organizationDashboard.agencyWorkspace .organizationMain h3,
+.organizationDashboard.agencyWorkspace .organizationMain strong{
+  color:#2c1947;
+}
+.organizationDashboard.agencyWorkspace .organizationMain p,
+.organizationDashboard.agencyWorkspace .organizationMain small{
+  color:#685b78;
+}
+.organizationDashboard.agencyWorkspace .organizationMain .button.primary{
+  background:#6331ae!important;
+  border-color:#6331ae!important;
+  color:#fff!important;
+}
+.organizationDashboard.agencyWorkspace .organizationMain .button:not(.primary){
+  background:#fff!important;
+  border-color:#ded5e9!important;
+  color:#4e3470!important;
+}
+.organizationDashboard.agencyWorkspace .organizationMain :is(input,select,textarea){
+  background:#fff!important;
+  color:#2c1947!important;
+  border-color:#ded5e9!important;
+}
+@media(max-width:760px){
+  .organizationDashboard.agencyWorkspace .organizationSidebar{
+    border-right:0!important;
+    border-bottom:1px solid #ece7f4!important;
+    box-shadow:0 4px 14px #29165008!important;
+  }
+}
