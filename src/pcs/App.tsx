@@ -14,6 +14,8 @@ export function Shell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isMairie = location.pathname === "/mairie";
+  // Organization workspaces use their own dashboard navigation, not the global PCS header.
+  const isOrganizationDashboard = location.pathname === "/organisation";
   // Keep the global PCS header on the CST login/recovery screen; hide it only inside the authenticated CST workspace.
   const isCstDashboard = location.pathname.startsWith("/cst/");
   const isAgentLogin =
@@ -182,7 +184,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app">
-      {!isCstDashboard && (
+      {!isCstDashboard && !isOrganizationDashboard && (
         <header
           className={
             "feedImmersiveHeader" +
