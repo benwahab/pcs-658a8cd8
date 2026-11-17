@@ -10,6 +10,11 @@ type MediaItem = {
 
 let activeFeedVideo: HTMLVideoElement | null = null;
 
+// Browsers only allow muted autoplay, so feed videos start silent. As soon as the
+// citizen presses Play (or unmutes with the native controls) sound is kept on for
+// the following feed videos too, like social-media feeds do.
+let feedSoundEnabled = false;
+
 function LazyFeedVideo({
   src,
   poster,
@@ -24,6 +29,8 @@ function LazyFeedVideo({
   const [buffering, setBuffering] = useState(false);
   const [autoplayAllowed, setAutoplayAllowed] = useState(true);
   const [slowNetwork, setSlowNetwork] = useState(false);
+  // Last mute state set by our own code, to tell it apart from a user toggle.
+  const lastSetMuted = useRef(true);
 
   useEffect(() => {
     const connection = (
@@ -84,6 +91,13 @@ function LazyFeedVideo({
     if (!video) return;
 
     let disposed = false;
+    let autoPlayPending = false;
+
+    const setMuted = (muted: boolean) => {
+      lastSetMuted.current = muted;
+      video.muted = muted;
+      video.defaultMuted = muted;
+    };
 
     const stopOtherFeedVideos = () => {
       if (activeFeedVideo && activeFeedVideo !== video) {
@@ -96,16 +110,29 @@ function LazyFeedVideo({
 
       // Explicit properties are important on mobile WebKit/Chromium:
       // the JSX attributes alone are not always enough after a source reload.
-      video.muted = true;
-      video.defaultMuted = true;
       video.playsInline = true;
 
       stopOtherFeedVideos();
       activeFeedVideo = video;
 
-      void video.play().catch(() => {
-        // Native video controls remain available when autoplay is refused.
-      });
+      // Try with sound if the citizen already enabled it; browsers refuse that
+      // without a recent gesture, so fall back to a muted start.
+      const withSound = feedSoundEnabled;
+      setMuted(!withSound);
+      autoPlayPending = true;
+      void video
+        .play()
+        .catch(() => {
+          if (!withSound) throw new Error("autoplay refused");
+          setMuted(true);
+          return video.play();
+        })
+        .catch(() => {
+          // Native video controls remain available when autoplay is refused.
+        })
+        .finally(() => {
+          autoPlayPending = false;
+        });
     };
 
     const onReady = () => {
@@ -115,6 +142,12 @@ function LazyFeedVideo({
 
     const onUserPlay = () => {
       activeFeedVideo = video;
+      // A play that we did not trigger is a deliberate tap: this is a user
+      // gesture, so sound is allowed. Turn it on.
+      if (!autoPlayPending) {
+        feedSoundEnabled = true;
+        setMuted(false);
+      }
       // Once the citizen explicitly starts playback, allow the browser to build
       // a useful buffer even when the device prefers reduced data usage.
       // This only affects the currently playing video.
@@ -124,6 +157,14 @@ function LazyFeedVideo({
     video.addEventListener("canplay", onReady);
     video.addEventListener("loadeddata", onReady);
     video.addEventListener("play", onUserPlay);
+
+    // The native volume/mute button is a user choice that carries to next videos.
+    const onVolumeChange = () => {
+      if (video.muted === lastSetMuted.current) return;
+      lastSetMuted.current = video.muted;
+      feedSoundEnabled = !video.muted;
+    };
+    video.addEventListener("volumechange", onVolumeChange);
 
     const onVisibility = () => {
       if (document.visibilityState !== "visible") video.pause();
@@ -136,8 +177,7 @@ function LazyFeedVideo({
       // Only the active video may buffer. On 3G/2G, Save-Data, or reduced
       // motion, keep metadata-only until the citizen manually presses Play.
       video.preload = slowNetwork && !autoplayAllowed ? "metadata" : "auto";
-      video.muted = true;
-      video.defaultMuted = true;
+      setMuted(!feedSoundEnabled);
       video.playsInline = true;
 
       if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
@@ -156,6 +196,7 @@ function LazyFeedVideo({
       video.removeEventListener("canplay", onReady);
       video.removeEventListener("loadeddata", onReady);
       video.removeEventListener("play", onUserPlay);
+      video.removeEventListener("volumechange", onVolumeChange);
       document.removeEventListener("visibilitychange", onVisibility);
       video.pause();
       if (activeFeedVideo === video) activeFeedVideo = null;
