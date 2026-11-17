@@ -182,7 +182,6 @@ function LazyFeedVideo({
         controlsList="noremoteplayback"
         disablePictureInPicture
       />
-      {buffering && <span className="feedVideoSpinner" aria-hidden="true" />}
     </div>
   );
 }
