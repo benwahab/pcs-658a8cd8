@@ -44,7 +44,7 @@ describe("Mairie to NIGELEC/NDE central-to-agency workflow", () => {
 
   it("leaves field-agent assignment to the receiving agency", () => {
     expect(organizationService).toContain("agency_assign_report_to_agent");
-    expect(organizationPage).toContain("Affecter un agent…");
+    expect(organizationPage).toContain("Affecter cette mission à un agent terrain");
     expect(organizationPage).toContain("assignAgencyMissionToAgent");
   });
 
