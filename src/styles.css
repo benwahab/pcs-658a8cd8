@@ -4363,3 +4363,27 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .moderatorDashboard .moderatorMediaCard{box-shadow:0 1px 2px #33205c0d,0 10px 28px -14px #33205c33}
 .moderatorDashboard .moderatorMediaCard video{box-shadow:0 10px 26px -12px #1b1230cc}
 @media(prefers-reduced-motion:reduce){.mairieDashboard *,.cstRefV2 *,.organizationDashboard *,.moderatorDashboard *{transition:none!important}.mairieDashboard .mairieButton.primary:hover{transform:none}}
+
+/* ===== Finitions premium v2 (visibles) — formulaire, connexions, dashboards ===== */
+.authScreen.pcsLogin,.cstAuthCard.pcsLogin{background:radial-gradient(120% 60% at 50% 0%,#ffffff2e,transparent 55%),linear-gradient(160deg,#8b5cf68c,#4c1d95a6 50%,#5b21b6a6)!important;border:1.5px solid #e6d8ffcc!important;box-shadow:0 0 0 1px #ffffff1f inset,0 2px 0 #ffffff47 inset,0 40px 90px -24px #0a0220,0 0 80px -8px #8b5cf699!important}
+.pcsLogin h1{text-shadow:0 2px 24px #c4a5ff80;letter-spacing:-.02em}
+.pcsLogin label{letter-spacing:.01em;font-weight:700}
+.pcsLogin :is(input:not([type=checkbox]):not([type=radio]),select,textarea){min-height:56px;background:linear-gradient(180deg,#12063a99,#2a1066666)!important;border:1.5px solid #f1e8ffb3!important;box-shadow:inset 0 2px 6px #0a022066,0 1px 0 #ffffff2e!important}
+.pcsLogin :is(input,select,textarea):focus-visible{border-color:#d9c2ff!important;box-shadow:inset 0 2px 6px #0a022066,0 0 0 4px #a26bff66,0 0 28px #8b5cf666!important}
+.pcsLogin .button,.pcsLogin .mediaPickBtn,.reportFormGlass .mediaPickBtn{min-height:52px;background:linear-gradient(180deg,#ffffff24,#ffffff0d)!important;border:1.5px solid #f1e8ff99!important;box-shadow:inset 0 1px 0 #ffffff40,0 8px 18px -10px #0a0220cc!important;font-weight:700}
+.pcsLogin .button.primary,.pcsLogin button[type=submit]{min-height:60px;background:linear-gradient(180deg,#b88bff 0%,#8b4dff 45%,#6a2ad8 100%)!important;border:1px solid #e0ccff!important;box-shadow:0 2px 0 #ffffff66 inset,0 -3px 0 #4a1aa855 inset,0 18px 36px -10px #7c3aede6,0 0 30px #a26bff59!important;text-shadow:0 1px 2px #2a0d6380}
+.pcsLogin .mediaChosen li{background:linear-gradient(180deg,#ffffff1f,#ffffff0d);border:1px solid #ffffff40;box-shadow:inset 0 1px 0 #ffffff30}
+.pcsLoginShield svg{filter:drop-shadow(0 0 8px #a26bffb3)}
+
+.mairieDashboard,.cstRefV2,.organizationDashboard,.moderatorDashboard{background:radial-gradient(900px 380px at 85% -80px,#e9defa80,transparent 70%),#f5f6fb!important}
+.mairieDashboard .mairieTopbar,.cstRefV2 .cstUtilityBar{box-shadow:0 8px 24px -16px #33205c59}
+.mairieDashboard .mairiePanel,.mairieDashboard .mairieWelcome,.organizationDashboard .orgKpiCard,.moderatorDashboard .moderatorPanel,.moderatorDashboard .moderatorKpis article{border-radius:16px!important;border-color:#e4def3;background:linear-gradient(180deg,#fff,#fbfaff)!important;box-shadow:0 1px 0 #fff inset,0 2px 4px #33205c0f,0 18px 40px -18px #33205c47!important}
+.mairieDashboard .mairieStatCard{border-radius:16px!important;box-shadow:0 1px 0 #ffffff80 inset,0 2px 4px #33205c0f,0 18px 40px -18px #33205c47!important}
+.mairieDashboard .mairieStatCard.featured{box-shadow:0 1px 0 #ffffff40 inset,0 22px 44px -16px #4c1e91d9!important}
+.mairieDashboard .panelHead h2,.moderatorDashboard .moderatorPanelHead h2{display:flex;align-items:center;gap:8px}
+.mairieDashboard .panelHead h2::before,.moderatorDashboard .moderatorPanelHead h2::before{content:"";width:4px;height:16px;border-radius:4px;background:linear-gradient(180deg,#8b5cf6,#4c1e91);flex:0 0 4px}
+.mairieDashboard .mairieTable th{background:linear-gradient(180deg,#f8f6fd,#efebf9);text-transform:uppercase;letter-spacing:.05em;font-size:.62rem}
+.mairieDashboard .mairieNav a.active{box-shadow:inset 3px 0 0 #c4a5ff,inset 0 1px 0 #ffffff33,0 10px 22px -10px #0a0220e6}
+.mairieDashboard .mairieSidebar,.cstRefV2 .cstSidebar,.organizationDashboard .organizationSidebar,.moderatorDashboard .moderatorSidebar{box-shadow:12px 0 40px -20px #1d0846b3}
+.organizationDashboard .orgKpiIcon,.moderatorDashboard .moderatorKpiIcon,.cstRefV2 .cstKpiIcon{box-shadow:inset 0 1px 0 #ffffff59,0 10px 20px -8px #4c1e91a6}
+.mairieDashboard .mairieButton.primary,.organizationDashboard .button.primary,.moderatorDashboard .button.primary,.cstRefV2 .button.primary{box-shadow:inset 0 1px 0 #ffffff59,0 12px 24px -8px #4c1e91d9}
