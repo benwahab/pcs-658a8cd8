@@ -4346,3 +4346,20 @@ body:has(.pcsLoginBg) :is(.shell,main,.app,.appShell){background:transparent!imp
 .uploadProgressTrack{box-shadow:inset 0 1px 2px #0a022059}
 .gpsNotice{box-shadow:0 1px 0 #ffffff26 inset,0 30px 70px -18px #0a0220e6}
 @media(prefers-reduced-motion:reduce){.pcsLogin .button,.pcsLogin .mediaPickBtn,.reportFormGlass .mediaPickBtn{transition:none}.pcsLogin .button:hover:not(:disabled){transform:none}}
+
+/* ===== Finitions premium — tableaux de bord Mairie, CST, Organisation, Modération (couleurs et mise en page inchangées) ===== */
+.mairieDashboard .mairiePanel,.mairieDashboard .mairieStatCard,.mairieDashboard .mairieWelcome,.organizationDashboard .orgKpiCard,.moderatorDashboard .moderatorPanel,.moderatorDashboard .moderatorKpis article,.cstRefV2 .cstCard{box-shadow:0 1px 2px #33205c0d,0 10px 28px -14px #33205c33!important;transition:box-shadow .2s,transform .2s,border-color .2s}
+.mairieDashboard .mairiePanel:hover,.mairieDashboard .mairieStatCard:hover,.organizationDashboard .orgKpiCard:hover,.moderatorDashboard .moderatorKpis article:hover,.cstRefV2 .cstCard:hover{box-shadow:0 1px 2px #33205c12,0 16px 34px -14px #33205c4d!important;border-color:#d6cdeb}
+.mairieDashboard .mairieStatCard.featured{box-shadow:inset 0 1px 0 #ffffff33,0 16px 34px -14px #4c1e91b3!important}
+.mairieDashboard .mairieStatCard strong,.cstRefV2 .cstKpiValue,.organizationDashboard .orgKpiCard strong,.moderatorDashboard .moderatorKpis strong{font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.mairieDashboard .mairieNav a,.mairieDashboard .mairieNav button,.cstRefV2 .cstSidebar .cstNav a,.organizationDashboard .organizationSidebar nav a,.moderatorDashboard .moderatorSidebar nav a{transition:background-color .18s,border-color .18s,box-shadow .18s}
+.mairieDashboard .mairieNav a.active,.cstRefV2 .cstSidebar .cstNav a.active,.organizationDashboard .organizationSidebar nav a.active,.moderatorDashboard .moderatorSidebar nav a.active{box-shadow:inset 0 1px 0 #ffffff26,0 8px 18px -10px #0a0220cc}
+.mairieDashboard .mairieButton.primary,.organizationDashboard .button.primary,.moderatorDashboard .button.primary,.cstRefV2 .button.primary{box-shadow:inset 0 1px 0 #ffffff40,0 8px 18px -8px #4c1e91b3;transition:filter .18s,transform .18s,box-shadow .18s}
+.mairieDashboard .mairieButton.primary:hover,.organizationDashboard .button.primary:hover,.moderatorDashboard .button.primary:hover,.cstRefV2 .button.primary:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.mairieDashboard .mairieButton,.organizationDashboard .button,.moderatorDashboard .button,.cstRefV2 .button{min-height:44px}
+.mairieDashboard .mairieTable tr,.cstRefV2 table tr{transition:background-color .15s}
+.mairieDashboard .mairieTable tr:hover td{background:#f6f2fd}
+.mairieDashboard :is(a,button,input,select,textarea):focus-visible,.cstRefV2 :is(a,button,input,select,textarea):focus-visible,.organizationDashboard :is(a,button,input,select,textarea):focus-visible,.moderatorDashboard :is(a,button,input,select,textarea):focus-visible{outline:3px solid #8b5cf666;outline-offset:2px;border-radius:9px}
+.moderatorDashboard .moderatorMediaCard{box-shadow:0 1px 2px #33205c0d,0 10px 28px -14px #33205c33}
+.moderatorDashboard .moderatorMediaCard video{box-shadow:0 10px 26px -12px #1b1230cc}
+@media(prefers-reduced-motion:reduce){.mairieDashboard *,.cstRefV2 *,.organizationDashboard *,.moderatorDashboard *{transition:none!important}.mairieDashboard .mairieButton.primary:hover{transform:none}}
