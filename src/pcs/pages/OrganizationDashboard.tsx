@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@/pcs/router";
 import { supabase } from "../lib/supabase";
 import PasswordField from "../components/PasswordField";
-import { downloadAgencyCredentialPdf, downloadOrganizationAgentCredentialPdf } from "../utils/agentCredentialPdf";
+import {
+  downloadAgencyCredentialPdf,
+  downloadOrganizationAgentCredentialPdf,
+} from "../utils/agentCredentialPdf";
 import {
   getMyOrganizationMembership,
   listOrganizationTransfers,
@@ -29,13 +32,18 @@ import type {
   OrganizationUnitAssignment,
   OrganizationUnitListItem,
 } from "../types/organization";
+import UiIcon from "@/pcs/components/UiIcon";
 
 export default function OrganizationDashboard() {
   const nav = useNavigate();
   const [membership, setMembership] = useState<OrganizationMembership | null>(null),
     [transfers, setTransfers] = useState<OrganizationTransfer[]>([]),
-    [resolutionMedia, setResolutionMedia] = useState<Awaited<ReturnType<typeof listPendingOrganizationResolutionMedia>>>([]),
-    [transferMedia, setTransferMedia] = useState<Awaited<ReturnType<typeof listOrganizationReportMedia>>>([]),
+    [resolutionMedia, setResolutionMedia] = useState<
+      Awaited<ReturnType<typeof listPendingOrganizationResolutionMedia>>
+    >([]),
+    [transferMedia, setTransferMedia] = useState<
+      Awaited<ReturnType<typeof listOrganizationReportMedia>>
+    >([]),
     [units, setUnits] = useState<OrganizationUnitListItem[]>([]),
     [missions, setMissions] = useState<AgencyMission[]>([]),
     [agencyMissions, setAgencyMissions] = useState<OrganizationUnitAssignment[]>([]),
@@ -156,7 +164,9 @@ export default function OrganizationDashboard() {
   const central = membership?.unit?.unit_type === "central";
   const currentMembership = membership!;
   return (
-    <section className={central ? "organizationDashboard" : "organizationDashboard agencyWorkspace"}>
+    <section
+      className={central ? "organizationDashboard" : "organizationDashboard agencyWorkspace"}
+    >
       <aside className="organizationSidebar">
         <div className="organizationBrand">
           <span>PCS</span>
@@ -215,7 +225,9 @@ export default function OrganizationDashboard() {
           {central ? (
             <>
               <article className="orgKpiCard">
-                <span className="orgKpiIcon violet">⇄</span>
+                <span className="orgKpiIcon violet">
+                  <UiIcon name="transfer" />
+                </span>
                 <div>
                   <small>Transmissions en attente</small>
                   <strong>{transfers.filter((item) => item.status === "pending").length}</strong>
@@ -223,7 +235,9 @@ export default function OrganizationDashboard() {
                 </div>
               </article>
               <article className="orgKpiCard">
-                <span className="orgKpiIcon blue">⌖</span>
+                <span className="orgKpiIcon blue">
+                  <UiIcon name="pin" />
+                </span>
                 <div>
                   <small>Agences rattachées</small>
                   <strong>{units.length}</strong>
@@ -231,7 +245,9 @@ export default function OrganizationDashboard() {
                 </div>
               </article>
               <article className="orgKpiCard">
-                <span className="orgKpiIcon green">▣</span>
+                <span className="orgKpiIcon green">
+                  <UiIcon name="list" />
+                </span>
                 <div>
                   <small>Missions locales</small>
                   <strong>{agencyMissions.length}</strong>
@@ -242,7 +258,9 @@ export default function OrganizationDashboard() {
           ) : (
             <>
               <article className="orgKpiCard">
-                <span className="orgKpiIcon violet">▣</span>
+                <span className="orgKpiIcon violet">
+                  <UiIcon name="list" />
+                </span>
                 <div>
                   <small>Missions reçues</small>
                   <strong>{missions.length}</strong>
@@ -250,7 +268,9 @@ export default function OrganizationDashboard() {
                 </div>
               </article>
               <article className="orgKpiCard">
-                <span className="orgKpiIcon amber">◷</span>
+                <span className="orgKpiIcon amber">
+                  <UiIcon name="clock" />
+                </span>
                 <div>
                   <small>À prendre en charge</small>
                   <strong>{transfers.filter((item) => item.status === "pending").length}</strong>
@@ -258,7 +278,9 @@ export default function OrganizationDashboard() {
                 </div>
               </article>
               <article className="orgKpiCard">
-                <span className="orgKpiIcon green">♙</span>
+                <span className="orgKpiIcon green">
+                  <UiIcon name="users" />
+                </span>
                 <div>
                   <small>Agents de l'agence</small>
                   <strong>{agents.length}</strong>
@@ -269,7 +291,11 @@ export default function OrganizationDashboard() {
           )}
         </section>
         {error && <div className="card error">{error}</div>}
-        {success && <div className="card" role="status">{success}</div>}
+        {success && (
+          <div className="card" role="status">
+            {success}
+          </div>
+        )}
         {central ? (
           <>
             <div className="card" id="org-transfers">
@@ -281,17 +307,41 @@ export default function OrganizationDashboard() {
                   <article className="card" key={t.id}>
                     <strong>{t.reports?.reference_code ?? t.report_id}</strong>
                     <h3>{t.reports?.title ?? "Signalement transmis"}</h3>
-                    {transferMedia.filter((media) => media.report_id === t.report_id).map((media) => (
-                      <div key={media.id} style={{ marginTop: 10 }}>
-                        {media.previewUrl ? (
-                          media.media_type.startsWith("image/") ? (
-                            <img src={media.previewUrl} alt="Photo du signalement" style={{ width: "100%", maxHeight: 280, objectFit: "contain", borderRadius: 10 }} />
+                    {transferMedia
+                      .filter((media) => media.report_id === t.report_id)
+                      .map((media) => (
+                        <div key={media.id} style={{ marginTop: 10 }}>
+                          {media.previewUrl ? (
+                            media.media_type.startsWith("image/") ? (
+                              <img
+                                src={media.previewUrl}
+                                alt="Photo du signalement"
+                                style={{
+                                  width: "100%",
+                                  maxHeight: 280,
+                                  objectFit: "contain",
+                                  borderRadius: 10,
+                                }}
+                              />
+                            ) : (
+                              <video
+                                src={media.previewUrl}
+                                controls
+                                playsInline
+                                preload="metadata"
+                                style={{
+                                  width: "100%",
+                                  maxHeight: 280,
+                                  borderRadius: 10,
+                                  background: "#111",
+                                }}
+                              />
+                            )
                           ) : (
-                            <video src={media.previewUrl} controls playsInline preload="metadata" style={{ width: "100%", maxHeight: 280, borderRadius: 10, background: "#111" }} />
-                          )
-                        ) : <p>Média indisponible pour le moment.</p>}
-                      </div>
-                    ))}
+                            <p>Média indisponible pour le moment.</p>
+                          )}
+                        </div>
+                      ))}
                     <p></p>
                     <small>Statut transmission : {t.status}</small>
                     {t.status === "pending" && (
@@ -321,11 +371,17 @@ export default function OrganizationDashboard() {
                     )}
                     {t.status === "accepted" && (
                       <div className="actions" style={{ display: "grid", gap: 8 }}>
-                        <p>Transmission acceptée. Choisissez maintenant l'agence locale qui recevra la mission.</p>
+                        <p>
+                          Transmission acceptée. Choisissez maintenant l'agence locale qui recevra
+                          la mission.
+                        </p>
                         <select
                           value={agencySelection[t.id] ?? ""}
                           onChange={(event) =>
-                            setAgencySelection((current) => ({ ...current, [t.id]: event.target.value }))
+                            setAgencySelection((current) => ({
+                              ...current,
+                              [t.id]: event.target.value,
+                            }))
                           }
                         >
                           <option value="">Choisir une agence locale…</option>
@@ -350,7 +406,8 @@ export default function OrganizationDashboard() {
                       <p>
                         Mission transmise à l'agence :{" "}
                         <strong>
-                          {units.find((unit) => unit.id === t.organization_unit_id)?.name ?? "Agence locale"}
+                          {units.find((unit) => unit.id === t.organization_unit_id)?.name ??
+                            "Agence locale"}
                         </strong>
                       </p>
                     )}
@@ -360,28 +417,81 @@ export default function OrganizationDashboard() {
             </div>
             <div className="card" id="org-resolution-review">
               <h2>Résolutions à valider</h2>
-              <p>Examinez les preuves envoyées par les agents des agences. Le signalement ne devient résolu qu'après votre approbation.</p>
+              <p>
+                Examinez les preuves envoyées par les agents des agences. Le signalement ne devient
+                résolu qu'après votre approbation.
+              </p>
               {!resolutionMedia.length ? (
                 <p>Aucune preuve de résolution en attente.</p>
-              ) : resolutionMedia.map((item) => (
-                <article className="card" key={item.id}>
-                  <strong>{item.reports?.reference_code ?? item.report_id} · {item.reports?.title ?? "Signalement"}</strong>
-                  {item.previewUrl ? (
-                    item.media_type.startsWith("image/") ? (
-                      <img src={item.previewUrl} alt="Preuve photo de résolution" style={{ width: "100%", maxHeight: 320, objectFit: "contain", borderRadius: 10, marginTop: 10 }} />
+              ) : (
+                resolutionMedia.map((item) => (
+                  <article className="card" key={item.id}>
+                    <strong>
+                      {item.reports?.reference_code ?? item.report_id} ·{" "}
+                      {item.reports?.title ?? "Signalement"}
+                    </strong>
+                    {item.previewUrl ? (
+                      item.media_type.startsWith("image/") ? (
+                        <img
+                          src={item.previewUrl}
+                          alt="Preuve photo de résolution"
+                          style={{
+                            width: "100%",
+                            maxHeight: 320,
+                            objectFit: "contain",
+                            borderRadius: 10,
+                            marginTop: 10,
+                          }}
+                        />
+                      ) : (
+                        <video
+                          src={item.previewUrl}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          style={{
+                            width: "100%",
+                            maxHeight: 320,
+                            borderRadius: 10,
+                            marginTop: 10,
+                            background: "#111",
+                          }}
+                        />
+                      )
                     ) : (
-                      <video src={item.previewUrl} controls playsInline preload="metadata" style={{ width: "100%", maxHeight: 320, borderRadius: 10, marginTop: 10, background: "#111" }} />
-                    )
-                  ) : <p>Prévisualisation indisponible. Actualisez pour réessayer.</p>}
-                  <small>{item.file_size ? (item.file_size / 1024 / 1024).toFixed(1) + " Mo" : "Taille inconnue"}</small>
-                  <div className="actions">
-                    <button className="button primary" disabled={busy} onClick={() => void reviewResolutionMedia(item.id, true)}>Approuver la résolution</button>
-                    <button className="button" disabled={busy} onClick={() => {
-                      if (window.confirm("Rejeter cette preuve ? Le signalement restera en traitement et l'agence pourra demander une nouvelle intervention.")) void reviewResolutionMedia(item.id, false);
-                    }}>Rejeter la résolution</button>
-                  </div>
-                </article>
-              ))}
+                      <p>Prévisualisation indisponible. Actualisez pour réessayer.</p>
+                    )}
+                    <small>
+                      {item.file_size
+                        ? (item.file_size / 1024 / 1024).toFixed(1) + " Mo"
+                        : "Taille inconnue"}
+                    </small>
+                    <div className="actions">
+                      <button
+                        className="button primary"
+                        disabled={busy}
+                        onClick={() => void reviewResolutionMedia(item.id, true)}
+                      >
+                        Approuver la résolution
+                      </button>
+                      <button
+                        className="button"
+                        disabled={busy}
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Rejeter cette preuve ? Le signalement restera en traitement et l'agence pourra demander une nouvelle intervention.",
+                            )
+                          )
+                            void reviewResolutionMedia(item.id, false);
+                        }}
+                      >
+                        Rejeter la résolution
+                      </button>
+                    </div>
+                  </article>
+                ))
+              )}
             </div>
             <div className="card" id="org-agencies">
               <h2>Agences</h2>
@@ -416,27 +526,62 @@ export default function OrganizationDashboard() {
             </div>
             <div className="card" id="org-create-agent">
               <h2>Créer un agent terrain de la centrale</h2>
-              <p>Les agents créés ici sont rattachés uniquement à cette centrale, indépendamment de ses agences.</p>
+              <p>
+                Les agents créés ici sont rattachés uniquement à cette centrale, indépendamment de
+                ses agences.
+              </p>
               <div className="form">
                 <label>
                   Prénom
-                  <input required value={agentForm.first_name} onChange={(event) => setAgentForm({ ...agentForm, first_name: event.target.value })} placeholder="Prénom de l'agent" />
+                  <input
+                    required
+                    value={agentForm.first_name}
+                    onChange={(event) =>
+                      setAgentForm({ ...agentForm, first_name: event.target.value })
+                    }
+                    placeholder="Prénom de l'agent"
+                  />
                 </label>
                 <label>
                   Nom
-                  <input required value={agentForm.last_name} onChange={(event) => setAgentForm({ ...agentForm, last_name: event.target.value })} placeholder="Nom de l'agent" />
+                  <input
+                    required
+                    value={agentForm.last_name}
+                    onChange={(event) =>
+                      setAgentForm({ ...agentForm, last_name: event.target.value })
+                    }
+                    placeholder="Nom de l'agent"
+                  />
                 </label>
                 <label>
                   Matricule
-                  <input required value={agentForm.matricule} onChange={(event) => setAgentForm({ ...agentForm, matricule: event.target.value })} placeholder="Matricule" />
+                  <input
+                    required
+                    value={agentForm.matricule}
+                    onChange={(event) =>
+                      setAgentForm({ ...agentForm, matricule: event.target.value })
+                    }
+                    placeholder="Matricule"
+                  />
                 </label>
                 <label>
                   Qualification / métier
-                  <input required value={agentForm.qualification} onChange={(event) => setAgentForm({ ...agentForm, qualification: event.target.value })} placeholder="Qualification" />
+                  <input
+                    required
+                    value={agentForm.qualification}
+                    onChange={(event) =>
+                      setAgentForm({ ...agentForm, qualification: event.target.value })
+                    }
+                    placeholder="Qualification"
+                  />
                 </label>
                 <label>
                   Téléphone
-                  <input value={agentForm.phone} onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })} placeholder="Numéro de téléphone" />
+                  <input
+                    value={agentForm.phone}
+                    onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })}
+                    placeholder="Numéro de téléphone"
+                  />
                 </label>
                 <PasswordField
                   label="Mot de passe"
@@ -458,27 +603,58 @@ export default function OrganizationDashboard() {
                 )}
                 <button
                   className="button primary"
-                  disabled={busy || !agentForm.first_name.trim() || !agentForm.last_name.trim() || !agentForm.matricule.trim() || !agentForm.qualification.trim() || agentForm.password.length < 8 || agentForm.password !== confirmAgentPassword}
-                  onClick={() => act(async () => {
-                    setSuccess("");
-                    const initialPassword = agentForm.password;
-                    const createdAgent = await createAgencyAgent({ ...agentForm });
-                    try {
-                      downloadOrganizationAgentCredentialPdf(
-                        createdAgent,
-                        { name: currentMembership.organization.name, code: currentMembership.organization.code },
-                        { name: currentMembership.unit?.name ?? "Unité", code: currentMembership.unit?.code ?? "", unit_type: currentMembership.unit?.unit_type ?? "agency" },
-                        initialPassword,
-                      );
-                      setSuccess("Le compte agent a été créé et sa fiche PDF avec les informations et le mot de passe initial a été téléchargée. Remettez-la directement à l'agent.");
-                    } catch (pdfError) {
-                      console.error("[PCS][OrganizationDashboard] Échec du PDF agent :", pdfError);
-                      setError("Le compte agent a été créé, mais le téléchargement du PDF a échoué. Ne fermez pas cette page avant d'avoir récupéré les identifiants.");
-                    }
-                    setAgentForm({ first_name: "", last_name: "", matricule: "", qualification: "", phone: "", password: "" });
-                    setConfirmAgentPassword("");
-                    setShowAgentPassword(false);
-                  })}
+                  disabled={
+                    busy ||
+                    !agentForm.first_name.trim() ||
+                    !agentForm.last_name.trim() ||
+                    !agentForm.matricule.trim() ||
+                    !agentForm.qualification.trim() ||
+                    agentForm.password.length < 8 ||
+                    agentForm.password !== confirmAgentPassword
+                  }
+                  onClick={() =>
+                    act(async () => {
+                      setSuccess("");
+                      const initialPassword = agentForm.password;
+                      const createdAgent = await createAgencyAgent({ ...agentForm });
+                      try {
+                        downloadOrganizationAgentCredentialPdf(
+                          createdAgent,
+                          {
+                            name: currentMembership.organization.name,
+                            code: currentMembership.organization.code,
+                          },
+                          {
+                            name: currentMembership.unit?.name ?? "Unité",
+                            code: currentMembership.unit?.code ?? "",
+                            unit_type: currentMembership.unit?.unit_type ?? "agency",
+                          },
+                          initialPassword,
+                        );
+                        setSuccess(
+                          "Le compte agent a été créé et sa fiche PDF avec les informations et le mot de passe initial a été téléchargée. Remettez-la directement à l'agent.",
+                        );
+                      } catch (pdfError) {
+                        console.error(
+                          "[PCS][OrganizationDashboard] Échec du PDF agent :",
+                          pdfError,
+                        );
+                        setError(
+                          "Le compte agent a été créé, mais le téléchargement du PDF a échoué. Ne fermez pas cette page avant d'avoir récupéré les identifiants.",
+                        );
+                      }
+                      setAgentForm({
+                        first_name: "",
+                        last_name: "",
+                        matricule: "",
+                        qualification: "",
+                        phone: "",
+                        password: "",
+                      });
+                      setConfirmAgentPassword("");
+                      setShowAgentPassword(false);
+                    })
+                  }
                 >
                   Créer l'agent terrain
                 </button>
@@ -489,8 +665,12 @@ export default function OrganizationDashboard() {
               ) : (
                 agents.map((a) => (
                   <div className="row" key={a.id}>
-                    <strong>{a.first_name} {a.last_name}</strong>
-                    <span>{a.qualification} · {a.matricule}</span>
+                    <strong>
+                      {a.first_name} {a.last_name}
+                    </strong>
+                    <span>
+                      {a.qualification} · {a.matricule}
+                    </span>
                   </div>
                 ))
               )}
@@ -498,7 +678,8 @@ export default function OrganizationDashboard() {
             <div className="card" id="org-create-agency">
               <h2>Créer un compte d’agence</h2>
               <p>
-                Chaque agence dispose de son propre accès. Son responsable crée et gère les comptes de ses agents terrain.
+                Chaque agence dispose de son propre accès. Son responsable crée et gère les comptes
+                de ses agents terrain.
               </p>
               <div className="form">
                 <label>
@@ -565,14 +746,24 @@ export default function OrganizationDashboard() {
                       try {
                         downloadAgencyCredentialPdf(
                           createdAgency.agency,
-                          { name: currentMembership.organization.name, code: currentMembership.organization.code },
+                          {
+                            name: currentMembership.organization.name,
+                            code: currentMembership.organization.code,
+                          },
                           membership.unit?.name ?? "Centrale",
                           initialPassword,
                         );
-                        setSuccess("Le compte d'agence a été créé et sa fiche PDF avec le code et le mot de passe initial a été téléchargée. Remettez-la directement au responsable de l'agence.");
+                        setSuccess(
+                          "Le compte d'agence a été créé et sa fiche PDF avec le code et le mot de passe initial a été téléchargée. Remettez-la directement au responsable de l'agence.",
+                        );
                       } catch (pdfError) {
-                        console.error("[PCS][OrganizationDashboard] Échec du PDF agence :", pdfError);
-                        setError("L'agence a été créée, mais le téléchargement du PDF a échoué. Conservez le code et le mot de passe pour les remettre au responsable.");
+                        console.error(
+                          "[PCS][OrganizationDashboard] Échec du PDF agence :",
+                          pdfError,
+                        );
+                        setError(
+                          "L'agence a été créée, mais le téléchargement du PDF a échoué. Conservez le code et le mot de passe pour les remettre au responsable.",
+                        );
                       }
                       setAgencyForm({
                         name: "",
@@ -639,7 +830,9 @@ export default function OrganizationDashboard() {
               ) : (
                 missions.map((m) => {
                   const report = m.reports;
-                  const originalMedia = transferMedia.filter((media) => media.report_id === m.report_id);
+                  const originalMedia = transferMedia.filter(
+                    (media) => media.report_id === m.report_id,
+                  );
                   const statusLabels: Record<string, string> = {
                     submitted: "Soumis",
                     verification: "En vérification",
@@ -650,31 +843,100 @@ export default function OrganizationDashboard() {
                   };
                   return (
                     <article className="card" key={m.id}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          flexWrap: "wrap",
+                        }}
+                      >
                         <strong>{report?.reference_code ?? m.report_id}</strong>
-                        <span className="statusPill">{statusLabels[report?.status ?? ""] ?? report?.status ?? m.status}</span>
+                        <span className="statusPill">
+                          {statusLabels[report?.status ?? ""] ?? report?.status ?? m.status}
+                        </span>
                       </div>
                       <h3>{report?.title ?? "Signalement"}</h3>
                       <div style={{ display: "grid", gap: 7, margin: "12px 0" }}>
-                        <p><strong>Localisation :</strong> {report?.location_label ?? "Localisation GPS enregistrée"}</p>
-                        <p><strong>Priorité :</strong> {report?.priority ?? "Non précisée"}</p>
-                        <p><strong>Date du signalement :</strong> {report?.created_at ? new Date(report.created_at).toLocaleString("fr-FR") : "Non disponible"}</p>
-                        <p><strong>Mission attribuée le :</strong> {new Date(m.assigned_at).toLocaleString("fr-FR")}</p>
-                        {m.mission_note && <p><strong>Consigne de la centrale :</strong> {m.mission_note}</p>}
+                        <p>
+                          <strong>Localisation :</strong>{" "}
+                          {report?.location_label ?? "Localisation GPS enregistrée"}
+                        </p>
+                        <p>
+                          <strong>Priorité :</strong> {report?.priority ?? "Non précisée"}
+                        </p>
+                        <p>
+                          <strong>Date du signalement :</strong>{" "}
+                          {report?.created_at
+                            ? new Date(report.created_at).toLocaleString("fr-FR")
+                            : "Non disponible"}
+                        </p>
+                        <p>
+                          <strong>Mission attribuée le :</strong>{" "}
+                          {new Date(m.assigned_at).toLocaleString("fr-FR")}
+                        </p>
+                        {m.mission_note && (
+                          <p>
+                            <strong>Consigne de la centrale :</strong> {m.mission_note}
+                          </p>
+                        )}
                       </div>
-                      <section aria-label="Médias originaux approuvés du signalement" style={{ display: "grid", gap: 10, margin: "14px 0", padding: 12, border: "1px solid #e9e1f1", borderRadius: 12 }}>
+                      <section
+                        aria-label="Médias originaux approuvés du signalement"
+                        style={{
+                          display: "grid",
+                          gap: 10,
+                          margin: "14px 0",
+                          padding: 12,
+                          border: "1px solid #e9e1f1",
+                          borderRadius: 12,
+                        }}
+                      >
                         <strong>Photos et vidéos du signalement</strong>
-                        {originalMedia.length ? originalMedia.map((media) => (
-                          <div key={media.id}>
-                            {media.previewUrl ? (
-                              media.media_type.startsWith("image/") ? (
-                                <img src={media.previewUrl} alt="Photo approuvée du signalement" loading="lazy" style={{ width: "100%", maxHeight: 320, objectFit: "contain", borderRadius: 10, background: "#f7f5f9" }} />
+                        {originalMedia.length ? (
+                          originalMedia.map((media) => (
+                            <div key={media.id}>
+                              {media.previewUrl ? (
+                                media.media_type.startsWith("image/") ? (
+                                  <img
+                                    src={media.previewUrl}
+                                    alt="Photo approuvée du signalement"
+                                    loading="lazy"
+                                    style={{
+                                      width: "100%",
+                                      maxHeight: 320,
+                                      objectFit: "contain",
+                                      borderRadius: 10,
+                                      background: "#f7f5f9",
+                                    }}
+                                  />
+                                ) : (
+                                  <video
+                                    src={media.previewUrl}
+                                    controls
+                                    playsInline
+                                    preload="metadata"
+                                    style={{
+                                      width: "100%",
+                                      maxHeight: 320,
+                                      borderRadius: 10,
+                                      background: "#111",
+                                    }}
+                                  />
+                                )
                               ) : (
-                                <video src={media.previewUrl} controls playsInline preload="metadata" style={{ width: "100%", maxHeight: 320, borderRadius: 10, background: "#111" }} />
-                              )
-                            ) : <p>Ce média approuvé est temporairement indisponible. Actualisez la page pour réessayer.</p>}
-                          </div>
-                        )) : <p>Aucune photo ou vidéo approuvée n'est disponible pour ce signalement.</p>}
+                                <p>
+                                  Ce média approuvé est temporairement indisponible. Actualisez la
+                                  page pour réessayer.
+                                </p>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <p>
+                            Aucune photo ou vidéo approuvée n'est disponible pour ce signalement.
+                          </p>
+                        )}
                       </section>
                       <label>
                         Affecter cette mission à un agent terrain
@@ -700,27 +962,63 @@ export default function OrganizationDashboard() {
             </div>
             <div className="card" id="org-create-agent">
               <h2>Créer un agent terrain</h2>
-              <p>Vous créez ici les comptes des agents rattachés à votre agence. Vous pourrez ensuite leur affecter les missions reçues.</p>
+              <p>
+                Vous créez ici les comptes des agents rattachés à votre agence. Vous pourrez ensuite
+                leur affecter les missions reçues.
+              </p>
               <div className="form">
                 <label>
                   Prénom
-                  <input required value={agentForm.first_name} onChange={(event) => setAgentForm({ ...agentForm, first_name: event.target.value })} placeholder="Prénom de l'agent" />
+                  <input
+                    required
+                    value={agentForm.first_name}
+                    onChange={(event) =>
+                      setAgentForm({ ...agentForm, first_name: event.target.value })
+                    }
+                    placeholder="Prénom de l'agent"
+                  />
                 </label>
                 <label>
                   Nom
-                  <input required value={agentForm.last_name} onChange={(event) => setAgentForm({ ...agentForm, last_name: event.target.value })} placeholder="Nom de l'agent" />
+                  <input
+                    required
+                    value={agentForm.last_name}
+                    onChange={(event) =>
+                      setAgentForm({ ...agentForm, last_name: event.target.value })
+                    }
+                    placeholder="Nom de l'agent"
+                  />
                 </label>
                 <label>
                   Matricule
-                  <input required value={agentForm.matricule} onChange={(event) => setAgentForm({ ...agentForm, matricule: event.target.value })} placeholder="Matricule" />
+                  <input
+                    required
+                    value={agentForm.matricule}
+                    onChange={(event) =>
+                      setAgentForm({ ...agentForm, matricule: event.target.value })
+                    }
+                    placeholder="Matricule"
+                  />
                 </label>
                 <label>
                   Qualification / métier
-                  <input required value={agentForm.qualification} onChange={(event) => setAgentForm({ ...agentForm, qualification: event.target.value })} placeholder="Qualification" />
+                  <input
+                    required
+                    value={agentForm.qualification}
+                    onChange={(event) =>
+                      setAgentForm({ ...agentForm, qualification: event.target.value })
+                    }
+                    placeholder="Qualification"
+                  />
                 </label>
                 <label>
                   Téléphone *
-                  <input required value={agentForm.phone} onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })} placeholder="Numéro de téléphone de connexion" />
+                  <input
+                    required
+                    value={agentForm.phone}
+                    onChange={(event) => setAgentForm({ ...agentForm, phone: event.target.value })}
+                    placeholder="Numéro de téléphone de connexion"
+                  />
                 </label>
                 <PasswordField
                   label="Mot de passe"
@@ -742,27 +1040,59 @@ export default function OrganizationDashboard() {
                 )}
                 <button
                   className="button primary"
-                  disabled={busy || !agentForm.first_name.trim() || !agentForm.last_name.trim() || !agentForm.matricule.trim() || !agentForm.qualification.trim() || !agentForm.phone.trim() || agentForm.password.length < 8 || agentForm.password !== confirmAgentPassword}
-                  onClick={() => act(async () => {
-                    setSuccess("");
-                    const initialPassword = agentForm.password;
-                    const createdAgent = await createAgencyAgent({ ...agentForm });
-                    try {
-                      downloadOrganizationAgentCredentialPdf(
-                        createdAgent,
-                        { name: currentMembership.organization.name, code: currentMembership.organization.code },
-                        { name: currentMembership.unit?.name ?? "Unité", code: currentMembership.unit?.code ?? "", unit_type: currentMembership.unit?.unit_type ?? "agency" },
-                        initialPassword,
-                      );
-                      setSuccess("Le compte agent a été créé et sa fiche PDF avec les informations et le mot de passe initial a été téléchargée. Remettez-la directement à l'agent.");
-                    } catch (pdfError) {
-                      console.error("[PCS][OrganizationDashboard] Échec du PDF agent :", pdfError);
-                      setError("Le compte agent a été créé, mais le téléchargement du PDF a échoué. Ne fermez pas cette page avant d'avoir récupéré les identifiants.");
-                    }
-                    setAgentForm({ first_name: "", last_name: "", matricule: "", qualification: "", phone: "", password: "" });
-                    setConfirmAgentPassword("");
-                    setShowAgentPassword(false);
-                  })}
+                  disabled={
+                    busy ||
+                    !agentForm.first_name.trim() ||
+                    !agentForm.last_name.trim() ||
+                    !agentForm.matricule.trim() ||
+                    !agentForm.qualification.trim() ||
+                    !agentForm.phone.trim() ||
+                    agentForm.password.length < 8 ||
+                    agentForm.password !== confirmAgentPassword
+                  }
+                  onClick={() =>
+                    act(async () => {
+                      setSuccess("");
+                      const initialPassword = agentForm.password;
+                      const createdAgent = await createAgencyAgent({ ...agentForm });
+                      try {
+                        downloadOrganizationAgentCredentialPdf(
+                          createdAgent,
+                          {
+                            name: currentMembership.organization.name,
+                            code: currentMembership.organization.code,
+                          },
+                          {
+                            name: currentMembership.unit?.name ?? "Unité",
+                            code: currentMembership.unit?.code ?? "",
+                            unit_type: currentMembership.unit?.unit_type ?? "agency",
+                          },
+                          initialPassword,
+                        );
+                        setSuccess(
+                          "Le compte agent a été créé et sa fiche PDF avec les informations et le mot de passe initial a été téléchargée. Remettez-la directement à l'agent.",
+                        );
+                      } catch (pdfError) {
+                        console.error(
+                          "[PCS][OrganizationDashboard] Échec du PDF agent :",
+                          pdfError,
+                        );
+                        setError(
+                          "Le compte agent a été créé, mais le téléchargement du PDF a échoué. Ne fermez pas cette page avant d'avoir récupéré les identifiants.",
+                        );
+                      }
+                      setAgentForm({
+                        first_name: "",
+                        last_name: "",
+                        matricule: "",
+                        qualification: "",
+                        phone: "",
+                        password: "",
+                      });
+                      setConfirmAgentPassword("");
+                      setShowAgentPassword(false);
+                    })
+                  }
                 >
                   Créer l'agent terrain
                 </button>

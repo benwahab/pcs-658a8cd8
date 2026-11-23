@@ -19,6 +19,7 @@ import type {
   MairieSignupRequest,
   OrganizationSignupRequest,
 } from "../types/cst";
+import UiIcon, { type UiIconName } from "@/pcs/components/UiIcon";
 
 async function callCst(
   body: Record<string, unknown>,
@@ -778,8 +779,7 @@ export function CSTDashboard() {
           nav("/cst");
           return;
         }
-        if (active)
-          setHealthError(e instanceof Error ? e.message : "Supervision indisponible.");
+        if (active) setHealthError(e instanceof Error ? e.message : "Supervision indisponible.");
       } finally {
         healthRequestInFlight = false;
       }
@@ -1079,17 +1079,17 @@ export function CSTDashboard() {
   const navItems: {
     id: string;
     label: string;
-    icon: string;
+    icon: UiIconName;
     href?: string;
     to?: string;
     sub?: [string, string][];
   }[] = [
-    { id: "home", label: "Tableau de bord", icon: "⌂", href: "#cst-home" },
-    { id: "reports", label: "Signalements", icon: "🔔", href: "#report-management" },
+    { id: "home", label: "Tableau de bord", icon: "home", href: "#cst-home" },
+    { id: "reports", label: "Signalements", icon: "bell", href: "#report-management" },
     {
       id: "media",
       label: "Modération des médias",
-      icon: "▣",
+      icon: "list",
       sub: [
         ["#moderation", "Photos et vidéos en attente"],
         ["#archives", "Archives vidéo"],
@@ -1098,27 +1098,27 @@ export function CSTDashboard() {
     {
       id: "regions",
       label: "Régions et communes",
-      icon: "▦",
+      icon: "grid",
       sub: [
         ["#cst-map", "Carte par région"],
         ["#governance", "Gouvernance territoriale"],
       ],
     },
-    { id: "mods", label: "Gestion des modérateurs", icon: "👥", to: "/cst/moderateurs" },
+    { id: "mods", label: "Gestion des modérateurs", icon: "users", to: "/cst/moderateurs" },
     {
       id: "inst",
       label: "Mairies et institutions",
-      icon: "🏛",
+      icon: "building",
       sub: [
         ["#mairie-signups", "Demandes mairies"],
         ["#org-signups", "Demandes NIGELEC / NDE"],
         ["#professional-accounts", "Comptes approuvés"],
       ],
     },
-    { id: "ops", label: "Suivi des interventions", icon: "⚙", href: "#governance" },
-    { id: "stats", label: "Statistiques et rapports", icon: "▥", href: "#cst-stats" },
-    { id: "journal", label: "Journal des activités", icon: "◷", href: "#cst-activity" },
-    { id: "settings", label: "Paramètres CST", icon: "⚙", href: "#professional-accounts" },
+    { id: "ops", label: "Suivi des interventions", icon: "settings", href: "#governance" },
+    { id: "stats", label: "Statistiques et rapports", icon: "chart", href: "#cst-stats" },
+    { id: "journal", label: "Journal des activités", icon: "clock", href: "#cst-activity" },
+    { id: "settings", label: "Paramètres CST", icon: "settings", href: "#professional-accounts" },
   ];
   const spaces: [string, string, string, string, string][] = [
     [
@@ -1165,7 +1165,9 @@ export function CSTDashboard() {
           {navItems.map((it, i) => {
             const inner = (
               <>
-                <span className="cstNavGlyph">{it.icon}</span>
+                <span className="cstNavGlyph">
+                  <UiIcon name={it.icon} />
+                </span>
                 <span className="cstNavText">{it.label}</span>
                 {it.sub && (
                   <b className={"cstNavChevron" + (openMenu === it.id ? " isOpen" : "")}>›</b>
@@ -1222,7 +1224,9 @@ export function CSTDashboard() {
               );
           }}
         >
-          <span className="cstNavGlyph">▦</span>
+          <span className="cstNavGlyph">
+            <UiIcon name="grid" />
+          </span>
           <span>Gestion détaillée</span>
           <b>{manageOpen ? "Masquer" : "Afficher"}</b>
         </button>
@@ -1238,7 +1242,9 @@ export function CSTDashboard() {
               );
           }}
         >
-          <span className="cstNavGlyph">⌘</span>
+          <span className="cstNavGlyph">
+            <UiIcon name="shield" />
+          </span>
           <span>Supervision technique</span>
           <b>{techOpen ? "Masquer" : "Afficher"}</b>
         </button>
@@ -1328,26 +1334,28 @@ export function CSTDashboard() {
             <section className="cstKpiGrid" aria-label="Indicateurs principaux">
               {(
                 [
-                  ["violet", "▤", "Signalements reçus", reportTotal, trend(() => true)],
+                  ["violet", "list", "Signalements reçus", reportTotal, trend(() => true)],
                   [
                     "orange",
-                    "◷",
+                    "clock",
                     "En attente de validation",
                     pendingReports,
                     trend((r) => ["submitted", "received", "verification"].includes(r.status)),
                   ],
                   [
                     "blue",
-                    "👥",
+                    "users",
                     "En cours de traitement",
                     Number(reportCounts.in_progress ?? 0),
                     trend((r) => r.status === "in_progress"),
                   ],
-                  ["green", "✓", "Résolus", resolved, trend((r) => r.status === "resolved")],
-                ] as [string, string, string, number, string][]
+                  ["green", "check", "Résolus", resolved, trend((r) => r.status === "resolved")],
+                ] as [string, UiIconName, string, number, string][]
               ).map(([tone, ic, label, val, tr]) => (
                 <article className="cstKpiCard" key={label}>
-                  <span className={"cstKpiIcon " + tone}>{ic}</span>
+                  <span className={"cstKpiIcon " + tone}>
+                    <UiIcon name={ic} />
+                  </span>
                   <div>
                     <small>{label}</small>
                     <div className="cstKpiValue">
@@ -1601,7 +1609,9 @@ export function CSTDashboard() {
                 <a href="#moderation">Voir tout</a>
               </div>
               <div className="cstMediaCount">
-                <span className="cstKpiIcon violet small">🔒</span>
+                <span className="cstKpiIcon violet small">
+                  <UiIcon name="lock" />
+                </span>
                 <strong>{mediaQueue.length}</strong>
               </div>
               {mediaQueue.length > 0 && (

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@/pcs/router";
 import { supabase } from "@/pcs/lib/supabase";
 import type { CstMediaItem } from "../types/cst";
+import UiIcon from "@/pcs/components/UiIcon";
 
 async function moderation(
   body: Record<string, unknown> = { action: "list" },
@@ -90,13 +91,22 @@ export default function Moderateur() {
         <p className="moderatorMenuLabel">SUPERVISION</p>
         <nav>
           <a className="active" href="#moderator-home">
-            <span>⌂</span>Tableau de bord
+            <span>
+              <UiIcon name="home" />
+            </span>
+            Tableau de bord
           </a>
           <a href="#moderator-queue">
-            <span>▣</span>File de modération <b>{items.length}</b>
+            <span>
+              <UiIcon name="list" />
+            </span>
+            File de modération <b>{items.length}</b>
           </a>
           <a href="#moderator-guidance">
-            <span>ⓘ</span>Consignes
+            <span>
+              <UiIcon name="info" />
+            </span>
+            Consignes
           </a>
         </nav>
         <div className="moderatorSidebarFoot">
@@ -140,7 +150,9 @@ export default function Moderateur() {
         )}
         <section className="moderatorKpis" aria-label="Indicateurs de modération">
           <article>
-            <span className="moderatorKpiIcon">▣</span>
+            <span className="moderatorKpiIcon">
+              <UiIcon name="list" />
+            </span>
             <div>
               <small>Médias en attente</small>
               <strong>{items.length}</strong>
@@ -148,7 +160,9 @@ export default function Moderateur() {
             </div>
           </article>
           <article>
-            <span className="moderatorKpiIcon soft">✓</span>
+            <span className="moderatorKpiIcon soft">
+              <UiIcon name="check" />
+            </span>
             <div>
               <small>File de validation</small>
               <strong>{items.length === 0 ? "Vide" : "À examiner"}</strong>
@@ -255,7 +269,9 @@ export default function Moderateur() {
           )}
         </section>
         <section className="moderatorGuidance" id="moderator-guidance">
-          <span>ⓘ</span>
+          <span>
+            <UiIcon name="info" />
+          </span>
           <div>
             <strong>Règle de publication</strong>
             <p>

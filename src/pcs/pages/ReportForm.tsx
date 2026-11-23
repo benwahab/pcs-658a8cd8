@@ -18,6 +18,37 @@ interface Commune {
   region_id: string;
 }
 
+const iconProps = {
+  width: 18,
+  height: 18,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.9,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+const PinIcon = () => (
+  <svg {...iconProps}>
+    <path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);
+const PhotoIcon = () => (
+  <svg {...iconProps}>
+    <rect x="3" y="5" width="18" height="14" rx="2.5" />
+    <circle cx="9" cy="11" r="2" />
+    <path d="M21 16l-5-5-8 8" />
+  </svg>
+);
+const VideoIcon = () => (
+  <svg {...iconProps}>
+    <rect x="3" y="6" width="13" height="12" rx="2.5" />
+    <path d="M16 10l5-3v10l-5-3" />
+  </svg>
+);
+
 const MAX_PHOTOS = 5;
 const MAX_TITLE_LENGTH = 120;
 const MAX_LOCATION_LENGTH = 250;
@@ -450,6 +481,7 @@ export default function ReportForm() {
             onClick={() => setGpsNoticeOpen(true)}
             disabled={saving}
           >
+            <PinIcon />
             Utiliser ma position GPS
           </button>
           {gpsNoticeOpen && (
@@ -502,49 +534,53 @@ export default function ReportForm() {
           )}
 
           <fieldset className="mediaPicker" disabled={saving}>
-            <button
-              type="button"
-              className="mediaPickBtn"
-              onClick={() => {
-                const accepted = window.confirm(
-                  "IMPORTANT — RÈGLES DES PHOTOS DE SIGNALEMENT\n\n" +
-                    "Importez uniquement une photo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\n\n" +
-                    "Toute photo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\n\n" +
-                    "Voulez-vous choisir une photo depuis votre téléphone ?",
-                );
-                if (accepted) photoInputRef.current?.click();
-              }}
-            >
-              Importer une photo
-            </button>
-            <input
-              ref={photoInputRef}
-              hidden
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(event) => {
-                const input = event.currentTarget;
-                void addPhotos(input.files);
-                input.value = "";
-              }}
-            />
+            <div className="mediaPickerRow">
+              <button
+                type="button"
+                className="mediaPickBtn"
+                onClick={() => {
+                  const accepted = window.confirm(
+                    "IMPORTANT — RÈGLES DES PHOTOS DE SIGNALEMENT\n\n" +
+                      "Importez uniquement une photo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\n\n" +
+                      "Toute photo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\n\n" +
+                      "Voulez-vous choisir une photo depuis votre téléphone ?",
+                  );
+                  if (accepted) photoInputRef.current?.click();
+                }}
+              >
+                <PhotoIcon />
+                Importer une photo
+              </button>
+              <input
+                ref={photoInputRef}
+                hidden
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(event) => {
+                  const input = event.currentTarget;
+                  void addPhotos(input.files);
+                  input.value = "";
+                }}
+              />
 
-            <button
-              type="button"
-              className="mediaPickBtn"
-              onClick={() => {
-                const accepted = window.confirm(
-                  "IMPORTANT — RÈGLES DES VIDÉOS DE SIGNALEMENT\n\n" +
-                    "Importez uniquement une vidéo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\n\n" +
-                    "Toute vidéo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\n\n" +
-                    "Voulez-vous choisir une vidéo depuis votre téléphone ?",
-                );
-                if (accepted) videoInputRef.current?.click();
-              }}
-            >
-              Importer une vidéo
-            </button>
+              <button
+                type="button"
+                className="mediaPickBtn"
+                onClick={() => {
+                  const accepted = window.confirm(
+                    "IMPORTANT — RÈGLES DES VIDÉOS DE SIGNALEMENT\n\n" +
+                      "Importez uniquement une vidéo réelle qui montre clairement le problème signalé et qui entre dans le cadre du signalement.\n\n" +
+                      "Toute vidéo sans preuve réelle, sans rapport avec le problème, trompeuse ou hors sujet sera rejetée et supprimée.\n\n" +
+                      "Voulez-vous choisir une vidéo depuis votre téléphone ?",
+                  );
+                  if (accepted) videoInputRef.current?.click();
+                }}
+              >
+                <VideoIcon />
+                Importer une vidéo
+              </button>
+            </div>
             <input
               ref={videoInputRef}
               hidden

@@ -21,6 +21,7 @@ import {
 import { statusLabels } from "../types";
 import BrandLogo from "../components/BrandLogo";
 import { downloadAgentCredentialPdf } from "../utils/agentCredentialPdf";
+import UiIcon from "@/pcs/components/UiIcon";
 
 // Resolution video awaiting review, with a short-lived preview link added client-side.
 type ResolutionVideo = Pick<
@@ -153,9 +154,13 @@ export default function MairieDashboard() {
       });
       if (reviewError) throw reviewError;
       if (!approve) {
-        setSuccess("La résolution a été rejetée. Le signalement reste en traitement et l'agent pourra transmettre une nouvelle preuve.");
+        setSuccess(
+          "La résolution a été rejetée. Le signalement reste en traitement et l'agent pourra transmettre une nouvelle preuve.",
+        );
       } else {
-        setSuccess("La résolution a été approuvée. Le signalement est maintenant officiellement résolu.");
+        setSuccess(
+          "La résolution a été approuvée. Le signalement est maintenant officiellement résolu.",
+        );
       }
       await load();
     } catch (e) {
@@ -325,31 +330,55 @@ export default function MairieDashboard() {
         <div className="mairieMenuLabel">MENU</div>
         <nav className="mairieNav">
           <a className="active" href="#dashboard">
-            <span>⌂</span>Tableau de bord
+            <span>
+              <UiIcon name="home" />
+            </span>
+            Tableau de bord
           </a>
           <a href="#signalements">
-            <span>▣</span>Signalements <b>{stats.total}</b>
+            <span>
+              <UiIcon name="list" />
+            </span>
+            Signalements <b>{stats.total}</b>
           </a>
           <a href="#agents">
-            <span>♙</span>Agents terrain <b>{activeAgents.length}</b>
+            <span>
+              <UiIcon name="users" />
+            </span>
+            Agents terrain <b>{activeAgents.length}</b>
           </a>
           <a href="#statistiques">
-            <span>◔</span>Statistiques
+            <span>
+              <UiIcon name="chart" />
+            </span>
+            Statistiques
           </a>
           <a href="#notifications">
-            <span>◌</span>Notifications
+            <span>
+              <UiIcon name="bell" />
+            </span>
+            Notifications
           </a>
         </nav>
         <div className="mairieMenuLabel">SYSTÈME</div>
         <nav className="mairieNav mairieNavBottom">
           <a href="#parametres">
-            <span>⚙</span>Paramètres
+            <span>
+              <UiIcon name="settings" />
+            </span>
+            Paramètres
           </a>
           <a href="#aide">
-            <span>?</span>Aide
+            <span>
+              <UiIcon name="help" />
+            </span>
+            Aide
           </a>
           <button onClick={logout}>
-            <span>↪</span>Déconnexion
+            <span>
+              <UiIcon name="logout" />
+            </span>
+            Déconnexion
           </button>
         </nav>
         <div className="mairieSidebarFooter">
@@ -360,7 +389,9 @@ export default function MairieDashboard() {
       <main className="mairieMain" id="dashboard">
         <header className="mairieTopbar">
           <div className="mairieSearch">
-            <span>⌕</span>
+            <span>
+              <UiIcon name="search" />
+            </span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -375,10 +406,10 @@ export default function MairieDashboard() {
                 document.getElementById("notifications")?.scrollIntoView({ behavior: "smooth" })
               }
             >
-              ♧
+              <UiIcon name="bell" />
             </button>
             <button className="iconButton" title="Actualiser" onClick={load}>
-              ↻
+              <UiIcon name="refresh" />
             </button>
             <div className="mairieProfile">
               <span className="profileAvatar">{(m?.name ?? "M").slice(0, 1).toUpperCase()}</span>
@@ -423,25 +454,33 @@ export default function MairieDashboard() {
           )}
           <section className="mairieStats">
             <article className="mairieStatCard featured">
-              <div className="statIcon">▣</div>
+              <div className="statIcon">
+                <UiIcon name="list" />
+              </div>
               <span>Total signalements</span>
               <strong>{stats.total}</strong>
               <small>Dans votre région</small>
             </article>
             <article className="mairieStatCard">
-              <div className="statIcon amber">!</div>
+              <div className="statIcon amber">
+                <UiIcon name="alert" />
+              </div>
               <span>À vérifier</span>
               <strong>{stats.verification}</strong>
               <small>En attente d'agent</small>
             </article>
             <article className="mairieStatCard">
-              <div className="statIcon violet">↗</div>
+              <div className="statIcon violet">
+                <UiIcon name="trend" />
+              </div>
               <span>En traitement</span>
               <strong>{stats.inProgress}</strong>
               <small>Missions en cours</small>
             </article>
             <article className="mairieStatCard">
-              <div className="statIcon green">✓</div>
+              <div className="statIcon green">
+                <UiIcon name="check" />
+              </div>
               <span>Résolus</span>
               <strong>{stats.resolved}</strong>
               <small>Traitement terminé</small>
@@ -641,7 +680,8 @@ export default function MairieDashboard() {
               <div>
                 <h2>Preuves de résolution à examiner</h2>
                 <p>
-                  Les photos et vidéos envoyées par les agents de cette mairie attendent votre décision. Le signalement ne sera clôturé qu'après votre approbation.
+                  Les photos et vidéos envoyées par les agents de cette mairie attendent votre
+                  décision. Le signalement ne sera clôturé qu'après votre approbation.
                 </p>
               </div>
               <span className="statusPill amber">{resolutionVideos.length} en attente</span>
@@ -680,7 +720,13 @@ export default function MairieDashboard() {
                         <img
                           src={item.previewUrl}
                           alt="Preuve photo de résolution"
-                          style={{ width: "100%", maxHeight: 300, objectFit: "contain", marginTop: 10, borderRadius: 8 }}
+                          style={{
+                            width: "100%",
+                            maxHeight: 300,
+                            objectFit: "contain",
+                            marginTop: 10,
+                            borderRadius: 8,
+                          }}
                         />
                       ) : (
                         <video
@@ -719,7 +765,11 @@ export default function MairieDashboard() {
                         className="mairieButton secondary"
                         disabled={reviewBusy === item.id}
                         onClick={() => {
-                          if (window.confirm("Rejeter cette preuve de résolution ? Le signalement restera en traitement."))
+                          if (
+                            window.confirm(
+                              "Rejeter cette preuve de résolution ? Le signalement restera en traitement.",
+                            )
+                          )
                             void reviewResolutionVideo(item, false);
                         }}
                       >
